@@ -18,7 +18,7 @@ import { BRAND_CONFIG, getWhatsAppUrl, formatCurrencyNGN } from '../data/config'
 import { SectionHeading } from '../components/common/SectionHeading';
 import { ProductCard } from '../components/common/ProductCard';
 import { QuickViewModal } from '../components/common/QuickViewModal';
-import { Product } from '../types';
+import type { Product } from '../types';
 
 export const HomePage: React.FC = () => {
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useMemo } from 'react';
-import { Product, JournalArticle } from '../types';
+import type { Product, JournalArticle } from '../types';
 import { PRODUCTS } from '../data/products';
 import { JOURNAL_ARTICLES } from '../data/journal';
 

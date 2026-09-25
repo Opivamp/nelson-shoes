@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { GALLERY_ITEMS } from '../data/gallery';
-import { GalleryItem } from '../types';
+import type { GalleryItem } from '../types';
 import { LightboxModal } from '../components/common/LightboxModal';
 import { SectionHeading } from '../components/common/SectionHeading';
 import { Eye } from 'lucide-react';

@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Filter, SlidersHorizontal, Check, RefreshCw } from 'lucide-react';
 import { PRODUCTS } from '../data/products';
-import { Product, ProductCategory } from '../types';
+import type { Product, ProductCategory } from '../types';
 import { ProductCard } from '../components/common/ProductCard';
 import { QuickViewModal } from '../components/common/QuickViewModal';
 import { SectionHeading } from '../components/common/SectionHeading';

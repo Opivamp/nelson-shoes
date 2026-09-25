@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { CartItem, Product } from '../types';
+import type { CartItem, Product } from '../types';
 import { BRAND_CONFIG, getWhatsAppUrl } from '../data/config';
 
 interface CartContextType {

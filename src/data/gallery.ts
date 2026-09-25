@@ -1,4 +1,4 @@
-import { GalleryItem } from '../types';
+import type { GalleryItem } from '../types';
 
 export const GALLERY_ITEMS: GalleryItem[] = [
   {

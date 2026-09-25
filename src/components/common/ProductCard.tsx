@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Heart, ArrowUpRight, Eye } from 'lucide-react';
-import { Product } from '../../types';
+import type { Product } from '../../types';
 import { formatCurrencyNGN, formatCurrencyUSD } from '../../data/config';
 import { useWishlist } from '../../context/WishlistContext';
 import { useCart } from '../../context/CartContext';

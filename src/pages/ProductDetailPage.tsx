@@ -11,15 +11,16 @@ import {
   Ruler, 
   Sparkles 
 } from 'lucide-react';
-import { getProductBySlug, PRODUCTS } from '../data/products';
 import { formatCurrencyNGN, formatCurrencyUSD, getWhatsAppUrl } from '../data/config';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
+import { useProducts } from '../context/ProductContext';
 import { ProductCard } from '../components/common/ProductCard';
 
 export const ProductDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
+  const { getProductBySlug, products } = useProducts();
   const product = slug ? getProductBySlug(slug) : undefined;
 
   const { addItem } = useCart();
@@ -53,7 +54,7 @@ export const ProductDetailPage: React.FC = () => {
   }
 
   const isSaved = isInWishlist(product.id);
-  const related = PRODUCTS.filter(p => p.id !== product.id).slice(0, 3);
+  const related = products.filter(p => p.id !== product.id).slice(0, 3);
 
   const handleAddToCart = () => {
     addItem(product, selectedSize, isBespokeFitting, customNotes);

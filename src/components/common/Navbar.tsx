@@ -1,6 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Search, ShoppingBag, Heart, Menu, X, ArrowUpRight } from 'lucide-react';
+import { 
+  Search, 
+  ShoppingBag, 
+  Heart, 
+  Menu, 
+  X, 
+  ChevronDown, 
+  ArrowUpRight, 
+  ShieldCheck, 
+  Clock, 
+  Scissors, 
+  Compass, 
+  BookOpen, 
+  Image, 
+  MapPin, 
+  UserCheck 
+} from 'lucide-react';
 import { BRAND_CONFIG } from '../../data/config';
 import { useCart } from '../../context/CartContext';
 import { useWishlist } from '../../context/WishlistContext';
@@ -9,6 +25,8 @@ import { useSearch } from '../../context/SearchContext';
 export const Navbar: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const dropdownTimeoutRef = useRef<any>(null);
   const location = useLocation();
 
   const { totalItems, openCart } = useCart();
@@ -17,7 +35,7 @@ export const Navbar: React.FC = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 40) {
+      if (window.scrollY > 30) {
         setIsScrolled(true);
       } else {
         setIsScrolled(false);
@@ -28,27 +46,32 @@ export const Navbar: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Close mobile menu on page navigation
+  // Close menus on page navigation
   useEffect(() => {
     setMobileMenuOpen(false);
+    setActiveDropdown(null);
   }, [location.pathname]);
 
-  const navLinks = [
-    { label: "COLLECTION", href: "/collection" },
-    { label: "BESPOKE", href: "/bespoke" },
-    { label: "THE CRAFT", href: "/craft" },
-    { label: "ABOUT", href: "/about" },
-    { label: "JOURNAL", href: "/journal" },
-    { label: "GALLERY", href: "/gallery" },
-  ];
+  const handleMouseEnter = (name: string) => {
+    if (dropdownTimeoutRef.current) {
+      clearTimeout(dropdownTimeoutRef.current);
+    }
+    setActiveDropdown(name);
+  };
+
+  const handleMouseLeave = () => {
+    dropdownTimeoutRef.current = setTimeout(() => {
+      setActiveDropdown(null);
+    }, 250);
+  };
 
   return (
     <>
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
           isScrolled
-            ? 'luxury-glass border-b border-[#D8CBB8]/10 py-3.5 shadow-2xl'
-            : 'bg-gradient-to-b from-[#0A0A0A]/90 via-[#0A0A0A]/40 to-transparent py-6'
+            ? 'luxury-glass border-b border-[#D8CBB8]/15 py-3.5 shadow-2xl'
+            : 'bg-gradient-to-b from-[#0A0A0A]/95 via-[#0A0A0A]/60 to-transparent py-5'
         }`}
       >
         <div className="max-w-7xl mx-auto px-6 md:px-10 flex items-center justify-between">
@@ -56,10 +79,10 @@ export const Navbar: React.FC = () => {
           {/* Brand Logo & Monogram */}
           <Link 
             to="/" 
-            className="group flex items-center gap-3 text-left focus:outline-none"
+            className="group flex items-center gap-3 text-left focus:outline-none flex-shrink-0"
             aria-label="Nelson Shoes Home"
           >
-            <div className="w-8 h-8 border border-[#B89B5E]/50 flex items-center justify-center transition-colors duration-300 group-hover:border-[#B89B5E]">
+            <div className="w-8 h-8 border border-[#B89B5E]/50 flex items-center justify-center transition-colors duration-300 group-hover:border-[#B89B5E] bg-[#0A0A0A]/60">
               <span className="font-serif text-lg font-light text-[#B89B5E]">N</span>
             </div>
             <div>
@@ -72,31 +95,225 @@ export const Navbar: React.FC = () => {
             </div>
           </Link>
 
-          {/* Desktop Navigation Links */}
-          <nav className="hidden lg:flex items-center space-x-8" aria-label="Main Navigation">
-            {navLinks.map((link) => {
-              const isActive = location.pathname === link.href;
-              return (
-                <Link
-                  key={link.label}
-                  to={link.href}
-                  className={`text-[11px] tracking-[0.22em] font-medium uppercase transition-colors duration-300 relative py-1 ${
-                    isActive 
-                      ? 'text-[#B89B5E]' 
-                      : 'text-[#D8CBB8]/80 hover:text-[#F5F1E8]'
-                  }`}
-                >
-                  {link.label}
-                  {isActive && (
-                    <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 bg-[#B89B5E] rounded-full"></span>
-                  )}
-                </Link>
-              );
-            })}
+          {/* Desktop Navigation Links — Streamlined with Elegant Dropdowns */}
+          <nav className="hidden lg:flex items-center space-x-7" aria-label="Main Navigation">
+            
+            {/* 01. COLLECTION (With Category Dropdown) */}
+            <div 
+              className="relative"
+              onMouseEnter={() => handleMouseEnter('collection')}
+              onMouseLeave={handleMouseLeave}
+            >
+              <Link
+                to="/collection"
+                className={`text-[11px] tracking-[0.22em] font-medium uppercase transition-colors duration-300 py-2 inline-flex items-center gap-1.5 ${
+                  location.pathname === '/collection' 
+                    ? 'text-[#B89B5E]' 
+                    : 'text-[#D8CBB8]/80 hover:text-[#F5F1E8]'
+                }`}
+              >
+                <span>COLLECTION</span>
+                <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${activeDropdown === 'collection' ? 'rotate-180 text-[#B89B5E]' : 'opacity-60'}`} />
+              </Link>
+
+              {/* Collection Dropdown Menu */}
+              {activeDropdown === 'collection' && (
+                <div className="absolute top-full left-0 mt-1 w-64 p-3 bg-[#0C0C0C]/98 border border-[#D8CBB8]/20 backdrop-blur-2xl shadow-2xl animate-fadeIn space-y-1 z-50">
+                  <div className="text-[9px] font-mono tracking-[0.25em] uppercase text-[#B89B5E] px-3 py-1 border-b border-[#D8CBB8]/10 mb-1">
+                    Footwear Silhouettes
+                  </div>
+                  
+                  <Link
+                    to="/collection"
+                    className="block px-3 py-2 text-xs font-serif text-[#F5F1E8] hover:text-[#B89B5E] hover:bg-[#B89B5E]/10 transition-colors"
+                  >
+                    View All Creations
+                  </Link>
+                  <Link
+                    to="/collection?category=oxford"
+                    className="block px-3 py-2 text-xs text-[#D8CBB8]/80 hover:text-[#F5F1E8] hover:bg-[#B89B5E]/10 transition-colors flex items-center justify-between"
+                  >
+                    <span>Wholecut Oxfords</span>
+                    <span className="text-[10px] text-[#B89B5E] font-mono">FORMAL</span>
+                  </Link>
+                  <Link
+                    to="/collection?category=monkstrap"
+                    className="block px-3 py-2 text-xs text-[#D8CBB8]/80 hover:text-[#F5F1E8] hover:bg-[#B89B5E]/10 transition-colors flex items-center justify-between"
+                  >
+                    <span>Double Monkstraps</span>
+                    <span className="text-[10px] text-[#B89B5E] font-mono">SARTORIAL</span>
+                  </Link>
+                  <Link
+                    to="/collection?category=boot"
+                    className="block px-3 py-2 text-xs text-[#D8CBB8]/80 hover:text-[#F5F1E8] hover:bg-[#B89B5E]/10 transition-colors flex items-center justify-between"
+                  >
+                    <span>Chelsea Boots</span>
+                    <span className="text-[10px] text-[#B89B5E] font-mono">ARCHIVE</span>
+                  </Link>
+                  <Link
+                    to="/collection?category=loafer"
+                    className="block px-3 py-2 text-xs text-[#D8CBB8]/80 hover:text-[#F5F1E8] hover:bg-[#B89B5E]/10 transition-colors flex items-center justify-between"
+                  >
+                    <span>Tassel & Venetian Loafers</span>
+                    <span className="text-[10px] text-[#B89B5E] font-mono">CASUAL</span>
+                  </Link>
+                </div>
+              )}
+            </div>
+
+            {/* 02. BESPOKE (Direct) */}
+            <Link
+              to="/bespoke"
+              className={`text-[11px] tracking-[0.22em] font-medium uppercase transition-colors duration-300 py-2 ${
+                location.pathname === '/bespoke' 
+                  ? 'text-[#B89B5E]' 
+                  : 'text-[#D8CBB8]/80 hover:text-[#F5F1E8]'
+              }`}
+            >
+              BESPOKE
+            </Link>
+
+            {/* 03. THE ATELIER (Dropdown grouping Craft, About, Gallery, Journal) */}
+            <div 
+              className="relative"
+              onMouseEnter={() => handleMouseEnter('atelier')}
+              onMouseLeave={handleMouseLeave}
+            >
+              <button
+                className={`text-[11px] tracking-[0.22em] font-medium uppercase transition-colors duration-300 py-2 inline-flex items-center gap-1.5 focus:outline-none ${
+                  ['/craft', '/about', '/gallery', '/journal'].includes(location.pathname)
+                    ? 'text-[#B89B5E]' 
+                    : 'text-[#D8CBB8]/80 hover:text-[#F5F1E8]'
+                }`}
+              >
+                <span>THE ATELIER</span>
+                <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${activeDropdown === 'atelier' ? 'rotate-180 text-[#B89B5E]' : 'opacity-60'}`} />
+              </button>
+
+              {/* Atelier Dropdown Menu */}
+              {activeDropdown === 'atelier' && (
+                <div className="absolute top-full left-0 mt-1 w-64 p-3 bg-[#0C0C0C]/98 border border-[#D8CBB8]/20 backdrop-blur-2xl shadow-2xl animate-fadeIn space-y-1 z-50">
+                  <div className="text-[9px] font-mono tracking-[0.25em] uppercase text-[#B89B5E] px-3 py-1 border-b border-[#D8CBB8]/10 mb-1">
+                    Heritage & Cordwaining
+                  </div>
+
+                  <Link
+                    to="/craft"
+                    className="px-3 py-2 text-xs text-[#F5F1E8] hover:text-[#B89B5E] hover:bg-[#B89B5E]/10 transition-colors flex items-center gap-2.5"
+                  >
+                    <Scissors className="w-3.5 h-3.5 text-[#B89B5E]" />
+                    <div>
+                      <div className="font-serif">The Craft & Welting</div>
+                      <div className="text-[10px] text-[#D8CBB8]/60 font-sans">Artisanal 6-stage cordwaining</div>
+                    </div>
+                  </Link>
+
+                  <Link
+                    to="/about"
+                    className="px-3 py-2 text-xs text-[#F5F1E8] hover:text-[#B89B5E] hover:bg-[#B89B5E]/10 transition-colors flex items-center gap-2.5"
+                  >
+                    <Compass className="w-3.5 h-3.5 text-[#B89B5E]" />
+                    <div>
+                      <div className="font-serif">Our Story & Founder</div>
+                      <div className="text-[10px] text-[#D8CBB8]/60 font-sans">Lagos roots & global standard</div>
+                    </div>
+                  </Link>
+
+                  <Link
+                    to="/gallery"
+                    className="px-3 py-2 text-xs text-[#F5F1E8] hover:text-[#B89B5E] hover:bg-[#B89B5E]/10 transition-colors flex items-center gap-2.5"
+                  >
+                    <Image className="w-3.5 h-3.5 text-[#B89B5E]" />
+                    <div>
+                      <div className="font-serif">Visual Archive</div>
+                      <div className="text-[10px] text-[#D8CBB8]/60 font-sans">Lookbook & photography</div>
+                    </div>
+                  </Link>
+
+                  <Link
+                    to="/journal"
+                    className="px-3 py-2 text-xs text-[#F5F1E8] hover:text-[#B89B5E] hover:bg-[#B89B5E]/10 transition-colors flex items-center gap-2.5"
+                  >
+                    <BookOpen className="w-3.5 h-3.5 text-[#B89B5E]" />
+                    <div>
+                      <div className="font-serif">Atelier Journal</div>
+                      <div className="text-[10px] text-[#D8CBB8]/60 font-sans">Shoe care & style essays</div>
+                    </div>
+                  </Link>
+
+                  <Link
+                    to="/contact"
+                    className="px-3 py-2 text-xs text-[#F5F1E8] hover:text-[#B89B5E] hover:bg-[#B89B5E]/10 transition-colors flex items-center gap-2.5 border-t border-[#D8CBB8]/10 pt-2"
+                  >
+                    <MapPin className="w-3.5 h-3.5 text-[#B89B5E]" />
+                    <div>
+                      <div className="font-serif">Lagos Workshop</div>
+                      <div className="text-[10px] text-[#D8CBB8]/60 font-sans">Fittings & atelier visits</div>
+                    </div>
+                  </Link>
+                </div>
+              )}
+            </div>
+
+            {/* 04. SERVICES / CLIENT PORTAL (Dropdown for Tracking & Admin Console) */}
+            <div 
+              className="relative"
+              onMouseEnter={() => handleMouseEnter('portal')}
+              onMouseLeave={handleMouseLeave}
+            >
+              <button
+                className={`text-[11px] tracking-[0.22em] font-medium uppercase transition-colors duration-300 py-2 inline-flex items-center gap-1.5 focus:outline-none ${
+                  ['/track', '/admin'].includes(location.pathname)
+                    ? 'text-[#B89B5E]' 
+                    : 'text-[#D8CBB8]/80 hover:text-[#F5F1E8]'
+                }`}
+              >
+                <span>SERVICES</span>
+                <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${activeDropdown === 'portal' ? 'rotate-180 text-[#B89B5E]' : 'opacity-60'}`} />
+              </button>
+
+              {/* Portal Dropdown Menu */}
+              {activeDropdown === 'portal' && (
+                <div className="absolute top-full left-0 mt-1 w-64 p-3 bg-[#0C0C0C]/98 border border-[#D8CBB8]/20 backdrop-blur-2xl shadow-2xl animate-fadeIn space-y-1 z-50">
+                  <div className="text-[9px] font-mono tracking-[0.25em] uppercase text-[#B89B5E] px-3 py-1 border-b border-[#D8CBB8]/10 mb-1">
+                    Client & Admin Services
+                  </div>
+
+                  <Link
+                    to="/track"
+                    className="px-3 py-2 text-xs text-[#F5F1E8] hover:text-[#B89B5E] hover:bg-[#B89B5E]/10 transition-colors flex items-center gap-2.5"
+                  >
+                    <Clock className="w-3.5 h-3.5 text-[#B89B5E]" />
+                    <div>
+                      <div className="font-serif flex items-center gap-2">
+                        <span>Track Commission</span>
+                        <span className="text-[9px] font-mono px-1 bg-[#B89B5E]/20 text-[#B89B5E]">LIVE</span>
+                      </div>
+                      <div className="text-[10px] text-[#D8CBB8]/60 font-sans">Check workbench progress</div>
+                    </div>
+                  </Link>
+
+                  <Link
+                    to="/admin"
+                    className="px-3 py-2 text-xs text-[#F5F1E8] hover:text-[#B89B5E] hover:bg-[#B89B5E]/10 transition-colors flex items-center gap-2.5 border-t border-[#D8CBB8]/10 pt-2"
+                  >
+                    <ShieldCheck className="w-3.5 h-3.5 text-[#B89B5E]" />
+                    <div>
+                      <div className="font-serif flex items-center gap-2">
+                        <span>Atelier Admin</span>
+                        <span className="text-[9px] font-mono px-1 bg-[#B89B5E] text-[#0A0A0A] font-bold">PORTAL</span>
+                      </div>
+                      <div className="text-[10px] text-[#D8CBB8]/60 font-sans">Upload products & orders</div>
+                    </div>
+                  </Link>
+                </div>
+              )}
+            </div>
+
           </nav>
 
           {/* Right Action Icons & Primary CTA */}
-          <div className="flex items-center space-x-4 md:space-x-6">
+          <div className="flex items-center space-x-3 md:space-x-5">
             
             {/* Search Trigger */}
             <button
@@ -159,6 +376,7 @@ export const Navbar: React.FC = () => {
                 <Menu className="w-6 h-6 stroke-[1.5]" />
               )}
             </button>
+
           </div>
         </div>
       </header>
@@ -171,54 +389,87 @@ export const Navbar: React.FC = () => {
             : 'opacity-0 pointer-events-none -translate-y-4'
         }`}
       >
-        <div className="space-y-6">
+        <div className="space-y-6 overflow-y-auto max-h-[75vh]">
           <p className="text-[10px] tracking-[0.3em] uppercase text-[#B89B5E] font-medium border-b border-[#D8CBB8]/10 pb-3">
-            Menu Navigation
+            Atelier Navigation
           </p>
           <nav className="flex flex-col space-y-4">
-            {navLinks.map((link) => (
-              <Link
-                key={link.label}
-                to={link.href}
-                className="font-serif text-2xl text-[#F5F1E8] hover:text-[#B89B5E] transition-colors flex items-center justify-between group"
-              >
-                <span>{link.label}</span>
-                <span className="text-xs text-[#D8CBB8]/40 group-hover:text-[#B89B5E] font-sans">
-                  0{navLinks.indexOf(link) + 1}
-                </span>
-              </Link>
-            ))}
+            <Link
+              to="/collection"
+              className="font-serif text-2xl text-[#F5F1E8] hover:text-[#B89B5E] transition-colors flex items-center justify-between"
+            >
+              <span>COLLECTION</span>
+              <span className="text-xs text-[#D8CBB8]/40 font-sans">01</span>
+            </Link>
+            <Link
+              to="/bespoke"
+              className="font-serif text-2xl text-[#F5F1E8] hover:text-[#B89B5E] transition-colors flex items-center justify-between"
+            >
+              <span>BESPOKE JOURNEY</span>
+              <span className="text-xs text-[#D8CBB8]/40 font-sans">02</span>
+            </Link>
+            <Link
+              to="/craft"
+              className="font-serif text-2xl text-[#F5F1E8] hover:text-[#B89B5E] transition-colors flex items-center justify-between"
+            >
+              <span>THE CRAFT & WELT</span>
+              <span className="text-xs text-[#D8CBB8]/40 font-sans">03</span>
+            </Link>
+            <Link
+              to="/about"
+              className="font-serif text-2xl text-[#F5F1E8] hover:text-[#B89B5E] transition-colors flex items-center justify-between"
+            >
+              <span>ABOUT ATELIER</span>
+              <span className="text-xs text-[#D8CBB8]/40 font-sans">04</span>
+            </Link>
+            <Link
+              to="/gallery"
+              className="font-serif text-2xl text-[#F5F1E8] hover:text-[#B89B5E] transition-colors flex items-center justify-between"
+            >
+              <span>GALLERY</span>
+              <span className="text-xs text-[#D8CBB8]/40 font-sans">05</span>
+            </Link>
+            <Link
+              to="/journal"
+              className="font-serif text-2xl text-[#F5F1E8] hover:text-[#B89B5E] transition-colors flex items-center justify-between"
+            >
+              <span>JOURNAL</span>
+              <span className="text-xs text-[#D8CBB8]/40 font-sans">06</span>
+            </Link>
             <Link
               to="/contact"
-              className="font-serif text-2xl text-[#F5F1E8] hover:text-[#B89B5E] transition-colors flex items-center justify-between group"
+              className="font-serif text-2xl text-[#F5F1E8] hover:text-[#B89B5E] transition-colors flex items-center justify-between"
             >
-              <span>CONTACT & ATELIER</span>
-              <span className="text-xs text-[#D8CBB8]/40 group-hover:text-[#B89B5E] font-sans">
-                07
-              </span>
+              <span>CONTACT</span>
+              <span className="text-xs text-[#D8CBB8]/40 font-sans">07</span>
             </Link>
+            
+            <div className="pt-3 border-t border-[#D8CBB8]/15 space-y-2">
+              <Link
+                to="/track"
+                className="font-serif text-xl text-[#B89B5E] hover:text-[#F5F1E8] transition-colors flex items-center justify-between"
+              >
+                <span>TRACK COMMISSION</span>
+                <span className="text-xs font-mono text-[#B89B5E]">LIVE</span>
+              </Link>
+              <Link
+                to="/admin"
+                className="font-serif text-xl text-[#B89B5E] hover:text-[#F5F1E8] transition-colors flex items-center justify-between"
+              >
+                <span>ADMIN CONSOLE</span>
+                <span className="text-xs font-mono bg-[#B89B5E] text-[#0A0A0A] px-1.5 py-0.5 font-bold">PORTAL</span>
+              </Link>
+            </div>
           </nav>
         </div>
 
-        <div className="space-y-4 pt-8 border-t border-[#D8CBB8]/10">
+        <div className="space-y-4 pt-6 border-t border-[#D8CBB8]/10">
           <Link
             to="/bespoke"
             className="block w-full text-center py-3.5 bg-[#B89B5E] text-[#0A0A0A] font-semibold text-xs tracking-[0.2em] uppercase hover:bg-[#D4BD86] transition-colors"
           >
             START BESPOKE INQUIRY
           </Link>
-
-          <div className="flex items-center justify-between text-[11px] text-[#D8CBB8]/60 pt-2 font-sans tracking-widest">
-            <span>LAGOS ATELIER</span>
-            <a 
-              href={BRAND_CONFIG.social.tiktok} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="text-[#B89B5E] hover:underline"
-            >
-              TIKTOK: @_N_ELSON
-            </a>
-          </div>
         </div>
       </div>
     </>

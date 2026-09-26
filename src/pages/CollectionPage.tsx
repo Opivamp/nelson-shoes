@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Filter, SlidersHorizontal, Check, RefreshCw } from 'lucide-react';
-import { PRODUCTS } from '../data/products';
+import { useProducts } from '../context/ProductContext';
 import type { Product, ProductCategory } from '../types';
 import { ProductCard } from '../components/common/ProductCard';
 import { QuickViewModal } from '../components/common/QuickViewModal';
@@ -9,6 +9,7 @@ import { SectionHeading } from '../components/common/SectionHeading';
 import { useWishlist } from '../context/WishlistContext';
 
 export const CollectionPage: React.FC = () => {
+  const { products } = useProducts();
   const [searchParams, setSearchParams] = useSearchParams();
   const initialCategory = (searchParams.get('category') as ProductCategory) || 'all';
   const showSavedOnly = searchParams.get('saved') === 'true';
@@ -44,7 +45,7 @@ export const CollectionPage: React.FC = () => {
   ];
 
   const filteredProducts = useMemo(() => {
-    return PRODUCTS.filter((p) => {
+    return products.filter((p) => {
       // Category filter
       if (selectedCategory !== 'all' && p.category !== selectedCategory) {
         return false;

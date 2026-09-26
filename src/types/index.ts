@@ -109,3 +109,45 @@ export interface Testimonial {
   shoeCommissioned: string;
   verifiedStatus: string;
 }
+
+export type OrderStatus = 
+  | 'Pending Confirmation' 
+  | 'At Workbench (Lasting)' 
+  | 'Welt Inseam Stitching' 
+  | 'Patina & Glacage' 
+  | 'Quality Inspection' 
+  | 'Dispatched' 
+  | 'Delivered';
+
+export interface CustomerOrder {
+  id: string;
+  orderNumber: string;
+  customer: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phoneWhatsApp: string;
+    address: string;
+    city: string;
+    state: string;
+    country: string;
+    deliveryMethod: 'dhl-express' | 'atelier-pickup';
+    fittingNotes?: string;
+  };
+  items: CartItem[];
+  subtotalNGN: number;
+  subtotalUSD: number;
+  paymentMethod: 'whatsapp-concierge' | 'bank-transfer' | 'paystack-card';
+  paymentStatus: 'pending' | 'deposit_paid' | 'paid';
+  status: OrderStatus;
+  trackingNumber?: string;
+  artisanNotes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AdminUser {
+  email: string;
+  name: string;
+  role: 'master_artisan' | 'atelier_staff';
+}

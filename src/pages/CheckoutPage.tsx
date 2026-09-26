@@ -11,10 +11,12 @@ import {
   Sparkles
 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import { useOrders } from '../context/OrderContext';
 import { formatCurrencyNGN, formatCurrencyUSD, BRAND_CONFIG, getWhatsAppUrl } from '../data/config';
 
 export const CheckoutPage: React.FC = () => {
   const { items, totalItems, subtotalNGN, subtotalUSD, clearCart } = useCart();
+  const { createOrder } = useOrders();
   const navigate = useNavigate();
 
   const [shippingDetails, setShippingDetails] = useState({
@@ -34,7 +36,6 @@ export const CheckoutPage: React.FC = () => {
 
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [orderReference, setOrderReference] = useState('');
-
   if (items.length === 0 && !orderPlaced) {
     return (
       <div className="bg-[#0A0A0A] text-[#F5F1E8] min-h-screen pt-40 pb-24 text-center px-6">
@@ -54,10 +55,27 @@ export const CheckoutPage: React.FC = () => {
 
   const handleSubmitOrder = (e: React.FormEvent) => {
     e.preventDefault();
-    const ref = `NS-ORD-${Math.floor(100000 + Math.random() * 900000)}`;
-    setOrderReference(ref);
+    const newOrder = createOrder({
+      customer: {
+        firstName: shippingDetails.firstName,
+        lastName: shippingDetails.lastName,
+        email: shippingDetails.email,
+        phoneWhatsApp: shippingDetails.phoneWhatsApp,
+        address: shippingDetails.address,
+        city: shippingDetails.city,
+        state: shippingDetails.state,
+        country: shippingDetails.country,
+        deliveryMethod: shippingDetails.deliveryMethod as any,
+        fittingNotes: shippingDetails.fittingNotes
+      },
+      items: [...items],
+      subtotalNGN,
+      subtotalUSD,
+      paymentMethod: shippingDetails.paymentMethod as any,
+      paymentStatus: shippingDetails.paymentMethod === 'paystack-card' ? 'deposit_paid' : 'pending'
+    });
+    setOrderReference(newOrder.orderNumber);
     setOrderPlaced(true);
-    // Keep items in view or clear after confirmation
   };
 
   const generateWhatsAppOrderSummary = () => {
@@ -459,6 +477,13 @@ export const CheckoutPage: React.FC = () => {
                 <MessageCircle className="w-4 h-4 fill-current" />
                 <span>CONFIRM ORDER ON WHATSAPP</span>
               </a>
+
+              <Link
+                to={`/track?order=${orderReference}`}
+                className="w-full sm:w-auto px-6 py-4 bg-[#181818] border border-[#B89B5E]/60 text-[#B89B5E] font-semibold text-xs tracking-[0.2em] uppercase hover:bg-[#B89B5E] hover:text-[#0A0A0A] transition-colors flex items-center justify-center gap-2"
+              >
+                <span>TRACK ORDER LIVE</span>
+              </Link>
 
               <button
                 onClick={() => {

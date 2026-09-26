@@ -12,22 +12,24 @@ import {
   ShieldCheck, 
   Scissors
 } from 'lucide-react';
-import { PRODUCTS } from '../data/products';
 import { TESTIMONIALS } from '../data/testimonials';
 import { BRAND_CONFIG, getWhatsAppUrl, formatCurrencyNGN } from '../data/config';
 import { SectionHeading } from '../components/common/SectionHeading';
 import { ProductCard } from '../components/common/ProductCard';
 import { QuickViewModal } from '../components/common/QuickViewModal';
+import { Hero } from '../components/home/Hero';
+import { useProducts } from '../context/ProductContext';
 import type { Product } from '../types';
 
 export const HomePage: React.FC = () => {
+  const { products, getFeaturedProducts } = useProducts();
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
   const [activeStep, setActiveStep] = useState(0);
 
-  const featured = PRODUCTS.slice(0, 4);
-  const heroProduct = PRODUCTS[0];
-  const sideProducts = PRODUCTS.slice(1, 3);
-  const statementProduct = PRODUCTS[2]; // Chelsea Boot or Monkstrap
+  const featured = getFeaturedProducts();
+  const heroProduct = products[0] || featured[0];
+  const sideProducts = products.slice(1, 3);
+  const statementProduct = products[2] || products[0];
 
   const makingStages = [
     {
@@ -81,88 +83,10 @@ export const HomePage: React.FC = () => {
     <div className="bg-[#0A0A0A] text-[#F5F1E8] min-h-screen">
       
       {/* ========================================================
-          SECTION 01 — HERO
-          Full-screen cinematic hero with handcrafted shoe on stone
+          SECTION 01 — CINEMATIC ANIMATED HERO
+          Full-screen smooth animated carousel with light, vibrant overlay
       ======================================================== */}
-      <section className="relative min-h-[92vh] lg:min-h-screen flex items-center justify-center overflow-hidden pt-20 pb-16">
-        
-        {/* Background Image with Cinematic Gradient & Depth */}
-        <div className="absolute inset-0 z-0">
-          <img
-            src="/images/hero-bespoke-oxford.jpg"
-            alt="Nelson Shoes Bespoke Wholecut Oxford on Volcanic Stone"
-            className="w-full h-full object-cover object-center filter brightness-[0.78] contrast-[1.08] transform scale-105 animate-fade-in"
-          />
-          {/* Subtle multi-layer cinematic vignette overlays */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A]/40 to-[#0A0A0A]/85" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#0A0A0A]/90 via-[#0A0A0A]/30 to-[#0A0A0A]/80" />
-        </div>
-
-        {/* Content Container */}
-        <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-10 w-full flex flex-col justify-between py-12">
-          
-          <div className="max-w-2xl space-y-6 md:space-y-8 text-left">
-            
-            {/* Top Monogram Label */}
-            <div className="inline-flex items-center gap-2.5 px-3 py-1.5 border border-[#B89B5E]/30 bg-[#0A0A0A]/70 backdrop-blur-md">
-              <span className="w-1.5 h-1.5 bg-[#B89B5E] rounded-full"></span>
-              <span className="text-[10px] md:text-[11px] uppercase tracking-[0.3em] font-medium text-[#B89B5E]">
-                NIGERIAN BESPOKE CORDWAINING
-              </span>
-            </div>
-
-            {/* Monumental Editorial Headline */}
-            <h1 className="font-serif text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-light text-[#F5F1E8] leading-[0.98] tracking-tight">
-              CRAFTED<br />
-              <span className="italic font-normal text-[#B89B5E]">BEYOND</span><br />
-              ORDINARY.
-            </h1>
-
-            {/* Supporting Copy */}
-            <p className="font-sans text-sm md:text-base text-[#D8CBB8]/80 max-w-lg leading-relaxed font-light">
-              Bespoke footwear meticulously shaped by hand, defined by precision. For those who understand that true luxury lives in the details.
-            </p>
-
-            {/* CTAs */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-2">
-              <Link
-                to="/collection"
-                className="px-8 py-4 bg-[#B89B5E] hover:bg-[#D4BD86] text-[#0A0A0A] text-xs font-semibold tracking-[0.22em] uppercase transition-all duration-300 text-center flex items-center justify-center gap-2 group shadow-xl"
-              >
-                <span>EXPLORE THE COLLECTION</span>
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </Link>
-
-              <Link
-                to="/bespoke"
-                className="px-8 py-4 bg-[#141414]/90 hover:bg-[#1C1C1C] border border-[#D8CBB8]/25 hover:border-[#B89B5E] text-[#F5F1E8] text-xs font-medium tracking-[0.22em] uppercase transition-all duration-300 text-center backdrop-blur-md"
-              >
-                START YOUR BESPOKE JOURNEY
-              </Link>
-            </div>
-
-          </div>
-
-          {/* Bottom Scroll Indicator & Atelier Note */}
-          <div className="pt-16 lg:pt-24 flex items-end justify-between border-t border-[#D8CBB8]/10 text-[#D8CBB8]/60 text-[11px] font-sans tracking-widest uppercase">
-            <div className="flex items-center gap-3">
-              <span className="text-[#B89B5E]">ATELIER PIECE NO. 01</span>
-              <span>•</span>
-              <span className="hidden sm:inline">THE SOVEREIGN WHOLECUT</span>
-            </div>
-
-            <a 
-              href="#statement"
-              className="flex items-center gap-2 text-[#D8CBB8] hover:text-[#B89B5E] transition-colors"
-            >
-              <span>DISCOVER THE CRAFT</span>
-              <span className="animate-bounce">↓</span>
-            </a>
-          </div>
-
-        </div>
-
-      </section>
+      <Hero />
 
 
       {/* ========================================================
@@ -218,7 +142,7 @@ export const HomePage: React.FC = () => {
               to="/collection"
               className="inline-flex items-center gap-2 text-xs tracking-[0.2em] uppercase text-[#B89B5E] hover:text-[#F5F1E8] transition-colors"
             >
-              <span>VIEW FULL COLLECTION ({PRODUCTS.length})</span>
+              <span>VIEW FULL COLLECTION ({products.length})</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>

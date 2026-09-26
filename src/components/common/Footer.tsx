@@ -208,6 +208,16 @@ export const Footer: React.FC = () => {
                   Direct Inquiries
                 </Link>
               </li>
+              <li>
+                <Link to="/track" className="hover:text-[#B89B5E] transition-colors">
+                  Track Commission
+                </Link>
+              </li>
+              <li>
+                <Link to="/admin" className="text-[#B89B5E] hover:underline font-mono">
+                  Atelier Admin Console ⚡
+                </Link>
+              </li>
             </ul>
           </div>
 

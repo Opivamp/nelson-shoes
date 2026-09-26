@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useMemo } from 'react';
 import type { Product, JournalArticle } from '../types';
-import { PRODUCTS } from '../data/products';
+import { useProducts } from './ProductContext';
 import { JOURNAL_ARTICLES } from '../data/journal';
 
 interface SearchContextType {
@@ -16,6 +16,7 @@ interface SearchContextType {
 const SearchContext = createContext<SearchContextType | undefined>(undefined);
 
 export const SearchProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { products } = useProducts();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -32,14 +33,14 @@ export const SearchProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const productResults = useMemo(() => {
     if (!trimmedQuery) return [];
-    return PRODUCTS.filter(product => 
+    return products.filter(product => 
       product.name.toLowerCase().includes(trimmedQuery) ||
       product.description.toLowerCase().includes(trimmedQuery) ||
       product.category.toLowerCase().includes(trimmedQuery) ||
       product.categoryLabel.toLowerCase().includes(trimmedQuery) ||
       product.materials.upper.toLowerCase().includes(trimmedQuery)
     );
-  }, [trimmedQuery]);
+  }, [trimmedQuery, products]);
 
   const articleResults = useMemo(() => {
     if (!trimmedQuery) return [];

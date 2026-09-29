@@ -4,32 +4,43 @@ import {
   ArrowRight, 
   ArrowUpRight, 
   MessageCircle, 
-  Check, 
-  ChevronRight, 
-  Compass, 
-  Layers, 
   Sparkles, 
   ShieldCheck, 
-  Scissors
+  Scissors,
+  Layers,
+  Film,
+  Hammer,
+  Crown,
+  Quote,
+  Filter,
+  CheckCircle2
 } from 'lucide-react';
 import { TESTIMONIALS } from '../data/testimonials';
 import { BRAND_CONFIG, getWhatsAppUrl, formatCurrencyNGN } from '../data/config';
 import { SectionHeading } from '../components/common/SectionHeading';
-import { ProductCard } from '../components/common/ProductCard';
 import { QuickViewModal } from '../components/common/QuickViewModal';
 import { Hero } from '../components/home/Hero';
 import { useProducts } from '../context/ProductContext';
 import type { Product } from '../types';
+import { AtelierStoryBar } from '../components/app/AtelierStoryBar';
+import { AtelierComposer } from '../components/app/AtelierComposer';
+import { AtelierFeedCard } from '../components/app/AtelierFeedCard';
 
 export const HomePage: React.FC = () => {
   const { products, getFeaturedProducts } = useProducts();
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
   const [activeStep, setActiveStep] = useState(0);
+  const [feedTab, setFeedTab] = useState<'feed' | 'cinema' | 'craft' | 'bespoke' | 'reviews'>('feed');
+  const [categoryFilter, setCategoryFilter] = useState<string>('All');
 
   const featured = getFeaturedProducts();
   const heroProduct = products[0] || featured[0];
-  const sideProducts = products.slice(1, 3);
-  const statementProduct = products[2] || products[0];
+
+  const categories = ['All', 'Oxfords', 'Monkstraps', 'Boots', 'Loafers'];
+
+  const filteredProducts = categoryFilter === 'All' 
+    ? products 
+    : products.filter(p => p.category.toLowerCase().includes(categoryFilter.toLowerCase().slice(0, 4)));
 
   const makingStages = [
     {
@@ -83,629 +94,435 @@ export const HomePage: React.FC = () => {
     <div className="bg-[#0A0A0A] text-[#F5F1E8] min-h-screen">
       
       {/* ========================================================
-          SECTION 01 — CINEMATIC ANIMATED HERO
-          Full-screen smooth animated carousel with light, vibrant overlay
+          1. TOP APP STORY HIGHLIGHTS BAR
+          Social App / PWA Highlights Carousel (Lagos Atelier Stories)
       ======================================================== */}
-      <Hero />
-
+      <AtelierStoryBar />
 
       {/* ========================================================
-          SECTION 02 — BRAND STATEMENT
-          Minimal editorial section with massive whitespace & typography
+          2. APPLICATION WORKSPACE FEED CONTAINER
+          Centered responsive app feed column matching modern web apps
       ======================================================== */}
-      <section id="statement" className="py-24 md:py-36 px-6 md:px-10 border-b border-[#D8CBB8]/10 relative">
-        <div className="max-w-5xl mx-auto text-center space-y-8 md:space-y-12">
+      <div className="max-w-3xl mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6 space-y-5">
+        
+        {/* Atelier Commission Composer Bar ("What's on your mind?") */}
+        <AtelierComposer />
+
+        {/* App Feed Segmented Navigation Tabs */}
+        <div className="bg-[#121212] border border-[#D8CBB8]/15 rounded-xl p-1.5 flex items-center justify-between overflow-x-auto no-scrollbar gap-1">
           
-          <span className="text-[10px] md:text-xs tracking-[0.4em] uppercase text-[#B89B5E] font-medium block">
-            THE PHILOSOPHY
-          </span>
+          <button
+            onClick={() => setFeedTab('feed')}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-mono font-medium whitespace-nowrap transition-all cursor-pointer ${
+              feedTab === 'feed'
+                ? 'bg-[#B89B5E] text-[#0A0A0A] shadow-md font-semibold'
+                : 'text-[#D8CBB8]/70 hover:text-[#F5F1E8] hover:bg-[#1A1A1A]'
+            }`}
+          >
+            <Sparkles size={13} />
+            <span>Atelier Feed</span>
+          </button>
 
-          <h2 className="font-serif text-3xl sm:text-5xl md:text-6xl font-light text-[#F5F1E8] leading-[1.18] tracking-tight">
-            "THE DIFFERENCE<br />
-            <span className="italic font-normal text-[#D8CBB8]">IS IN THE DETAIL."</span>
-          </h2>
+          <button
+            onClick={() => setFeedTab('cinema')}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-mono font-medium whitespace-nowrap transition-all cursor-pointer ${
+              feedTab === 'cinema'
+                ? 'bg-[#B89B5E] text-[#0A0A0A] shadow-md font-semibold'
+                : 'text-[#D8CBB8]/70 hover:text-[#F5F1E8] hover:bg-[#1A1A1A]'
+            }`}
+          >
+            <Film size={13} />
+            <span>Cinematic View</span>
+          </button>
 
-          <p className="font-sans text-sm md:text-base text-[#D8CBB8]/75 max-w-2xl mx-auto leading-relaxed font-light">
-            In an era of mass consumption and rushed assembly, Nelson Atelier stands as a bastion of contemplative shoemaking. Every hide is inspected by hand. Every bevelled waist is carved with patience. Every pair is made with the unyielding conviction that exceptional footwear transforms not merely a silhouette, but the demeanor of the man who wears it.
-          </p>
+          <button
+            onClick={() => setFeedTab('craft')}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-mono font-medium whitespace-nowrap transition-all cursor-pointer ${
+              feedTab === 'craft'
+                ? 'bg-[#B89B5E] text-[#0A0A0A] shadow-md font-semibold'
+                : 'text-[#D8CBB8]/70 hover:text-[#F5F1E8] hover:bg-[#1A1A1A]'
+            }`}
+          >
+            <Hammer size={13} />
+            <span>Bench Craft</span>
+          </button>
 
-          <div className="pt-4 flex items-center justify-center gap-6 text-xs text-[#B89B5E] font-serif italic">
-            <span>Hand-Welted Inseam</span>
-            <span>—</span>
-            <span>French Box Calf</span>
-            <span>—</span>
-            <span>Anatomical Lasts</span>
-          </div>
+          <button
+            onClick={() => setFeedTab('bespoke')}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-mono font-medium whitespace-nowrap transition-all cursor-pointer ${
+              feedTab === 'bespoke'
+                ? 'bg-[#B89B5E] text-[#0A0A0A] shadow-md font-semibold'
+                : 'text-[#D8CBB8]/70 hover:text-[#F5F1E8] hover:bg-[#1A1A1A]'
+            }`}
+          >
+            <Crown size={13} />
+            <span>Bespoke Lasts</span>
+          </button>
+
+          <button
+            onClick={() => setFeedTab('reviews')}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-mono font-medium whitespace-nowrap transition-all cursor-pointer ${
+              feedTab === 'reviews'
+                ? 'bg-[#B89B5E] text-[#0A0A0A] shadow-md font-semibold'
+                : 'text-[#D8CBB8]/70 hover:text-[#F5F1E8] hover:bg-[#1A1A1A]'
+            }`}
+          >
+            <Quote size={13} />
+            <span>Patron Dossiers</span>
+          </button>
 
         </div>
-      </section>
 
-
-      {/* ========================================================
-          SECTION 03 — FEATURED COLLECTION
-          Asymmetric editorial layout: large feature on left, stacked right
-      ======================================================== */}
-      <section className="py-24 md:py-32 px-6 md:px-10 border-b border-[#D8CBB8]/10">
-        <div className="max-w-7xl mx-auto space-y-16">
-          
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-            <div className="space-y-2">
-              <span className="text-[10px] md:text-xs tracking-[0.35em] uppercase text-[#B89B5E] font-medium">
-                THE SIGNATURE SILHOUETTES
-              </span>
-              <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-light text-[#F5F1E8]">
-                SIGNATURE CREATIONS
-              </h2>
-            </div>
-
-            <Link
-              to="/collection"
-              className="inline-flex items-center gap-2 text-xs tracking-[0.2em] uppercase text-[#B89B5E] hover:text-[#F5F1E8] transition-colors"
-            >
-              <span>VIEW FULL COLLECTION ({products.length})</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
-
-          {/* Asymmetric Editorial Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+        {/* ========================================================
+            VIEW MODE A: ATELIER FEED (Active Social / App Stream)
+        ======================================================== */}
+        {feedTab === 'feed' && (
+          <div className="space-y-4">
             
-            {/* Left Large Dominant Feature */}
-            <div className="lg:col-span-7">
-              <ProductCard 
-                product={heroProduct} 
-                priority={true}
-                onQuickView={setQuickViewProduct}
-              />
+            {/* Live Atelier Bench Ticker */}
+            <div className="bg-[#121212] border border-[#B89B5E]/30 rounded-xl p-3 flex items-center justify-between gap-3 text-xs font-mono">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+                <span className="text-[#D8CBB8]/90 truncate">
+                  <strong className="text-[#B89B5E] font-semibold">Live Atelier:</strong> Currently hand-lasting Sovereign Wholecuts in French Box Calf.
+                </span>
+              </div>
+              <Link 
+                to="/craft" 
+                className="text-[11px] text-[#B89B5E] hover:underline shrink-0 hidden sm:inline"
+              >
+                Inspect Craft →
+              </Link>
             </div>
 
-            {/* Right Stacked Pair */}
-            <div className="lg:col-span-5 flex flex-col space-y-10">
-              {sideProducts.map((product) => (
-                <ProductCard 
+            {/* Silhouette Category Filter Chips */}
+            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+              <span className="text-[11px] font-mono text-[#D8CBB8]/50 flex items-center gap-1 pl-1 shrink-0">
+                <Filter size={11} />
+                <span>Filter:</span>
+              </span>
+              {categories.map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setCategoryFilter(cat)}
+                  className={`px-3 py-1 rounded-full text-xs font-mono transition-all cursor-pointer shrink-0 ${
+                    categoryFilter === cat
+                      ? 'bg-[#B89B5E]/20 border border-[#B89B5E] text-[#B89B5E] font-semibold'
+                      : 'bg-[#141414] border border-[#D8CBB8]/15 text-[#D8CBB8]/70 hover:text-[#F5F1E8] hover:border-[#D8CBB8]/30'
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+              <span className="text-[10px] font-mono text-[#D8CBB8]/40 ml-auto shrink-0 pr-1">
+                {filteredProducts.length} Creations
+              </span>
+            </div>
+
+            {/* Stream of Atelier Feed Cards */}
+            <div className="space-y-5">
+              {filteredProducts.map((product, idx) => (
+                <AtelierFeedCard
                   key={product.id}
-                  product={product} 
+                  product={product}
                   onQuickView={setQuickViewProduct}
+                  hoursSpent={85 + (idx % 3) * 15}
+                  timeAgo={idx === 0 ? "Freshly burnished today" : idx === 1 ? "Finished yesterday at Bench #2" : "Available from Private Reserve"}
                 />
               ))}
             </div>
 
           </div>
+        )}
 
-          {/* Bottom Callout Banner */}
-          <div className="p-8 md:p-12 bg-[#121212] border border-[#D8CBB8]/15 flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="space-y-2 text-center md:text-left">
-              <h3 className="font-serif text-2xl text-[#F5F1E8]">
-                Seek a bespoke silhouette not shown here?
-              </h3>
-              <p className="text-xs text-[#D8CBB8]/70 font-sans max-w-lg">
-                Our atelier welcomes custom designs, unique patina colorways, and personalized anatomical lasts for private clients.
-              </p>
+        {/* ========================================================
+            VIEW MODE B: CINEMATIC SHOWCASE (Hero + Editorial)
+        ======================================================== */}
+        {feedTab === 'cinema' && (
+          <div className="space-y-6 animate-fadeIn">
+            {/* Embedded Hero Component */}
+            <div className="rounded-2xl overflow-hidden border border-[#D8CBB8]/15 shadow-2xl">
+              <Hero />
             </div>
 
-            <Link
-              to="/bespoke"
-              className="px-6 py-3 border border-[#B89B5E] text-[#B89B5E] hover:bg-[#B89B5E] hover:text-[#0A0A0A] text-xs tracking-[0.2em] uppercase font-semibold transition-colors shrink-0"
-            >
-              COMMISSION BESPOKE
-            </Link>
-          </div>
-
-        </div>
-      </section>
-
-
-      {/* ========================================================
-          SECTION 04 — THE NELSON DIFFERENCE
-          Split image + text section with numbered list 01-05
-      ======================================================== */}
-      <section className="py-24 md:py-32 px-6 md:px-10 border-b border-[#D8CBB8]/10 bg-[#0D0D0D]">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
-          
-          {/* Left Column: Image with Subtle Frame */}
-          <div className="lg:col-span-6 relative">
-            <div className="aspect-[4/5] overflow-hidden bg-[#161616] border border-[#D8CBB8]/15 relative">
-              <img
-                src="/images/craft-artisan-hands.jpg"
-                alt="Master shoemaker hand-stitching Goodyear welt in Lagos atelier"
-                className="w-full h-full object-cover object-center"
-              />
-              <div className="absolute bottom-6 left-6 bg-[#0A0A0A]/90 backdrop-blur-md p-4 border border-[#B89B5E]/30 max-w-xs">
-                <span className="text-[9px] uppercase tracking-[0.25em] text-[#B89B5E] block font-medium">
-                  ATELIER STANDARDS
-                </span>
-                <p className="font-serif text-sm text-[#F5F1E8] mt-1">
-                  Over 120 individual steps completed strictly by hand before a pair earns the Nelson seal.
-                </p>
+            {/* Editorial Philosophy Statement Card */}
+            <div className="bg-[#121212] border border-[#D8CBB8]/15 rounded-2xl p-6 md:p-10 space-y-6 text-center">
+              <span className="text-[10px] md:text-xs tracking-[0.4em] uppercase text-[#B89B5E] font-medium block">
+                THE PHILOSOPHY
+              </span>
+              <h2 className="font-serif text-2xl sm:text-4xl font-light text-[#F5F1E8] leading-tight">
+                "THE DIFFERENCE<br />
+                <span className="italic font-normal text-[#D8CBB8]">IS IN THE DETAIL."</span>
+              </h2>
+              <p className="font-sans text-xs sm:text-sm text-[#D8CBB8]/75 max-w-xl mx-auto leading-relaxed font-light">
+                In an era of mass consumption and rushed assembly, Nelson Atelier stands as a bastion of contemplative shoemaking. Every hide is inspected by hand. Every bevelled waist is carved with patience.
+              </p>
+              <div className="pt-2 flex flex-wrap items-center justify-center gap-4 text-xs text-[#B89B5E] font-serif italic">
+                <span>Hand-Welted Inseam</span>
+                <span>—</span>
+                <span>French Box Calf</span>
+                <span>—</span>
+                <span>Anatomical Lasts</span>
               </div>
             </div>
           </div>
+        )}
 
-          {/* Right Column: Editorial Headings & Numbered List */}
-          <div className="lg:col-span-6 space-y-8">
-            <div className="space-y-3">
-              <span className="text-[10px] md:text-xs tracking-[0.35em] uppercase text-[#B89B5E] font-medium">
-                THE PRINCIPLES
+        {/* ========================================================
+            VIEW MODE C: BENCH CRAFT (6 Stages Interactive)
+        ======================================================== */}
+        {feedTab === 'craft' && (
+          <div className="bg-[#121212] border border-[#D8CBB8]/15 rounded-2xl p-4 sm:p-6 space-y-6 animate-fadeIn">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#D8CBB8]/10 pb-4">
+              <div>
+                <span className="text-[10px] font-mono uppercase tracking-widest text-[#B89B5E]">
+                  Cordwaining Choreography
+                </span>
+                <h3 className="font-serif text-xl sm:text-2xl text-[#F5F1E8]">
+                  The Art of Making
+                </h3>
+              </div>
+              <span className="text-xs font-mono text-[#D8CBB8]/60">
+                Stage {activeStep + 1} of {makingStages.length}
               </span>
-              <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-light text-[#F5F1E8] leading-tight">
-                MADE BY HAND.<br />
-                <span className="italic font-normal text-[#D8CBB8]">MADE WITH INTENT.</span>
-              </h2>
-              <p className="text-xs md:text-sm text-[#D8CBB8]/70 font-sans leading-relaxed font-light">
-                True shoemaking is an architectural discipline. We do not take shortcuts. Every pair is systematically developed through five non-negotiable milestones:
+            </div>
+
+            {/* Interactive Stage Selector Tabs */}
+            <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+              {makingStages.map((stage, idx) => (
+                <button
+                  key={stage.num}
+                  onClick={() => setActiveStep(idx)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-mono uppercase tracking-wider whitespace-nowrap transition-all ${
+                    activeStep === idx
+                      ? 'bg-[#B89B5E] text-[#0A0A0A] font-bold'
+                      : 'bg-[#181818] text-[#D8CBB8]/60 hover:text-[#F5F1E8]'
+                  }`}
+                >
+                  {stage.num}. {stage.title}
+                </button>
+              ))}
+            </div>
+
+            {/* Active Stage Display */}
+            <div className="space-y-4">
+              <div className="aspect-[16/10] overflow-hidden rounded-xl border border-[#D8CBB8]/15 bg-black relative">
+                <img
+                  src={makingStages[activeStep].image}
+                  alt={makingStages[activeStep].title}
+                  className="w-full h-full object-cover object-center transition-transform duration-700 hover:scale-105"
+                />
+                <div className="absolute top-3 left-3 bg-black/80 backdrop-blur-md px-3 py-1 rounded-full border border-[#B89B5E]/40 font-mono text-xs text-[#B89B5E]">
+                  Stage {makingStages[activeStep].num}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <h4 className="font-serif text-2xl text-[#F5F1E8]">
+                  {makingStages[activeStep].title}
+                </h4>
+                <p className="text-xs sm:text-sm text-[#D8CBB8]/80 font-sans leading-relaxed">
+                  {makingStages[activeStep].desc}
+                </p>
+              </div>
+
+              <div className="pt-2 flex items-center justify-between">
+                <button
+                  onClick={() => setActiveStep((prev) => (prev > 0 ? prev - 1 : makingStages.length - 1))}
+                  className="px-4 py-2 border border-[#D8CBB8]/20 hover:border-[#B89B5E] text-xs font-mono uppercase tracking-wider text-[#D8CBB8] rounded-lg"
+                >
+                  ← Previous
+                </button>
+                <button
+                  onClick={() => setActiveStep((prev) => (prev < makingStages.length - 1 ? prev + 1 : 0))}
+                  className="px-4 py-2 bg-[#B89B5E] text-[#0A0A0A] text-xs font-mono uppercase tracking-wider font-semibold hover:bg-[#D4BD86] rounded-lg"
+                >
+                  Next Stage →
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================
+            VIEW MODE D: BESPOKE STUDIO (Personalized Pathway)
+        ======================================================== */}
+        {feedTab === 'bespoke' && (
+          <div className="bg-[#121212] border border-[#D8CBB8]/15 rounded-2xl p-4 sm:p-6 space-y-6 animate-fadeIn">
+            <div className="text-center space-y-2 border-b border-[#D8CBB8]/10 pb-5">
+              <span className="text-[10px] font-mono uppercase tracking-widest text-[#B89B5E]">
+                The Bespoke Pathway
+              </span>
+              <h3 className="font-serif text-2xl sm:text-3xl text-[#F5F1E8]">
+                Your Shoe. Your Story.
+              </h3>
+              <p className="text-xs text-[#D8CBB8]/70 max-w-md mx-auto">
+                Comprehensive anatomical foot mapping and instep analysis tailored to the individual patron.
               </p>
             </div>
 
-            {/* Numbered List 01 to 05 */}
-            <div className="space-y-4 pt-2">
-              {[
-                { num: "01", title: "DESIGN", text: "Proportion, balance, and aesthetic restraint mapped to the wearer's anatomy." },
-                { num: "02", title: "MATERIAL", text: "French box calfskin, Tuscan vegetal-tanned sole bends, and buttery glove linings." },
-                { num: "03", title: "CONSTRUCTION", text: "Hand-welted Goodyear and Blake-Rapid techniques for decades of resoleability." },
-                { num: "04", title: "FINISHING", text: "Hand-set brass nails, bevelled waists, and multiple layers of mirror wax glacage." },
-                { num: "05", title: "INSPECTION", text: "Tension, symmetry, and stitch regularity evaluated by master shoemakers." }
-              ].map((item, idx) => (
-                <div 
-                  key={item.num}
-                  className="p-4 bg-[#141414] border border-[#D8CBB8]/10 hover:border-[#B89B5E]/50 transition-colors flex items-start gap-4 group"
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {bespokeJourney.map((item) => (
+                <div
+                  key={item.step}
+                  className="p-4 bg-[#181818] border border-[#D8CBB8]/10 rounded-xl space-y-2 hover:border-[#B89B5E]/40 transition-colors"
                 >
-                  <span className="font-serif text-xl text-[#B89B5E] group-hover:scale-105 transition-transform">
-                    {item.num}
+                  <span className="font-serif text-xl text-[#B89B5E]">
+                    {item.step}
                   </span>
-                  <div>
-                    <h3 className="text-xs tracking-[0.2em] uppercase font-semibold text-[#F5F1E8] group-hover:text-[#B89B5E] transition-colors">
-                      {item.title}
-                    </h3>
-                    <p className="text-xs text-[#D8CBB8]/70 font-sans mt-1">
-                      {item.text}
-                    </p>
-                  </div>
+                  <h4 className="text-xs font-mono uppercase tracking-wider text-[#F5F1E8] font-semibold">
+                    {item.title}
+                  </h4>
+                  <p className="text-xs text-[#D8CBB8]/70 font-sans leading-relaxed">
+                    {item.desc}
+                  </p>
                 </div>
               ))}
             </div>
 
-          </div>
-
-        </div>
-      </section>
-
-
-      {/* ========================================================
-          SECTION 05 — CRAFTSMANSHIP (HORIZONTAL PROCESS)
-          Cinematic storytelling section through stages of making
-      ======================================================== */}
-      <section className="py-24 md:py-36 px-6 md:px-10 border-b border-[#D8CBB8]/10 relative">
-        <div className="max-w-7xl mx-auto space-y-16">
-          
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-            <SectionHeading
-              category="THE METHODOLOGY"
-              title="THE ART OF MAKING"
-              subtitle="Step behind the workbench. Explore the meticulous choreography of classical shoemaking performed at our Lagos atelier."
-              align="left"
-            />
-
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-[#D8CBB8]/50 uppercase tracking-widest font-sans">
-                STAGE {activeStep + 1} OF {makingStages.length}
-              </span>
-            </div>
-          </div>
-
-          {/* Interactive Stage Selector Tabs */}
-          <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar border-b border-[#D8CBB8]/15">
-            {makingStages.map((stage, idx) => (
-              <button
-                key={stage.num}
-                onClick={() => setActiveStep(idx)}
-                className={`px-4 py-2.5 text-xs tracking-[0.2em] uppercase whitespace-nowrap transition-all border-b-2 font-medium ${
-                  activeStep === idx
-                    ? 'border-[#B89B5E] text-[#B89B5E] bg-[#141414]'
-                    : 'border-transparent text-[#D8CBB8]/60 hover:text-[#F5F1E8]'
-                }`}
-              >
-                {stage.num} — {stage.title}
-              </button>
-            ))}
-          </div>
-
-          {/* Active Stage Hero Display */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-[#121212] border border-[#D8CBB8]/15 p-6 md:p-10">
-            <div className="lg:col-span-7 aspect-[16/10] overflow-hidden bg-[#181818] border border-[#D8CBB8]/10">
-              <img
-                src={makingStages[activeStep].image}
-                alt={makingStages[activeStep].title}
-                className="w-full h-full object-cover object-center transform transition-transform duration-700 hover:scale-105"
-              />
-            </div>
-
-            <div className="lg:col-span-5 space-y-6">
-              <span className="font-serif text-4xl text-[#B89B5E]">
-                {makingStages[activeStep].num}
-              </span>
-              <h3 className="font-serif text-3xl md:text-4xl text-[#F5F1E8]">
-                {makingStages[activeStep].title}
-              </h3>
-              <p className="text-sm text-[#D8CBB8]/80 font-sans leading-relaxed font-light">
-                {makingStages[activeStep].desc}
-              </p>
-
-              <div className="pt-4 flex items-center gap-4">
-                <button
-                  onClick={() => setActiveStep((prev) => (prev > 0 ? prev - 1 : makingStages.length - 1))}
-                  className="px-4 py-2 border border-[#D8CBB8]/20 hover:border-[#B89B5E] text-xs uppercase tracking-widest text-[#D8CBB8]"
-                >
-                  PREV
-                </button>
-                <button
-                  onClick={() => setActiveStep((prev) => (prev < makingStages.length - 1 ? prev + 1 : 0))}
-                  className="px-4 py-2 bg-[#B89B5E] text-[#0A0A0A] text-xs uppercase tracking-widest font-semibold hover:bg-[#D4BD86]"
-                >
-                  NEXT STAGE →
-                </button>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </section>
-
-
-      {/* ========================================================
-          SECTION 06 — BESPOKE EXPERIENCE
-          "YOUR SHOE. YOUR STORY." Visual journey
-      ======================================================== */}
-      <section className="py-24 md:py-32 px-6 md:px-10 border-b border-[#D8CBB8]/10 bg-[#0B0B0B]">
-        <div className="max-w-7xl mx-auto space-y-16">
-          
-          <div className="text-center max-w-2xl mx-auto space-y-4">
-            <span className="text-[10px] md:text-xs tracking-[0.35em] uppercase text-[#B89B5E] font-medium">
-              THE BESPOKE PATHWAY
-            </span>
-            <h2 className="font-serif text-4xl sm:text-5xl md:text-6xl font-light text-[#F5F1E8]">
-              YOUR SHOE.<br />
-              <span className="italic font-normal text-[#D8CBB8]">YOUR STORY.</span>
-            </h2>
-            <p className="text-xs md:text-sm text-[#D8CBB8]/70 font-sans leading-relaxed font-light">
-              From silhouette to leather, colour to finishing, every detail can be considered around the individual wearer.
-            </p>
-          </div>
-
-          {/* Visual Step-by-Step Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {bespokeJourney.map((item) => (
-              <div
-                key={item.step}
-                className="p-6 md:p-8 bg-[#121212] border border-[#D8CBB8]/10 hover:border-[#B89B5E]/50 transition-all duration-300 space-y-3 group"
-              >
-                <span className="font-serif text-3xl text-[#B89B5E] group-hover:scale-110 transition-transform inline-block">
-                  {item.step}
-                </span>
-                <h3 className="text-xs tracking-[0.22em] uppercase font-semibold text-[#F5F1E8] group-hover:text-[#B89B5E] transition-colors">
-                  {item.title}
-                </h3>
-                <p className="text-xs text-[#D8CBB8]/70 font-sans leading-relaxed">
-                  {item.desc}
-                </p>
-              </div>
-            ))}
-          </div>
-
-          {/* Central Call to Action */}
-          <div className="text-center pt-4">
-            <Link
-              to="/bespoke"
-              className="inline-flex items-center gap-3 px-8 py-4 bg-[#B89B5E] text-[#0A0A0A] font-semibold text-xs tracking-[0.22em] uppercase hover:bg-[#D4BD86] transition-all shadow-xl"
-            >
-              <span>START A BESPOKE REQUEST</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
-
-        </div>
-      </section>
-
-
-      {/* ========================================================
-          SECTION 07 — STATEMENT PRODUCT
-          Full-width shoe showcase that visually dominates the screen
-      ======================================================== */}
-      <section className="relative py-28 md:py-44 px-6 md:px-10 border-b border-[#D8CBB8]/10 overflow-hidden flex items-center justify-center">
-        
-        {/* Statement Background Image */}
-        <div className="absolute inset-0 z-0">
-          <img
-            src="/images/craft-workshop-lasts.jpg"
-            alt="Nelson Shoes Workshop Statement"
-            className="w-full h-full object-cover object-center filter brightness-[0.4] contrast-[1.1]"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A]/60 to-[#0A0A0A]" />
-        </div>
-
-        <div className="relative z-10 max-w-4xl mx-auto text-center space-y-6">
-          <span className="text-[11px] tracking-[0.4em] uppercase text-[#B89B5E] font-medium block">
-            THE ARCHITECTURAL BENCHMARK
-          </span>
-
-          <h2 className="font-serif text-4xl sm:text-6xl md:text-7xl font-light text-[#F5F1E8] leading-tight">
-            THE SIGNATURE
-          </h2>
-
-          <p className="font-display tracking-[0.3em] text-xs sm:text-sm text-[#D8CBB8] uppercase">
-            HANDCRAFTED IN NIGERIA
-          </p>
-
-          <p className="font-sans text-xs sm:text-sm text-[#D8CBB8]/75 max-w-lg mx-auto leading-relaxed font-light">
-            An uncompromising celebration of West African artisanal mastery, built on lasts sculpted for anatomical perfection.
-          </p>
-
-          <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link
-              to={`/product/${heroProduct.slug}`}
-              className="px-8 py-3.5 bg-[#B89B5E] text-[#0A0A0A] text-xs font-semibold tracking-[0.2em] uppercase hover:bg-[#D4BD86] transition-colors"
-            >
-              DISCOVER THE PIECE
-            </Link>
-
-            <a
-              href={getWhatsAppUrl("Hello Nelson Atelier, I am enquiring about The Signature Oxford.")}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-8 py-3.5 bg-[#121212]/90 border border-[#D8CBB8]/30 hover:border-[#B89B5E] text-[#F5F1E8] text-xs tracking-[0.2em] uppercase transition-colors flex items-center gap-2"
-            >
-              <MessageCircle className="w-3.5 h-3.5 text-[#B89B5E]" />
-              <span>WHATSAPP ATELIER</span>
-            </a>
-          </div>
-        </div>
-
-      </section>
-
-
-      {/* ========================================================
-          SECTION 08 — BRAND STORY
-          "FROM CRAFT TO CULTURE."
-      ======================================================== */}
-      <section className="py-24 md:py-32 px-6 md:px-10 border-b border-[#D8CBB8]/10 bg-[#0E0E0E]">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
-          
-          <div className="lg:col-span-6 space-y-6">
-            <span className="text-[10px] md:text-xs tracking-[0.35em] uppercase text-[#B89B5E] font-medium">
-              THE HERITAGE & ORIGIN
-            </span>
-
-            <h2 className="font-serif text-3xl sm:text-5xl font-light text-[#F5F1E8] leading-tight">
-              FROM CRAFT<br />
-              <span className="italic font-normal text-[#D8CBB8]">TO CULTURE.</span>
-            </h2>
-
-            <div className="space-y-4 text-xs md:text-sm text-[#D8CBB8]/75 font-sans leading-relaxed font-light">
-              <p>
-                Nelson Shoes emerged from a singular conviction: that African artisanal shoemaking belongs on the same global stage as the most storied heritage cordwainers of Europe.
-              </p>
-              <p>
-                Founded and directed by Nelson in Lagos, Nigeria, the atelier bridges ancestral hand-techniques with contemporary sartorial silhouettes. We do not mass-produce; we build individual pieces of wearable art for clients who value patience, individuality, and honest material authenticity.
-              </p>
-              <p>
-                Every pair that leaves our workshop carries the cadence of Nigerian dedication—sculpted by hand, burnished with natural oils, and engineered to walk with authority.
-              </p>
-            </div>
-
-            <div className="pt-2">
+            <div className="pt-2 text-center">
               <Link
-                to="/about"
-                className="inline-flex items-center gap-2 text-xs tracking-[0.2em] uppercase text-[#B89B5E] hover:text-[#F5F1E8] font-medium transition-colors"
+                to="/bespoke"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-[#B89B5E] text-[#0A0A0A] font-mono font-semibold text-xs uppercase tracking-wider rounded-xl hover:bg-[#D4BD86] transition-all shadow-xl"
               >
-                <span>DISCOVER OUR STORY</span>
-                <ArrowRight className="w-4 h-4" />
+                <span>Initiate Bespoke Commission</span>
+                <ArrowRight size={14} />
               </Link>
             </div>
           </div>
+        )}
 
-          <div className="lg:col-span-6">
-            <div className="relative aspect-[4/3] bg-[#141414] border border-[#D8CBB8]/15 overflow-hidden">
-              <img
-                src="/images/craft-workshop-lasts.jpg"
-                alt="Nelson shoemaking atelier in Lagos"
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A]/80 to-transparent" />
-              <div className="absolute bottom-6 left-6 right-6 flex items-center justify-between text-[11px] text-[#D8CBB8] font-sans tracking-widest uppercase">
-                <span>LAGOS, NIGERIA</span>
-                <span className="text-[#B89B5E]">PRIVATE ATELIER</span>
+        {/* ========================================================
+            VIEW MODE E: PATRON REVIEWS (Dossiers)
+        ======================================================== */}
+        {feedTab === 'reviews' && (
+          <div className="space-y-4 animate-fadeIn">
+            <div className="bg-[#121212] border border-[#D8CBB8]/15 rounded-xl p-4 flex items-center justify-between">
+              <div>
+                <span className="text-[10px] font-mono uppercase text-[#B89B5E]">Patron Testimonials</span>
+                <h3 className="font-serif text-lg text-[#F5F1E8]">Verified Client Chronicles</h3>
               </div>
-            </div>
-          </div>
-
-        </div>
-      </section>
-
-
-      {/* ========================================================
-          SECTION 09 — SOCIAL PROOF
-          Elegant testimonial section with clearly marked placeholders
-      ======================================================== */}
-      <section className="py-24 md:py-32 px-6 md:px-10 border-b border-[#D8CBB8]/10 bg-[#0A0A0A]">
-        <div className="max-w-5xl mx-auto space-y-12">
-          
-          <SectionHeading
-            category="CLIENT DISCOURSE"
-            title="VOICES OF CONNOISSEURS"
-            subtitle="Thoughts from patrons who wear Nelson creations to boardroom negotiations, state functions, and intimate salons."
-          />
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-4">
-            {TESTIMONIALS.map((t) => (
-              <div 
-                key={t.id}
-                className="p-6 md:p-8 bg-[#121212] border border-[#D8CBB8]/10 flex flex-col justify-between space-y-6 relative group hover:border-[#B89B5E]/40 transition-colors"
-              >
-                <div className="space-y-4">
-                  <span className="font-serif text-5xl text-[#B89B5E]/30 leading-none block -mb-4">
-                    “
-                  </span>
-                  <p className="font-serif italic text-base md:text-lg text-[#F5F1E8] leading-relaxed">
-                    {t.quote}
-                  </p>
-                </div>
-
-                <div className="border-t border-[#D8CBB8]/10 pt-4 space-y-1">
-                  <h4 className="text-xs font-semibold text-[#F5F1E8] font-sans tracking-wider">
-                    {t.author}
-                  </h4>
-                  <p className="text-[11px] text-[#D8CBB8]/60 font-sans">
-                    {t.titleOrLocation}
-                  </p>
-                  <p className="text-[10px] text-[#B89B5E] font-sans italic pt-0.5">
-                    Commissioned: {t.shoeCommissioned}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-
-        </div>
-      </section>
-
-
-      {/* ========================================================
-          SECTION 10 — SOCIAL / TIKTOK
-          "FOLLOW THE CRAFT." Link to @_n_elson
-      ======================================================== */}
-      <section className="py-24 md:py-32 px-6 md:px-10 border-b border-[#D8CBB8]/10 bg-[#0E0E0E]">
-        <div className="max-w-7xl mx-auto space-y-12">
-          
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-            <div className="space-y-2">
-              <span className="text-[10px] md:text-xs tracking-[0.35em] uppercase text-[#B89B5E] font-medium">
-                DIGITAL ATELIER ARCHIVE
+              <span className="text-xs font-mono text-emerald-400 flex items-center gap-1">
+                <CheckCircle2 size={13} />
+                <span>100% Authentic Bespoke</span>
               </span>
-              <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-light text-[#F5F1E8]">
-                FOLLOW THE CRAFT.
-              </h2>
-              <p className="text-xs md:text-sm text-[#D8CBB8]/70 font-sans max-w-xl">
-                See the process unfold in real-time. Discover new creations, witness leather finishing, and follow Nelson's cordwaining journey.
-              </p>
             </div>
 
+            <div className="space-y-3">
+              {TESTIMONIALS.map((t) => (
+                <div
+                  key={t.id}
+                  className="p-4 bg-[#121212] border border-[#D8CBB8]/10 rounded-xl space-y-3"
+                >
+                  <div className="flex text-[#B89B5E] text-xs">
+                    {'★'.repeat(5)}
+                  </div>
+                  <p className="font-serif text-sm text-[#F5F1E8] italic leading-relaxed">
+                    "{t.quote}"
+                  </p>
+                  <div className="border-t border-[#D8CBB8]/10 pt-2 flex items-center justify-between text-xs">
+                    <div>
+                      <span className="font-sans font-medium text-[#F5F1E8] block">{t.author}</span>
+                      <span className="text-[10px] text-[#D8CBB8]/60 font-mono">{t.titleOrLocation}</span>
+                    </div>
+                    <span className="text-[10px] font-mono text-[#B89B5E] bg-[#B89B5E]/10 px-2 py-0.5 rounded">
+                      {t.shoeCommissioned}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================
+            3. DIGITAL ATELIER TIKTOK FEED (App Reel Cards)
+        ======================================================== */}
+        <div className="bg-[#121212] border border-[#D8CBB8]/15 rounded-2xl p-4 sm:p-5 space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
+              <h3 className="font-serif text-base text-[#F5F1E8]">
+                Atelier Dispatches (@_n_elson)
+              </h3>
+            </div>
             <a
               href={BRAND_CONFIG.social.tiktok}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-[#161616] border border-[#B89B5E]/50 hover:border-[#B89B5E] hover:bg-[#B89B5E] hover:text-[#0A0A0A] text-xs uppercase tracking-[0.2em] font-semibold text-[#F5F1E8] transition-all"
+              className="text-xs font-mono text-[#B89B5E] hover:underline flex items-center gap-1"
             >
-              <span>FOLLOW @_N_ELSON ON TIKTOK</span>
-              <ArrowUpRight className="w-4 h-4" />
+              <span>Watch Reels</span>
+              <ArrowUpRight size={13} />
             </a>
           </div>
 
-          {/* Social Showcase Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
             {[
-              {
-                img: "/images/hero-bespoke-oxford.jpg",
-                title: "Burnished Wholecut Reveal",
-                handle: "@_n_elson"
-              },
-              {
-                img: "/images/craft-artisan-hands.jpg",
-                title: "Hand-Welt Inseam Sewing",
-                handle: "@_n_elson"
-              },
-              {
-                img: "/images/product-tassel-loafer.jpg",
-                title: "Hand-Braided Apron Loafers",
-                handle: "@_n_elson"
-              },
-              {
-                img: "/images/product-bespoke-sandal.jpg",
-                title: "Vegetal-Tanned Sandal Crafting",
-                handle: "@_n_elson"
-              }
-            ].map((card, idx) => (
+              { img: "/images/hero-bespoke-oxford.jpg", title: "Wholecut Glacage" },
+              { img: "/images/craft-artisan-hands.jpg", title: "Hand-Welt Stitching" },
+              { img: "/images/product-tassel-loafer.jpg", title: "Braided Apron" },
+              { img: "/images/product-bespoke-sandal.jpg", title: "Vegetal Sandal" }
+            ].map((reel, idx) => (
               <a
                 key={idx}
                 href={BRAND_CONFIG.social.tiktok}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group relative aspect-[3/4] bg-[#141414] overflow-hidden border border-[#D8CBB8]/10 hover:border-[#B89B5E]/60 transition-all"
+                className="group relative aspect-[3/4] bg-black rounded-lg overflow-hidden border border-[#D8CBB8]/10 hover:border-[#B89B5E] transition-all"
               >
                 <img
-                  src={card.img}
-                  alt={card.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                  src={reel.img}
+                  alt={reel.title}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A]/95 via-transparent to-transparent opacity-80 group-hover:opacity-95 transition-opacity" />
-                <div className="absolute bottom-4 left-4 right-4 text-left">
-                  <span className="text-[9px] uppercase tracking-widest text-[#B89B5E] block font-medium">
-                    TIKTOK DISPATCH
-                  </span>
-                  <p className="font-serif text-sm text-[#F5F1E8] group-hover:text-[#B89B5E] transition-colors">
-                    {card.title}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent opacity-80 group-hover:opacity-95 transition-opacity" />
+                <div className="absolute bottom-2 left-2 right-2">
+                  <p className="text-[11px] font-mono text-[#F5F1E8] truncate font-medium">
+                    {reel.title}
                   </p>
-                  <span className="text-[10px] text-[#D8CBB8]/60 font-sans block mt-0.5">
-                    {card.handle}
+                  <span className="text-[9px] font-mono text-[#B89B5E]">
+                    Watch Video →
                   </span>
                 </div>
               </a>
             ))}
           </div>
-
-        </div>
-      </section>
-
-
-      {/* ========================================================
-          SECTION 11 — FINAL CTA
-          Dramatic dark section: "READY FOR SOMETHING DISTINCTIVE?"
-      ======================================================== */}
-      <section className="py-28 md:py-40 px-6 md:px-10 bg-[#070707] relative overflow-hidden">
-        
-        {/* Subtle decorative background lines */}
-        <div className="absolute inset-0 pointer-events-none opacity-20">
-          <div className="absolute top-1/2 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[#B89B5E] to-transparent"></div>
         </div>
 
-        <div className="max-w-4xl mx-auto text-center space-y-8 relative z-10">
-          
-          <div className="w-12 h-12 border border-[#B89B5E]/40 mx-auto flex items-center justify-center">
-            <span className="font-serif text-2xl font-light text-[#B89B5E]">N</span>
+        {/* ========================================================
+            4. FINAL CONCIERGE BANNER
+        ======================================================== */}
+        <div className="bg-gradient-to-r from-[#181818] via-[#1F1B14] to-[#181818] border border-[#B89B5E]/30 rounded-2xl p-6 text-center space-y-4">
+          <div className="w-10 h-10 rounded-full border border-[#B89B5E]/50 mx-auto flex items-center justify-center font-serif text-lg text-[#B89B5E]">
+            N
           </div>
-
-          <h2 className="font-serif text-4xl sm:text-6xl md:text-7xl font-light text-[#F5F1E8] tracking-tight leading-tight">
-            READY FOR<br />
-            <span className="italic font-normal text-[#B89B5E]">SOMETHING DISTINCTIVE?</span>
-          </h2>
-
-          <p className="font-sans text-sm md:text-base text-[#D8CBB8]/75 max-w-lg mx-auto leading-relaxed font-light">
-            Begin a conversation about your next pair of bespoke shoes. Discuss your measurements, select rare hides, and commission an heirloom built exclusively for you.
+          <h3 className="font-serif text-xl sm:text-2xl text-[#F5F1E8]">
+            Desire a Unique Bespoke Last?
+          </h3>
+          <p className="text-xs text-[#D8CBB8]/75 max-w-md mx-auto leading-relaxed">
+            Begin a private consultation with our Master Cordwainer. Discuss measurements, rare hides, and anatomical lasts.
           </p>
-
-          <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-1">
             <Link
               to="/bespoke"
-              className="w-full sm:w-auto px-8 py-4 bg-[#B89B5E] text-[#0A0A0A] font-semibold text-xs tracking-[0.22em] uppercase hover:bg-[#D4BD86] transition-all shadow-xl"
+              className="w-full sm:w-auto px-6 py-2.5 bg-[#B89B5E] text-[#0A0A0A] font-mono text-xs font-semibold uppercase tracking-wider rounded-lg hover:bg-[#D4BD86] transition-all shadow-md"
             >
-              START BESPOKE REQUEST
+              Start Bespoke Request
             </Link>
-
             <a
-              href={getWhatsAppUrl("Hello Nelson, I am ready to begin a bespoke shoe commission.")}
+              href={getWhatsAppUrl("Hello Nelson Atelier, I would like to consult on a custom bespoke shoe order.")}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full sm:w-auto px-8 py-4 bg-[#141414] border border-[#B89B5E]/40 hover:border-[#B89B5E] text-[#F5F1E8] text-xs font-medium tracking-[0.22em] uppercase transition-colors flex items-center justify-center gap-2"
+              className="w-full sm:w-auto px-6 py-2.5 bg-[#141414] border border-[#B89B5E]/40 text-[#F5F1E8] font-mono text-xs uppercase tracking-wider rounded-lg hover:border-[#B89B5E] transition-colors flex items-center justify-center gap-2"
             >
-              <MessageCircle className="w-4 h-4 text-[#B89B5E]" />
-              <span>WHATSAPP NELSON</span>
+              <MessageCircle size={14} className="text-emerald-400" />
+              <span>WhatsApp Atelier</span>
             </a>
           </div>
-
-          <p className="text-[11px] text-[#D8CBB8]/50 uppercase tracking-widest font-sans pt-4">
-            Private Consultations in Lagos • Worldwide Bespoke Express Courier
-          </p>
-
         </div>
-      </section>
+
+      </div>
 
       {/* Quick View Modal */}
       <QuickViewModal

@@ -8,11 +8,6 @@ import { WishlistProvider } from './context/WishlistContext';
 import { SearchProvider } from './context/SearchContext';
 
 import { LuxuryLoader } from './components/common/LuxuryLoader';
-import { Navbar } from './components/common/Navbar';
-import { Footer } from './components/common/Footer';
-import { CartDrawer } from './components/common/CartDrawer';
-import { SearchModal } from './components/common/SearchModal';
-import { FloatingWhatsApp } from './components/common/FloatingWhatsApp';
 import { ScrollToTop } from './components/common/ScrollToTop';
 
 import { HomePage } from './pages/HomePage';
@@ -43,22 +38,41 @@ const AdminOrdersPage = React.lazy(() => import('./pages/admin/AdminOrdersPage')
 const AdminBespokePage = React.lazy(() => import('./pages/admin/AdminBespokePage').then(m => ({ default: m.AdminBespokePage })));
 const AdminSettingsPage = React.lazy(() => import('./pages/admin/AdminSettingsPage').then(m => ({ default: m.AdminSettingsPage })));
 
+import { AppLayout } from './components/app/AppLayout';
+
 function AppContent() {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
+
+  if (isAdminRoute) {
+    return (
+      <div className="min-h-screen bg-[#0A0A0A] text-[#F5F1E8] selection:bg-[#B89B5E] selection:text-[#0A0A0A]">
+        <ScrollToTop />
+        <LuxuryLoader />
+        <React.Suspense fallback={<RouteLoader />}>
+          <Routes>
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<AdminDashboardOverview />} />
+              <Route path="products" element={<AdminProductsPage />} />
+              <Route path="orders" element={<AdminOrdersPage />} />
+              <Route path="bespoke" element={<AdminBespokePage />} />
+              <Route path="settings" element={<AdminSettingsPage />} />
+            </Route>
+          </Routes>
+        </React.Suspense>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-[#0A0A0A] text-[#F5F1E8] selection:bg-[#B89B5E] selection:text-[#0A0A0A]">
       <ScrollToTop />
       <LuxuryLoader />
 
-      {/* Render Public Storefront Header if not on Admin routes */}
-      {!isAdminRoute && <Navbar />}
-
-      <main className="flex-1">
+      <AppLayout>
         <React.Suspense fallback={<RouteLoader />}>
           <Routes>
-            {/* Public Storefront Routes */}
+            {/* Public Storefront Application Routes */}
             <Route path="/" element={<HomePage />} />
             <Route path="/collection" element={<CollectionPage />} />
             <Route path="/product/:slug" element={<ProductDetailPage />} />
@@ -74,30 +88,10 @@ function AppContent() {
             <Route path="/track" element={<OrderTrackingPage />} />
             <Route path="/privacy" element={<PrivacyPage />} />
             <Route path="/terms" element={<TermsPage />} />
-
-            {/* Dedicated Atelier Admin Console */}
-            <Route path="/admin" element={<AdminLayout />}>
-              <Route index element={<AdminDashboardOverview />} />
-              <Route path="products" element={<AdminProductsPage />} />
-              <Route path="orders" element={<AdminOrdersPage />} />
-              <Route path="bespoke" element={<AdminBespokePage />} />
-              <Route path="settings" element={<AdminSettingsPage />} />
-            </Route>
-
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </React.Suspense>
-      </main>
-
-      {/* Render Public Storefront Overlays if not on Admin routes */}
-      {!isAdminRoute && (
-        <>
-          <Footer />
-          <CartDrawer />
-          <SearchModal />
-          <FloatingWhatsApp />
-        </>
-      )}
+      </AppLayout>
     </div>
   );
 }

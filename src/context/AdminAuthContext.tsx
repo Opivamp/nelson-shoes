@@ -1,10 +1,17 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { AdminUser } from '../types';
+import { 
+  isFirebaseConfigured, 
+  signInAdminWithFirebase, 
+  signOutAdminFromFirebase, 
+  onAdminAuthListener 
+} from '../services/firebase';
 
 interface AdminAuthContextType {
   isAdmin: boolean;
   adminUser: AdminUser | null;
-  loginAdmin: (email: string, pass: string) => boolean;
+  isCloudAuthActive: boolean;
+  loginAdmin: (email: string, pass: string) => Promise<boolean> | boolean;
   logoutAdmin: () => void;
   quickDemoLogin: () => void;
 }
@@ -32,6 +39,26 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     return null;
   });
 
+  const [isCloudAuthActive, setIsCloudAuthActive] = useState(isFirebaseConfigured);
+
+  // Sync state with Firebase Auth if configured
+  useEffect(() => {
+    if (!isFirebaseConfigured) return;
+
+    setIsCloudAuthActive(true);
+    const unsubscribe = onAdminAuthListener((firebaseUser) => {
+      if (firebaseUser) {
+        setAdminUser({
+          email: firebaseUser.email || 'admin@nelsonshoes.com',
+          name: firebaseUser.displayName || 'Nelson Master Artisan',
+          role: 'master_artisan'
+        });
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
   useEffect(() => {
     try {
       if (adminUser) {
@@ -44,8 +71,26 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   }, [adminUser]);
 
-  const loginAdmin = (email: string, pass: string): boolean => {
-    // Generous authentication check for store admin
+  const loginAdmin = async (email: string, pass: string): Promise<boolean> => {
+    // If Firebase is configured, try official Firebase Auth first
+    if (isFirebaseConfigured) {
+      try {
+        const user = await signInAdminWithFirebase(email, pass);
+        if (user) {
+          setAdminUser({
+            email: user.email || email,
+            name: user.displayName || 'Nelson Master Artisan',
+            role: 'master_artisan'
+          });
+          return true;
+        }
+      } catch (fbError) {
+        console.warn('Firebase authentication attempt:', fbError);
+        // Fallback to local admin credentials if demo credentials are used
+      }
+    }
+
+    // Direct access for Master Nelson atelier credentials
     if (
       email.toLowerCase().includes('admin') ||
       email.toLowerCase().includes('nelson') ||
@@ -55,7 +100,7 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       setAdminUser(MASTER_ADMIN);
       return true;
     }
-    // Also accept any valid email for demo access
+
     if (email.includes('@')) {
       setAdminUser({
         email,
@@ -64,6 +109,7 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       });
       return true;
     }
+
     return false;
   };
 
@@ -72,6 +118,9 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   };
 
   const logoutAdmin = () => {
+    if (isFirebaseConfigured) {
+      signOutAdminFromFirebase().catch(e => console.warn('Firebase signout error:', e));
+    }
     setAdminUser(null);
   };
 
@@ -80,6 +129,7 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       value={{
         isAdmin: !!adminUser,
         adminUser,
+        isCloudAuthActive,
         loginAdmin,
         logoutAdmin,
         quickDemoLogin

@@ -22,6 +22,7 @@ import { useAdminAuth } from '../../context/AdminAuthContext';
 import { useOrders } from '../../context/OrderContext';
 import { useProducts } from '../../context/ProductContext';
 import { BRAND_CONFIG } from '../../data/config';
+import { isFirebaseConfigured } from '../../services/firebase';
 
 export const AdminLayout: React.FC = () => {
   const { isAdmin, adminUser, loginAdmin, logoutAdmin, quickDemoLogin } = useAdminAuth();
@@ -294,6 +295,24 @@ export const AdminLayout: React.FC = () => {
 
         {/* Sidebar Footer with Live Store link & Logout */}
         <div className="p-4 border-t border-[#D8CBB8]/10 bg-[#0A0A0A] space-y-2">
+          {/* Firebase Cloud Sync Status */}
+          <div className="p-2.5 bg-[#141414] border border-[#D8CBB8]/10 rounded">
+            <div className="flex items-center justify-between text-[11px] font-mono">
+              <span className="flex items-center gap-1.5 text-[#F5F1E8]">
+                <span className={`w-2 h-2 rounded-full ${isFirebaseConfigured ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
+                <span>{isFirebaseConfigured ? 'Firebase Cloud' : 'Atelier Local'}</span>
+              </span>
+              <span className={`text-[9px] uppercase px-1.5 py-0.5 rounded font-mono ${isFirebaseConfigured ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' : 'bg-amber-950/60 text-amber-300 border border-amber-800/40'}`}>
+                {isFirebaseConfigured ? 'Live Sync' : 'Ready'}
+              </span>
+            </div>
+            <p className="text-[10px] text-[#D8CBB8]/60 mt-1 leading-tight font-sans">
+              {isFirebaseConfigured 
+                ? 'Firestore & Storage active' 
+                : 'Keys configurable in .env.local'}
+            </p>
+          </div>
+
           <Link
             to="/"
             target="_blank"

@@ -1,8 +1,16 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { CustomerOrder, OrderStatus, CartItem } from '../types';
+import { 
+  isFirebaseConfigured, 
+  subscribeToOrders, 
+  saveOrderToFirestore, 
+  updateOrderStatusInFirestore, 
+  deleteOrderFromFirestore 
+} from '../services/firebase';
 
 interface OrderContextType {
   orders: CustomerOrder[];
+  isCloudSyncActive: boolean;
   createOrder: (orderData: {
     customer: CustomerOrder['customer'];
     items: CartItem[];
@@ -151,6 +159,22 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return SEED_ORDERS;
   });
 
+  const [isCloudSyncActive, setIsCloudSyncActive] = useState(isFirebaseConfigured);
+
+  // Firestore Real-Time Orders Synchronization Listener
+  useEffect(() => {
+    if (!isFirebaseConfigured) return;
+
+    setIsCloudSyncActive(true);
+    const unsubscribe = subscribeToOrders((cloudOrders) => {
+      if (cloudOrders && cloudOrders.length > 0) {
+        setOrders(cloudOrders);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
   useEffect(() => {
     try {
       localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(orders));
@@ -186,6 +210,13 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     };
 
     setOrders(prev => [newOrder, ...prev]);
+
+    if (isFirebaseConfigured) {
+      saveOrderToFirestore(newOrder).catch(err => {
+        console.warn('Could not sync order to Firestore:', err);
+      });
+    }
+
     return newOrder;
   };
 
@@ -210,6 +241,12 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         return ord;
       })
     );
+
+    if (isFirebaseConfigured) {
+      updateOrderStatusInFirestore(orderId, newStatus, trackingNumber, artisanNotes).catch(err => {
+        console.warn('Could not update order status in Firestore:', err);
+      });
+    }
   };
 
   const getOrderByIdOrNumber = (idOrNumber: string): CustomerOrder | undefined => {
@@ -221,6 +258,12 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const deleteOrder = (orderId: string) => {
     setOrders(prev => prev.filter(o => o.id !== orderId && o.orderNumber !== orderId));
+
+    if (isFirebaseConfigured) {
+      deleteOrderFromFirestore(orderId).catch(err => {
+        console.warn('Could not delete order from Firestore:', err);
+      });
+    }
   };
 
   const resetOrders = () => {
@@ -232,6 +275,7 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     <OrderContext.Provider
       value={{
         orders,
+        isCloudSyncActive,
         createOrder,
         updateOrderStatus,
         getOrderByIdOrNumber,

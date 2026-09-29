@@ -54,14 +54,43 @@ A web application for **Nelson Shoes** featuring a bespoke luxury storefront, dy
 
 ---
 
+## 🔥 Firebase Cloud Architecture
+
+The application includes a complete Firebase Cloud service integration with resilient local fallback:
+
+- **Cloud Firestore**:
+  - `products`: Real-time footwear catalog synchronization.
+  - `orders`: Real-time order tracking, workbench progress, and client status updates.
+  - `bespoke_inquiries`: Bespoke measurement dossiers.
+- **Firebase Storage**: Direct high-resolution photography uploads from the Product Atelier.
+- **Firebase Authentication**: Master cordwainer administrative authentication.
+- **Resilient Fallback**: Automatically operates seamlessly with local storage whenever keys are not present.
+
+### Configuring Firebase Environment Variables
+
+Create `.env.local` in the project root:
+
+```env
+VITE_FIREBASE_API_KEY=your_api_key
+VITE_FIREBASE_AUTH_DOMAIN=your_project_id.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=your_project_id
+VITE_FIREBASE_STORAGE_BUCKET=your_project_id.appspot.com
+VITE_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
+VITE_FIREBASE_APP_ID=your_app_id
+VITE_FIREBASE_MEASUREMENT_ID=your_measurement_id
+```
+
+---
+
 ## 🛠 Tech Stack & Architecture
 
-- **Core**: React 18 + TypeScript + Vite
+- **Core**: React 19 + TypeScript + Vite
+- **Cloud Backend**: Firebase 12 (Firestore, Storage, Auth, Hosting)
 - **Styling**: Tailwind CSS + Custom Obsidian & Gold Luxury Design System (`#0A0A0A`, `#F5F1E8`, `#B89B5E`)
 - **State Management**:
-  - [`ProductContext`](src/context/ProductContext.tsx) — Dynamic CRUD with persistent browser storage & seed fallback
-  - [`OrderContext`](src/context/OrderContext.tsx) — Real-time order pipeline & tracking updates
-  - [`AdminAuthContext`](src/context/AdminAuthContext.tsx) — Session and administrative authorization
+  - [`ProductContext`](src/context/ProductContext.tsx) — Real-time Firestore sync & persistent offline fallback
+  - [`OrderContext`](src/context/OrderContext.tsx) — Real-time Firestore orders & client live tracker
+  - [`AdminAuthContext`](src/context/AdminAuthContext.tsx) — Firebase Auth & Master Nelson session
   - [`CartContext`](src/context/CartContext.tsx) — Multi-item commission dossier & currency switching
 
 ---
@@ -82,3 +111,4 @@ npm run build
 Storefront: `http://localhost:5173/`  
 Admin Dashboard: `http://localhost:5173/admin`  
 Order Tracker: `http://localhost:5173/track`
+

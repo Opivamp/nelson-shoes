@@ -14,15 +14,19 @@ import {
   DollarSign,
   Layers,
   Ruler,
-  AlertCircle
+  AlertCircle,
+  Loader2,
+  Cloud
 } from 'lucide-react';
 import { useProducts } from '../../context/ProductContext';
 import type { Product, ProductCategory } from '../../types';
 import { formatCurrencyNGN, formatCurrencyUSD } from '../../data/config';
+import { isFirebaseConfigured, uploadProductImageToStorage } from '../../services/firebase';
 
 export const AdminProductsPage: React.FC = () => {
-  const { products, addProduct, updateProduct, deleteProduct } = useProducts();
+  const { products, addProduct, updateProduct, deleteProduct, isCloudSyncActive } = useProducts();
   const [searchParams] = useSearchParams();
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -102,10 +106,33 @@ export const AdminProductsPage: React.FC = () => {
     setIsModalOpen(true);
   };
 
-  // Handle local image file upload (converts to base64 data URL)
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Handle footwear photography upload (Firebase Storage with local fallback)
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
+    if (!file) return;
+
+    if (isFirebaseConfigured) {
+      setIsUploadingPhoto(true);
+      try {
+        const slug = formName 
+          ? formName.toLowerCase().replace(/[^a-z0-9]+/g, '-') 
+          : 'nelson-shoe';
+        const downloadUrl = await uploadProductImageToStorage(file, slug);
+        setFormImage(downloadUrl);
+        showToast('Photo uploaded directly to Firebase Storage!');
+      } catch (err) {
+        console.warn('Firebase Storage upload failed, falling back to local base64 preview:', err);
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          if (typeof reader.result === 'string') {
+            setFormImage(reader.result);
+          }
+        };
+        reader.readAsDataURL(file);
+      } finally {
+        setIsUploadingPhoto(false);
+      }
+    } else {
       const reader = new FileReader();
       reader.onloadend = () => {
         if (typeof reader.result === 'string') {
@@ -526,11 +553,26 @@ export const AdminProductsPage: React.FC = () => {
                     {/* File Picker */}
                     <div>
                       <label className="flex items-center gap-2 px-3 py-2 bg-[#202020] hover:bg-[#282828] border border-[#D8CBB8]/30 rounded cursor-pointer transition-colors text-xs text-[#F5F1E8]">
-                        <Upload size={14} className="text-[#B89B5E]" />
-                        <span>Choose Photo from Device...</span>
+                        {isUploadingPhoto ? (
+                          <>
+                            <Loader2 size={14} className="text-[#B89B5E] animate-spin" />
+                            <span className="text-[#B89B5E]">Uploading to Firebase Storage...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Upload size={14} className="text-[#B89B5E]" />
+                            <span>Choose Photo from Device...</span>
+                            {isCloudSyncActive && (
+                              <span className="ml-auto text-[10px] text-emerald-400 font-mono flex items-center gap-1">
+                                <Cloud size={10} /> Storage Ready
+                              </span>
+                            )}
+                          </>
+                        )}
                         <input
                           type="file"
                           accept="image/*"
+                          disabled={isUploadingPhoto}
                           onChange={handleFileUpload}
                           className="hidden"
                         />

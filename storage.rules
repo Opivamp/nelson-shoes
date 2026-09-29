@@ -1,0 +1,12 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /products/{allPaths=**} {
+      // Anyone can view product photos on the luxury storefront
+      allow read: if true;
+      // Allow image uploads under 15MB
+      allow write: if request.resource.size < 15 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*');
+    }
+  }
+}

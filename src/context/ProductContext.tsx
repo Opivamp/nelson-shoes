@@ -1,9 +1,16 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { Product, ProductCategory } from '../types';
 import { PRODUCTS as DEFAULT_PRODUCTS } from '../data/products';
+import { 
+  isFirebaseConfigured, 
+  subscribeToProducts, 
+  saveProductToFirestore, 
+  deleteProductFromFirestore 
+} from '../services/firebase';
 
 interface ProductContextType {
   products: Product[];
+  isCloudSyncActive: boolean;
   getProductBySlug: (slug: string) => Product | undefined;
   getProductById: (id: string) => Product | undefined;
   getProductsByCategory: (category: ProductCategory | string) => Product[];
@@ -34,12 +41,28 @@ export const ProductProvider: React.FC<{ children: React.ReactNode }> = ({ child
     return DEFAULT_PRODUCTS;
   });
 
-  // Sync to local storage
+  const [isCloudSyncActive, setIsCloudSyncActive] = useState(isFirebaseConfigured);
+
+  // Firestore Real-Time Synchronization Listener
+  useEffect(() => {
+    if (!isFirebaseConfigured) return;
+
+    setIsCloudSyncActive(true);
+    const unsubscribe = subscribeToProducts((cloudProducts) => {
+      if (cloudProducts && cloudProducts.length > 0) {
+        setProducts(cloudProducts);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // Sync to local storage for instant offline availability & resilience
   useEffect(() => {
     try {
       localStorage.setItem(PRODUCTS_STORAGE_KEY, JSON.stringify(products));
     } catch (e) {
-      console.error('Failed to persist products:', e);
+      console.error('Failed to persist products locally:', e);
     }
   }, [products]);
 
@@ -113,22 +136,44 @@ export const ProductProvider: React.FC<{ children: React.ReactNode }> = ({ child
     };
 
     setProducts(prev => [newProduct, ...prev]);
+
+    // Save to Firestore asynchronously
+    if (isFirebaseConfigured) {
+      saveProductToFirestore(newProduct).catch(err => {
+        console.warn('Could not sync new product to Firestore:', err);
+      });
+    }
+
     return newProduct;
   };
 
   const updateProduct = (id: string, updates: Partial<Product>) => {
+    let updatedTarget: Product | null = null;
     setProducts(prev =>
       prev.map(item => {
         if (item.id === id) {
-          return { ...item, ...updates };
+          updatedTarget = { ...item, ...updates };
+          return updatedTarget;
         }
         return item;
       })
     );
+
+    if (isFirebaseConfigured && updatedTarget) {
+      saveProductToFirestore(updatedTarget).catch(err => {
+        console.warn('Could not sync updated product to Firestore:', err);
+      });
+    }
   };
 
   const deleteProduct = (id: string) => {
     setProducts(prev => prev.filter(item => item.id !== id));
+
+    if (isFirebaseConfigured) {
+      deleteProductFromFirestore(id).catch(err => {
+        console.warn('Could not delete product from Firestore:', err);
+      });
+    }
   };
 
   const resetToDefaultProducts = () => {
@@ -140,6 +185,7 @@ export const ProductProvider: React.FC<{ children: React.ReactNode }> = ({ child
     <ProductContext.Provider
       value={{
         products,
+        isCloudSyncActive,
         getProductBySlug,
         getProductById,
         getProductsByCategory,

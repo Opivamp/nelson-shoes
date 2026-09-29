@@ -74,7 +74,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ onToggleMobileMenu }) => {
                 NELSON
               </span>
               <span className="text-[9px] uppercase tracking-[0.25em] text-[#B89B5E] font-mono block -mt-0.5">
-                Artisanal App
+                Bespoke Atelier
               </span>
             </div>
           </Link>

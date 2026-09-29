@@ -68,7 +68,7 @@ export const AtelierFeedCard: React.FC<AtelierFeedCardProps> = ({
   );
 
   return (
-    <article className="bg-[#121212] border border-[#D8CBB8]/15 rounded-xl md:rounded-2xl overflow-hidden shadow-xl hover:border-[#B89B5E]/40 transition-all duration-300">
+    <article className="bg-[#121212] border border-[#D8CBB8]/15 rounded-xl md:rounded-2xl overflow-hidden shadow-xl hover:border-[#B89B5E]/40 transition-all duration-300 w-full min-w-0">
       
       {/* 1. App Post Header */}
       <div className="p-3.5 md:p-4.5 flex items-center justify-between border-b border-[#D8CBB8]/10">
@@ -133,14 +133,14 @@ export const AtelierFeedCard: React.FC<AtelierFeedCardProps> = ({
 
       {/* 2. Post Caption / Editorial Narrative */}
       <div className="px-4 py-3 text-xs md:text-sm text-[#D8CBB8]/85 space-y-1.5 font-sans leading-relaxed">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-2 min-w-0">
           <Link 
             to={`/product/${product.slug}`}
-            className="font-serif text-lg md:text-xl font-normal text-[#F5F1E8] hover:text-[#B89B5E] transition-colors"
+            className="font-serif text-base sm:text-lg md:text-xl font-normal text-[#F5F1E8] hover:text-[#B89B5E] transition-colors truncate min-w-0"
           >
             {product.name}
           </Link>
-          <span className="font-mono text-sm md:text-base font-semibold text-[#B89B5E]">
+          <span className="font-mono text-xs sm:text-sm md:text-base font-semibold text-[#B89B5E] shrink-0 whitespace-nowrap">
             {formatCurrencyNGN(product.priceNGN)}
           </span>
         </div>
@@ -195,22 +195,22 @@ export const AtelierFeedCard: React.FC<AtelierFeedCardProps> = ({
       </div>
 
       {/* 4. App Interactive Feed Action Bar (Like, Quick View, WhatsApp, Cart) */}
-      <div className="p-3 md:p-3.5 flex items-center justify-between gap-2 bg-[#0E0E0E]">
+      <div className="p-2.5 sm:p-3.5 flex items-center justify-between gap-1.5 sm:gap-2 bg-[#0E0E0E] w-full min-w-0">
         
         {/* Left Action Buttons */}
-        <div className="flex items-center gap-1 sm:gap-2">
+        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
           
           {/* Wishlist Button */}
           <button
             onClick={() => toggleWishlist(product.id)}
-            className={`flex items-center gap-1.5 py-1.5 px-2.5 rounded-lg text-xs font-mono transition-colors ${
+            className={`flex items-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-mono transition-colors shrink-0 ${
               isLiked 
                 ? 'text-rose-400 bg-rose-500/10' 
                 : 'text-[#D8CBB8]/70 hover:text-rose-400 hover:bg-[#181818]'
             }`}
             aria-label={isLiked ? "Remove from wishlist" : "Add to wishlist"}
           >
-            <Heart size={15} fill={isLiked ? "currentColor" : "none"} />
+            <Heart size={15} fill={isLiked ? "currentColor" : "none"} className="shrink-0" />
             <span className="hidden sm:inline">{isLiked ? 'Saved' : 'Save'}</span>
           </button>
 
@@ -219,20 +219,20 @@ export const AtelierFeedCard: React.FC<AtelierFeedCardProps> = ({
             href={whatsAppInquiryUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 py-1.5 px-2.5 rounded-lg text-xs font-mono text-[#D8CBB8]/70 hover:text-emerald-400 hover:bg-[#181818] transition-colors"
+            className="flex items-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-mono text-[#D8CBB8]/70 hover:text-emerald-400 hover:bg-[#181818] transition-colors shrink-0"
             title="Discuss with Master Cordwainer"
           >
-            <MessageCircle size={15} />
+            <MessageCircle size={15} className="shrink-0" />
             <span className="hidden sm:inline">Inquire</span>
           </a>
 
           {/* Share */}
           <button
             onClick={handleShare}
-            className="flex items-center gap-1.5 py-1.5 px-2.5 rounded-lg text-xs font-mono text-[#D8CBB8]/70 hover:text-[#B89B5E] hover:bg-[#181818] transition-colors"
+            className="flex items-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-mono text-[#D8CBB8]/70 hover:text-[#B89B5E] hover:bg-[#181818] transition-colors shrink-0"
             aria-label="Share"
           >
-            <Share2 size={15} />
+            <Share2 size={15} className="shrink-0" />
             <span className="hidden sm:inline">{copied ? 'Copied' : 'Share'}</span>
           </button>
 
@@ -241,7 +241,7 @@ export const AtelierFeedCard: React.FC<AtelierFeedCardProps> = ({
         {/* Right Action: Add to Cart / Commission CTA */}
         <button
           onClick={handleAddToCart}
-          className={`px-4 py-2 rounded-lg font-mono text-xs font-semibold flex items-center gap-2 transition-all duration-300 shadow-md ${
+          className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg font-mono text-xs font-semibold flex items-center gap-1.5 sm:gap-2 transition-all duration-300 shadow-md shrink-0 whitespace-nowrap ${
             addedAnimation
               ? 'bg-emerald-500 text-[#0A0A0A]'
               : 'bg-[#B89B5E] hover:bg-[#C9AD70] text-[#0A0A0A] hover:shadow-[0_0_15px_rgba(184,155,94,0.3)]'
@@ -249,13 +249,13 @@ export const AtelierFeedCard: React.FC<AtelierFeedCardProps> = ({
         >
           {addedAnimation ? (
             <>
-              <Check size={14} strokeWidth={2.5} />
-              <span>Added to Trunk</span>
+              <Check size={14} strokeWidth={2.5} className="shrink-0" />
+              <span>Added</span>
             </>
           ) : (
             <>
-              <ShoppingBag size={14} />
-              <span>Commission Pair</span>
+              <ShoppingBag size={14} className="shrink-0" />
+              <span>Commission</span>
             </>
           )}
         </button>

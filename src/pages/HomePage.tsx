@@ -5,12 +5,7 @@ import {
   ArrowUpRight, 
   MessageCircle, 
   Sparkles, 
-  Filter, 
-  Layers, 
-  CheckCircle2, 
-  ChevronRight,
-  ShieldCheck,
-  Compass
+  CheckCircle2
 } from 'lucide-react';
 import { TESTIMONIALS } from '../data/testimonials';
 import { BRAND_CONFIG, getWhatsAppUrl } from '../data/config';
@@ -89,19 +84,19 @@ export const HomePage: React.FC = () => {
   ];
 
   return (
-    <div className="bg-[#0A0A0A] text-[#F5F1E8] min-h-screen">
+    <div className="bg-[#0A0A0A] text-[#F5F1E8] min-h-screen w-full min-w-0">
       
       {/* ========================================================
           APPLICATION MAIN STREAM CONTAINER
           Responsive container tailored for web application layout
       ======================================================== */}
-      <div className="max-w-4xl mx-auto px-3 sm:px-4 md:px-6 py-3 sm:py-5 space-y-6">
+      <div className="max-w-4xl mx-auto px-3 sm:px-4 md:px-6 py-3 sm:py-5 space-y-4 sm:space-y-6 w-full min-w-0 overflow-x-hidden">
         
         {/* ========================================================
             1. CREATIVE AUTOMATIC ATELIER SLIDER
             Auto-advancing masterpiece showcase with progress bar & direct CTAs
         ======================================================== */}
-        <section aria-label="Signature Footwear Showcase">
+        <section aria-label="Signature Footwear Showcase" className="w-full min-w-0">
           <CreativeAppSlider 
             onQuickView={handleQuickViewBySlug} 
             products={products}
@@ -112,7 +107,7 @@ export const HomePage: React.FC = () => {
             2. ATELIER QUICK UTILITY / COMMISSION BAR
             High utility: Custom Last, Foot Anatomy Scan, Live Cordwainer, Track Order
         ======================================================== */}
-        <section aria-label="Atelier Commission Services">
+        <section aria-label="Atelier Commission Services" className="w-full min-w-0">
           <AtelierComposer />
         </section>
 
@@ -120,16 +115,16 @@ export const HomePage: React.FC = () => {
             3. LIVE ATELIER BENCH STATUS TICKER
             Useful status info indicating active cordwaining in Lagos
         ======================================================== */}
-        <div className="bg-[#121212] border border-[#B89B5E]/25 rounded-xl p-3 sm:p-3.5 flex items-center justify-between gap-3 text-xs font-mono shadow-md">
-          <div className="flex items-center gap-2.5 min-w-0">
+        <div className="bg-[#121212] border border-[#B89B5E]/25 rounded-xl p-2.5 sm:p-3.5 flex items-center justify-between gap-2.5 text-xs font-mono shadow-md w-full min-w-0 overflow-hidden">
+          <div className="flex items-center gap-2 min-w-0 flex-1">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
-            <span className="text-[#D8CBB8]/90 truncate">
+            <span className="text-[#D8CBB8]/90 truncate min-w-0 block text-[11px] sm:text-xs">
               <strong className="text-[#B89B5E] font-semibold">Active Bench:</strong> Nelson Lagos Atelier currently lasting Batch #14 in French Box Calf.
             </span>
           </div>
           <Link 
             to="/craft" 
-            className="text-[11px] text-[#B89B5E] hover:underline shrink-0 hidden sm:inline"
+            className="text-[11px] text-[#B89B5E] hover:underline shrink-0 hidden sm:inline whitespace-nowrap"
           >
             Inspect Technique →
           </Link>
@@ -139,27 +134,27 @@ export const HomePage: React.FC = () => {
             4. CURATED ATELIER CREATIONS FEED
             Filter pills + high-utility interactive product cards
         ======================================================== */}
-        <section aria-label="Bespoke Footwear Collection" className="space-y-4">
+        <section aria-label="Bespoke Footwear Collection" className="space-y-4 w-full min-w-0">
           
           {/* Header & Silhouette Filter Chips */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#111111] p-3 rounded-xl border border-[#D8CBB8]/15">
-            <div className="flex items-center gap-2">
-              <Sparkles size={14} className="text-[#B89B5E]" />
-              <h2 className="font-serif text-base sm:text-lg text-[#F5F1E8]">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 bg-[#111111] p-2.5 sm:p-3 rounded-xl border border-[#D8CBB8]/15 w-full min-w-0 overflow-hidden">
+            <div className="flex items-center gap-2 shrink-0">
+              <Sparkles size={14} className="text-[#B89B5E] shrink-0" />
+              <h2 className="font-serif text-sm sm:text-base md:text-lg text-[#F5F1E8] whitespace-nowrap">
                 Atelier Creations
               </h2>
-              <span className="text-[10px] font-mono text-[#B89B5E] bg-[#B89B5E]/15 px-2 py-0.5 rounded-full">
+              <span className="text-[10px] font-mono text-[#B89B5E] bg-[#B89B5E]/15 px-2 py-0.5 rounded-full whitespace-nowrap">
                 {filteredProducts.length} Silhouettes
               </span>
             </div>
 
             {/* Filter Pills */}
-            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 w-full sm:w-auto">
               {categories.map((cat) => (
                 <button
                   key={cat}
                   onClick={() => setCategoryFilter(cat)}
-                  className={`px-3 py-1 rounded-lg text-xs font-mono transition-all cursor-pointer shrink-0 ${
+                  className={`px-2.5 sm:px-3 py-1 rounded-lg text-xs font-mono transition-all cursor-pointer shrink-0 ${
                     categoryFilter === cat
                       ? 'bg-[#B89B5E] text-[#0A0A0A] font-bold shadow-md'
                       : 'bg-[#181818] border border-[#D8CBB8]/15 text-[#D8CBB8]/70 hover:text-[#F5F1E8] hover:border-[#D8CBB8]/30'
@@ -172,7 +167,7 @@ export const HomePage: React.FC = () => {
           </div>
 
           {/* Cards Stream */}
-          <div className="space-y-4">
+          <div className="space-y-4 w-full min-w-0">
             {filteredProducts.map((product, idx) => (
               <AtelierFeedCard
                 key={product.id}
@@ -190,13 +185,13 @@ export const HomePage: React.FC = () => {
             5. THE ART OF MAKING (INTERACTIVE 6-STAGE SCRUBBER)
             Educational, high-value visualizer of the cordwaining process
         ======================================================== */}
-        <section aria-label="Cordwaining Craftsmanship" className="bg-[#121212] border border-[#D8CBB8]/15 rounded-2xl p-4 sm:p-6 space-y-5">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#D8CBB8]/10 pb-4">
+        <section aria-label="Cordwaining Craftsmanship" className="bg-[#121212] border border-[#D8CBB8]/15 rounded-2xl p-3.5 sm:p-6 space-y-4 sm:space-y-5 w-full min-w-0 overflow-hidden">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 border-b border-[#D8CBB8]/10 pb-3 sm:pb-4">
             <div>
               <span className="text-[10px] font-mono uppercase tracking-widest text-[#B89B5E] block">
                 Atelier Choreography
               </span>
-              <h3 className="font-serif text-xl sm:text-2xl text-[#F5F1E8]">
+              <h3 className="font-serif text-lg sm:text-2xl text-[#F5F1E8]">
                 The Art of Making
               </h3>
             </div>
@@ -206,12 +201,12 @@ export const HomePage: React.FC = () => {
           </div>
 
           {/* Step Selector Buttons */}
-          <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+          <div className="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar w-full">
             {makingStages.map((stage, idx) => (
               <button
                 key={stage.num}
                 onClick={() => setActiveStep(idx)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-mono uppercase tracking-wider whitespace-nowrap transition-all cursor-pointer ${
+                className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-mono uppercase tracking-wider whitespace-nowrap transition-all cursor-pointer shrink-0 ${
                   activeStep === idx
                     ? 'bg-[#B89B5E] text-[#0A0A0A] font-bold shadow-md'
                     : 'bg-[#181818] border border-[#D8CBB8]/15 text-[#D8CBB8]/60 hover:text-[#F5F1E8]'
@@ -223,20 +218,20 @@ export const HomePage: React.FC = () => {
           </div>
 
           {/* Active Stage Card */}
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4 w-full min-w-0">
             <div className="aspect-[16/10] overflow-hidden rounded-xl border border-[#D8CBB8]/15 bg-black relative">
               <img
                 src={makingStages[activeStep].image}
                 alt={makingStages[activeStep].title}
                 className="w-full h-full object-cover object-center transition-transform duration-700 hover:scale-105"
               />
-              <div className="absolute top-3 left-3 bg-black/80 backdrop-blur-md px-3 py-1 rounded-full border border-[#B89B5E]/40 font-mono text-xs text-[#B89B5E]">
+              <div className="absolute top-2.5 left-2.5 sm:top-3 sm:left-3 bg-black/80 backdrop-blur-md px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full border border-[#B89B5E]/40 font-mono text-[11px] sm:text-xs text-[#B89B5E]">
                 Stage {makingStages[activeStep].num}
               </div>
             </div>
 
-            <div className="space-y-2">
-              <h4 className="font-serif text-xl sm:text-2xl text-[#F5F1E8]">
+            <div className="space-y-1.5 sm:space-y-2">
+              <h4 className="font-serif text-lg sm:text-2xl text-[#F5F1E8]">
                 {makingStages[activeStep].title}
               </h4>
               <p className="text-xs sm:text-sm text-[#D8CBB8]/80 font-sans leading-relaxed">
@@ -244,16 +239,16 @@ export const HomePage: React.FC = () => {
               </p>
             </div>
 
-            <div className="pt-2 flex items-center justify-between">
+            <div className="pt-1 flex items-center justify-between">
               <button
                 onClick={() => setActiveStep((prev) => (prev > 0 ? prev - 1 : makingStages.length - 1))}
-                className="px-4 py-2 border border-[#D8CBB8]/20 hover:border-[#B89B5E] text-xs font-mono uppercase tracking-wider text-[#D8CBB8] rounded-lg transition-colors cursor-pointer"
+                className="px-3 sm:px-4 py-1.5 sm:py-2 border border-[#D8CBB8]/20 hover:border-[#B89B5E] text-xs font-mono uppercase tracking-wider text-[#D8CBB8] rounded-lg transition-colors cursor-pointer"
               >
-                ← Previous
+                ← Prev
               </button>
               <button
                 onClick={() => setActiveStep((prev) => (prev < makingStages.length - 1 ? prev + 1 : 0))}
-                className="px-4 py-2 bg-[#B89B5E] text-[#0A0A0A] text-xs font-mono uppercase tracking-wider font-semibold hover:bg-[#D4BD86] rounded-lg transition-colors cursor-pointer"
+                className="px-3 sm:px-4 py-1.5 sm:py-2 bg-[#B89B5E] text-[#0A0A0A] text-xs font-mono uppercase tracking-wider font-semibold hover:bg-[#D4BD86] rounded-lg transition-colors cursor-pointer"
               >
                 Next Stage →
               </button>
@@ -265,12 +260,12 @@ export const HomePage: React.FC = () => {
             6. BESPOKE PATHWAY
             The 6-step journey from consultation to delivery
         ======================================================== */}
-        <section aria-label="Bespoke Pathway" className="bg-[#121212] border border-[#D8CBB8]/15 rounded-2xl p-4 sm:p-6 space-y-5">
-          <div className="text-center space-y-1.5 border-b border-[#D8CBB8]/10 pb-4">
+        <section aria-label="Bespoke Pathway" className="bg-[#121212] border border-[#D8CBB8]/15 rounded-2xl p-3.5 sm:p-6 space-y-4 sm:space-y-5 w-full min-w-0 overflow-hidden">
+          <div className="text-center space-y-1 border-b border-[#D8CBB8]/10 pb-3 sm:pb-4">
             <span className="text-[10px] font-mono uppercase tracking-widest text-[#B89B5E]">
               Custom Shoemaking
             </span>
-            <h3 className="font-serif text-2xl sm:text-3xl text-[#F5F1E8]">
+            <h3 className="font-serif text-xl sm:text-3xl text-[#F5F1E8]">
               Your Shoe. Your Story.
             </h3>
             <p className="text-xs text-[#D8CBB8]/70 max-w-md mx-auto">
@@ -278,13 +273,13 @@ export const HomePage: React.FC = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3 w-full min-w-0">
             {bespokeJourney.map((item) => (
               <div
                 key={item.step}
-                className="p-3.5 bg-[#181818] border border-[#D8CBB8]/10 rounded-xl space-y-1.5 hover:border-[#B89B5E]/40 transition-colors"
+                className="p-3 sm:p-3.5 bg-[#181818] border border-[#D8CBB8]/10 rounded-xl space-y-1 hover:border-[#B89B5E]/40 transition-colors"
               >
-                <span className="font-serif text-lg text-[#B89B5E] font-medium">
+                <span className="font-serif text-base sm:text-lg text-[#B89B5E] font-medium">
                   {item.step}
                 </span>
                 <h4 className="text-xs font-mono uppercase tracking-wider text-[#F5F1E8] font-semibold">
@@ -297,10 +292,10 @@ export const HomePage: React.FC = () => {
             ))}
           </div>
 
-          <div className="pt-2 text-center">
+          <div className="pt-1 text-center">
             <Link
               to="/bespoke"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-[#B89B5E] text-[#0A0A0A] font-mono font-semibold text-xs uppercase tracking-wider rounded-xl hover:bg-[#D4BD86] transition-all shadow-xl"
+              className="inline-flex items-center gap-2 px-5 sm:px-6 py-2.5 sm:py-3 bg-[#B89B5E] text-[#0A0A0A] font-mono font-semibold text-xs uppercase tracking-wider rounded-xl hover:bg-[#D4BD86] transition-all shadow-xl"
             >
               <span>Initiate Bespoke Commission</span>
               <ArrowRight size={14} />
@@ -311,25 +306,25 @@ export const HomePage: React.FC = () => {
         {/* ========================================================
             7. VERIFIED PATRON DOSSIERS & TESTIMONIALS
         ======================================================== */}
-        <section aria-label="Patron Testimonials" className="space-y-3">
-          <div className="bg-[#121212] border border-[#D8CBB8]/15 rounded-xl p-3.5 flex items-center justify-between">
+        <section aria-label="Patron Testimonials" className="space-y-3 w-full min-w-0">
+          <div className="bg-[#121212] border border-[#D8CBB8]/15 rounded-xl p-3 sm:p-3.5 flex items-center justify-between w-full min-w-0">
             <div>
               <span className="text-[10px] font-mono uppercase text-[#B89B5E]">Patron Testimonials</span>
-              <h3 className="font-serif text-base sm:text-lg text-[#F5F1E8]">Verified Client Chronicles</h3>
+              <h3 className="font-serif text-sm sm:text-lg text-[#F5F1E8]">Verified Client Chronicles</h3>
             </div>
-            <span className="text-xs font-mono text-emerald-400 flex items-center gap-1">
+            <span className="text-xs font-mono text-emerald-400 flex items-center gap-1 shrink-0">
               <CheckCircle2 size={13} />
               <span className="hidden sm:inline">100% Authentic Bespoke</span>
             </span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 w-full min-w-0">
             {TESTIMONIALS.map((t) => (
               <div
                 key={t.id}
-                className="p-4 bg-[#121212] border border-[#D8CBB8]/10 rounded-xl space-y-3 flex flex-col justify-between"
+                className="p-3.5 sm:p-4 bg-[#121212] border border-[#D8CBB8]/10 rounded-xl space-y-2.5 flex flex-col justify-between"
               >
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   <div className="flex text-[#B89B5E] text-xs">
                     {'★'.repeat(5)}
                   </div>
@@ -352,11 +347,11 @@ export const HomePage: React.FC = () => {
         {/* ========================================================
             8. DIGITAL ARCHIVE DISPATCHES (@_n_elson)
         ======================================================== */}
-        <section aria-label="Digital Atelier Archive" className="bg-[#121212] border border-[#D8CBB8]/15 rounded-2xl p-4 sm:p-5 space-y-4">
+        <section aria-label="Digital Atelier Archive" className="bg-[#121212] border border-[#D8CBB8]/15 rounded-2xl p-3.5 sm:p-5 space-y-3.5 w-full min-w-0 overflow-hidden">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
-              <h3 className="font-serif text-base text-[#F5F1E8]">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping shrink-0" />
+              <h3 className="font-serif text-sm sm:text-base text-[#F5F1E8] truncate">
                 Atelier Dispatches (@_n_elson)
               </h3>
             </div>
@@ -364,14 +359,14 @@ export const HomePage: React.FC = () => {
               href={BRAND_CONFIG.social.tiktok}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-xs font-mono text-[#B89B5E] hover:underline flex items-center gap-1"
+              className="text-xs font-mono text-[#B89B5E] hover:underline flex items-center gap-1 shrink-0"
             >
               <span>Watch Reels</span>
               <ArrowUpRight size={13} />
             </a>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 w-full min-w-0">
             {[
               { img: "/images/hero-bespoke-oxford.jpg", title: "Wholecut Glacage" },
               { img: "/images/craft-artisan-hands.jpg", title: "Hand-Welt Stitching" },
@@ -383,7 +378,7 @@ export const HomePage: React.FC = () => {
                 href={BRAND_CONFIG.social.tiktok}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group relative aspect-[3/4] bg-black rounded-lg overflow-hidden border border-[#D8CBB8]/10 hover:border-[#B89B5E] transition-all"
+                className="group relative aspect-[3/4] bg-black rounded-lg overflow-hidden border border-[#D8CBB8]/10 hover:border-[#B89B5E] transition-all min-w-0"
               >
                 <img
                   src={reel.img}
@@ -392,7 +387,7 @@ export const HomePage: React.FC = () => {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent opacity-80 group-hover:opacity-95 transition-opacity" />
                 <div className="absolute bottom-2 left-2 right-2">
-                  <p className="text-[11px] font-mono text-[#F5F1E8] truncate font-medium">
+                  <p className="text-[10px] sm:text-[11px] font-mono text-[#F5F1E8] truncate font-medium">
                     {reel.title}
                   </p>
                   <span className="text-[9px] font-mono text-[#B89B5E]">
@@ -407,20 +402,20 @@ export const HomePage: React.FC = () => {
         {/* ========================================================
             9. FINAL CONCIERGE BANNER
         ======================================================== */}
-        <section aria-label="Bespoke Consultation" className="bg-gradient-to-r from-[#181818] via-[#1F1B14] to-[#181818] border border-[#B89B5E]/30 rounded-2xl p-6 text-center space-y-4">
-          <div className="w-10 h-10 rounded-full border border-[#B89B5E]/50 mx-auto flex items-center justify-center font-serif text-lg text-[#B89B5E]">
+        <section aria-label="Bespoke Consultation" className="bg-gradient-to-r from-[#181818] via-[#1F1B14] to-[#181818] border border-[#B89B5E]/30 rounded-2xl p-4 sm:p-6 text-center space-y-3.5 w-full min-w-0 overflow-hidden">
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-[#B89B5E]/50 mx-auto flex items-center justify-center font-serif text-base sm:text-lg text-[#B89B5E]">
             N
           </div>
-          <h3 className="font-serif text-xl sm:text-2xl text-[#F5F1E8]">
+          <h3 className="font-serif text-lg sm:text-2xl text-[#F5F1E8]">
             Desire an Heirloom Bespoke Last?
           </h3>
           <p className="text-xs text-[#D8CBB8]/75 max-w-md mx-auto leading-relaxed">
             Begin a private consultation with our Master Cordwainer. Discuss measurements, rare hides, and anatomical lasts.
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-1">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-2.5 pt-1">
             <Link
               to="/bespoke"
-              className="w-full sm:w-auto px-6 py-2.5 bg-[#B89B5E] text-[#0A0A0A] font-mono text-xs font-semibold uppercase tracking-wider rounded-lg hover:bg-[#D4BD86] transition-all shadow-md"
+              className="w-full sm:w-auto px-5 sm:px-6 py-2 sm:py-2.5 bg-[#B89B5E] text-[#0A0A0A] font-mono text-xs font-semibold uppercase tracking-wider rounded-lg hover:bg-[#D4BD86] transition-all shadow-md"
             >
               Start Bespoke Request
             </Link>
@@ -428,9 +423,9 @@ export const HomePage: React.FC = () => {
               href={getWhatsAppUrl("Hello Nelson Atelier, I would like to consult on a custom bespoke shoe order.")}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full sm:w-auto px-6 py-2.5 bg-[#141414] border border-[#B89B5E]/40 text-[#F5F1E8] font-mono text-xs uppercase tracking-wider rounded-lg hover:border-[#B89B5E] transition-colors flex items-center justify-center gap-2"
+              className="w-full sm:w-auto px-5 sm:px-6 py-2 sm:py-2.5 bg-[#141414] border border-[#B89B5E]/40 text-[#F5F1E8] font-mono text-xs uppercase tracking-wider rounded-lg hover:border-[#B89B5E] transition-colors flex items-center justify-center gap-2"
             >
-              <MessageCircle size={14} className="text-emerald-400" />
+              <MessageCircle size={14} className="text-emerald-400 shrink-0" />
               <span>WhatsApp Atelier</span>
             </a>
           </div>

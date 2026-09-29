@@ -20,9 +20,14 @@ export const MobileBottomNav: React.FC = () => {
     return location.pathname.startsWith(path);
   };
 
+  // Hide bottom nav during checkout for focused payment flow
+  if (location.pathname.startsWith('/checkout')) {
+    return null;
+  }
+
   return (
     <nav 
-      className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-[#0A0A0A]/95 backdrop-blur-xl border-t border-[#D8CBB8]/15 px-2 py-1.5 shadow-[0_-4px_20px_rgba(0,0,0,0.8)] pb-safe"
+      className="fixed bottom-0 left-0 right-0 z-50 lg:hidden bg-[#0A0A0A]/95 backdrop-blur-xl border-t border-[#D8CBB8]/15 px-2 py-1.5 shadow-[0_-4px_20px_rgba(0,0,0,0.8)] pb-safe"
       aria-label="Mobile Application Navigation"
     >
       <div className="flex items-center justify-around">

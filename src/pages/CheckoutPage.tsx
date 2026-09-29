@@ -173,7 +173,7 @@ export const CheckoutPage: React.FC = () => {
   };
 
   return (
-    <div className="bg-[#0A0A0A] text-[#F5F1E8] min-h-screen pt-28 md:pt-36 pb-24">
+    <div className="bg-[#0A0A0A] text-[#F5F1E8] min-h-screen pt-6 md:pt-10 pb-24">
       <div className="max-w-7xl mx-auto px-6 md:px-10 space-y-12">
         
         {/* Top Back Link */}

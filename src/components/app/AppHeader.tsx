@@ -20,6 +20,7 @@ import { useWishlist } from '../../context/WishlistContext';
 import { useSearch } from '../../context/SearchContext';
 import { formatCurrencyNGN, getWhatsAppUrl } from '../../data/config';
 import { NotificationsPanel } from './NotificationsPanel';
+import { ThemeToggle } from '../common/ThemeToggle';
 
 interface AppHeaderProps {
   onToggleMobileMenu?: () => void;
@@ -154,6 +155,9 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ onToggleMobileMenu }) => {
         ======================================================== */}
         <div className="flex items-center gap-1.5 sm:gap-2 lg:gap-3 shrink-0 ml-auto">
           
+          {/* Theme Mode Switcher (Dark / Light) */}
+          <ThemeToggle />
+
           {/* Wishlist Pill (Hidden in checkout) */}
           {!isCheckout && (
             <Link

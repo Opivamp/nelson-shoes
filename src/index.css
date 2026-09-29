@@ -19,6 +19,7 @@
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    transition: background-color 0.25s ease, color 0.25s ease;
   }
 
   body {
@@ -27,6 +28,7 @@
     overflow-x: hidden;
     margin: 0;
     padding: 0;
+    transition: background-color 0.25s ease, color 0.25s ease;
   }
 
   /* Custom subtle scrollbar */
@@ -68,6 +70,111 @@
     outline: 1.5px solid #B89B5E;
     outline-offset: 3px;
   }
+}
+
+/* ========================================================
+   LUXURY LIGHT THEME ADAPTATION (ATELIER ALABASTER & IVORY)
+   Transforms entire application from Obsidian to Warm Alabaster
+   ======================================================== */
+html.light,
+html.light body {
+  background-color: #FBF9F5 !important;
+  color: #14120E !important;
+}
+
+html.light ::-webkit-scrollbar-track {
+  background: #F4EFE6 !important;
+}
+
+html.light ::-webkit-scrollbar-thumb {
+  background: #D8CCA8 !important;
+}
+
+html.light ::-webkit-scrollbar-thumb:hover {
+  background: #B89B5E !important;
+}
+
+/* Surface backgrounds */
+html.light .bg-\[\#0A0A0A\] { background-color: #FBF9F5 !important; }
+html.light .bg-\[\#070707\] { background-color: #F2ECE0 !important; }
+html.light .bg-\[\#0B0B0B\] { background-color: #F8F5EE !important; }
+html.light .bg-\[\#0D0D0D\] { background-color: #F5EFE5 !important; }
+html.light .bg-\[\#0E0E0E\] { background-color: #F4ECE1 !important; }
+html.light .bg-\[\#0E0E0E\]\/95 { background-color: rgba(244, 236, 225, 0.95) !important; }
+html.light .bg-\[\#0A0A0A\]\/95 { background-color: rgba(251, 249, 245, 0.95) !important; }
+html.light .bg-\[\#0A0A0A\]\/90 { background-color: rgba(251, 249, 245, 0.9) !important; }
+html.light .bg-\[\#0A0A0A\]\/80 { background-color: rgba(251, 249, 245, 0.8) !important; }
+html.light .bg-\[\#0A0A0A\]\/75 { background-color: rgba(251, 249, 245, 0.75) !important; }
+html.light .bg-\[\#0A0A0A\]\/70 { background-color: rgba(251, 249, 245, 0.7) !important; }
+html.light .bg-\[\#0A0A0A\]\/60 { background-color: rgba(251, 249, 245, 0.6) !important; }
+html.light .bg-\[\#111111\] { background-color: #FFFFFF !important; }
+html.light .bg-\[\#121212\] { background-color: #FFFFFF !important; }
+html.light .bg-\[\#141414\] { background-color: #F7F3EB !important; }
+html.light .bg-\[\#161616\] { background-color: #FFFFFF !important; }
+html.light .bg-\[\#181818\] { background-color: #F2EBE0 !important; }
+html.light .bg-\[\#1A1A1A\] { background-color: #EAE2D3 !important; }
+html.light .bg-\[\#202020\], html.light .bg-\[\#222222\] { background-color: #E2D9C8 !important; }
+html.light .bg-black { background-color: #EFE7DA !important; }
+html.light .bg-black\/80,
+html.light .bg-black\/75,
+html.light .bg-black\/70,
+html.light .bg-black\/60 {
+  background-color: rgba(255, 255, 255, 0.88) !important;
+}
+html.light .bg-black\/40 {
+  background-color: rgba(240, 233, 222, 0.7) !important;
+}
+
+/* Typography contrast */
+html.light .text-\[\#F5F1E8\] { color: #14120E !important; }
+html.light .text-\[\#F5F1E8\]\/90 { color: #231E18 !important; }
+html.light .text-\[\#D8CBB8\] { color: #4B4234 !important; }
+html.light .text-\[\#D8CBB8\]\/90 { color: #2B251D !important; }
+html.light .text-\[\#D8CBB8\]\/85 { color: #3A3227 !important; }
+html.light .text-\[\#D8CBB8\]\/80 { color: #4B4234 !important; }
+html.light .text-\[\#D8CBB8\]\/75 { color: #5B503F !important; }
+html.light .text-\[\#D8CBB8\]\/70 { color: #695D4A !important; }
+html.light .text-\[\#D8CBB8\]\/60 { color: #7B6E58 !important; }
+html.light .text-\[\#D8CBB8\]\/50 { color: #8F8169 !important; }
+html.light .text-\[\#D8CBB8\]\/40 { color: #A5967E !important; }
+html.light .text-\[\#D8CBB8\]\/30 { color: #BAAC93 !important; }
+
+/* Borders & Dividers */
+html.light .border-\[\#D8CBB8\]\/10 { border-color: rgba(184, 155, 94, 0.16) !important; }
+html.light .border-\[\#D8CBB8\]\/15 { border-color: rgba(184, 155, 94, 0.22) !important; }
+html.light .border-\[\#D8CBB8\]\/20 { border-color: rgba(184, 155, 94, 0.28) !important; }
+html.light .border-\[\#D8CBB8\]\/25 { border-color: rgba(184, 155, 94, 0.35) !important; }
+html.light .border-\[\#D8CBB8\]\/30 { border-color: rgba(184, 155, 94, 0.42) !important; }
+html.light .border-\[\#D8CBB8\]\/40 { border-color: rgba(184, 155, 94, 0.5) !important; }
+
+/* Cards & Modals Elevation in Light Mode */
+html.light .shadow-xl, 
+html.light .shadow-2xl,
+html.light .shadow-lg {
+  box-shadow: 0 10px 30px -5px rgba(100, 80, 50, 0.08), 0 4px 12px -2px rgba(100, 80, 50, 0.04) !important;
+}
+
+/* Gradients in Light Mode */
+html.light .bg-gradient-to-t.from-\[\#0A0A0A\] {
+  --tw-gradient-from: rgba(251, 249, 245, 0.95) !important;
+}
+html.light .bg-gradient-to-r.from-\[\#0A0A0A\]\/90,
+html.light .bg-gradient-to-r.from-\[\#0A0A0A\]\/85 {
+  --tw-gradient-from: rgba(251, 249, 245, 0.94) !important;
+}
+
+/* Forms & Inputs in Light Mode */
+html.light input, 
+html.light select, 
+html.light textarea {
+  background-color: #FFFFFF !important;
+  color: #14120E !important;
+  border-color: #D8CCA8 !important;
+}
+
+html.light input::placeholder, 
+html.light textarea::placeholder {
+  color: #9A8D77 !important;
 }
 
 @layer utilities {

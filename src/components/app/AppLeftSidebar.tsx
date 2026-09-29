@@ -19,6 +19,7 @@ import {
 import { useWishlist } from '../../context/WishlistContext';
 import { useCart } from '../../context/CartContext';
 import { BRAND_CONFIG, getWhatsAppUrl } from '../../data/config';
+import { ThemeToggle } from '../common/ThemeToggle';
 
 export const AppLeftSidebar: React.FC = () => {
   const location = useLocation();
@@ -69,6 +70,12 @@ export const AppLeftSidebar: React.FC = () => {
             <span className="text-[#D8CBB8]/50 block">Saved</span>
             <span className="text-[#B89B5E] font-bold block">{totalWishlist}</span>
           </div>
+        </div>
+
+        {/* Theme Appearance Switcher */}
+        <div className="pt-2 border-t border-[#D8CBB8]/10 flex items-center justify-between">
+          <span className="text-[11px] font-mono text-[#D8CBB8]/70">Atelier Theme</span>
+          <ThemeToggle />
         </div>
       </div>
 

@@ -6,6 +6,7 @@ import { AdminAuthProvider } from './context/AdminAuthContext';
 import { CartProvider } from './context/CartContext';
 import { WishlistProvider } from './context/WishlistContext';
 import { SearchProvider } from './context/SearchContext';
+import { ThemeProvider } from './context/ThemeContext';
 
 import { LuxuryLoader } from './components/common/LuxuryLoader';
 import { ScrollToTop } from './components/common/ScrollToTop';
@@ -105,7 +106,9 @@ export function App() {
             <CartProvider>
               <WishlistProvider>
                 <SearchProvider>
-                  <AppContent />
+                  <ThemeProvider>
+                    <AppContent />
+                  </ThemeProvider>
                 </SearchProvider>
               </WishlistProvider>
             </CartProvider>

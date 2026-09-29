@@ -205,8 +205,13 @@ export const AdminOrdersPage: React.FC = () => {
                         {order.customer.firstName} {order.customer.lastName}
                       </div>
 
-                      <div className="text-xs text-[#D8CBB8]/60 font-mono">
-                        {order.customer.city}, {order.customer.country} • {order.items.length} item(s)
+                      <div className="text-xs text-[#D8CBB8]/60 font-mono flex items-center gap-2 flex-wrap">
+                        <span>{order.customer.city}, {order.customer.country} • {order.items.length} item(s)</span>
+                        {order.paymentMethod === 'paystack-card' && (
+                          <span className="px-1.5 py-0.5 bg-emerald-950/60 border border-emerald-500/30 text-emerald-400 text-[10px] rounded">
+                            💳 Paystack Paid
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -327,8 +332,14 @@ export const AdminOrdersPage: React.FC = () => {
                           </div>
                           <div>
                             <span className="text-[#D8CBB8]/50">Payment Status: </span>
-                            <span className="uppercase text-emerald-400">{order.paymentStatus}</span>
+                            <span className="uppercase text-emerald-400 font-bold">{order.paymentStatus}</span>
                           </div>
+                          {order.paymentReference && (
+                            <div className="pt-0.5">
+                              <span className="text-[#D8CBB8]/50">Paystack Ref: </span>
+                              <span className="text-[#B89B5E] select-all font-bold">{order.paymentReference}</span>
+                            </div>
+                          )}
                           <div>
                             <span className="text-[#D8CBB8]/50">Freight Method: </span>
                             <span className="text-[#F5F1E8]">{order.customer.deliveryMethod === 'dhl-express' ? 'DHL Express Worldwide' : 'Lagos Atelier Pickup'}</span>

@@ -18,6 +18,7 @@ interface OrderContextType {
     subtotalUSD: number;
     paymentMethod: CustomerOrder['paymentMethod'];
     paymentStatus?: CustomerOrder['paymentStatus'];
+    paymentReference?: string;
   }) => CustomerOrder;
   updateOrderStatus: (
     orderId: string, 
@@ -190,6 +191,7 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     subtotalUSD: number;
     paymentMethod: CustomerOrder['paymentMethod'];
     paymentStatus?: CustomerOrder['paymentStatus'];
+    paymentReference?: string;
   }): CustomerOrder => {
     const orderNum = `NS-ORD-${Math.floor(100000 + Math.random() * 900000)}`;
     const now = new Date().toISOString();
@@ -203,6 +205,7 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       subtotalUSD: orderData.subtotalUSD,
       paymentMethod: orderData.paymentMethod,
       paymentStatus: orderData.paymentStatus || 'pending',
+      paymentReference: orderData.paymentReference,
       status: 'Pending Confirmation',
       artisanNotes: 'Order received through atelier website. Awaiting workbench allocation.',
       createdAt: now,

@@ -124,13 +124,20 @@ export const OrderTrackingPage: React.FC = () => {
                 </span>
               </div>
 
-              <div className="text-left sm:text-right">
+              <div className="text-left sm:text-right space-y-1">
                 <span className="text-[10px] uppercase tracking-widest text-[#D8CBB8]/50 block font-mono">
                   Current Status
                 </span>
-                <span className="inline-block mt-1 px-3 py-1 bg-[#B89B5E]/20 text-[#B89B5E] border border-[#B89B5E]/30 text-xs font-mono font-semibold uppercase tracking-wider rounded">
+                <span className="inline-block px-3 py-1 bg-[#B89B5E]/20 text-[#B89B5E] border border-[#B89B5E]/30 text-xs font-mono font-semibold uppercase tracking-wider rounded">
                   {foundOrder.status}
                 </span>
+                {foundOrder.paymentStatus === 'paid' && (
+                  <div className="pt-0.5">
+                    <span className="inline-block px-2.5 py-0.5 bg-emerald-950/60 text-emerald-400 border border-emerald-500/30 text-[10px] font-mono rounded">
+                      ✓ Settled via Paystack
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
 

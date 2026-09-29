@@ -139,6 +139,7 @@ export interface CustomerOrder {
   subtotalUSD: number;
   paymentMethod: 'whatsapp-concierge' | 'bank-transfer' | 'paystack-card';
   paymentStatus: 'pending' | 'deposit_paid' | 'paid';
+  paymentReference?: string;
   status: OrderStatus;
   trackingNumber?: string;
   artisanNotes?: string;

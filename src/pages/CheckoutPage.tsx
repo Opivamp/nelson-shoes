@@ -8,11 +8,15 @@ import {
   Building2, 
   ArrowLeft,
   Truck,
-  Sparkles
+  Sparkles,
+  Loader2,
+  Lock,
+  Shield
 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useOrders } from '../context/OrderContext';
 import { formatCurrencyNGN, formatCurrencyUSD, BRAND_CONFIG, getWhatsAppUrl } from '../data/config';
+import { launchPaystackPopup, isPaystackConfigured } from '../services/paystack';
 
 export const CheckoutPage: React.FC = () => {
   const { items, totalItems, subtotalNGN, subtotalUSD, clearCart } = useCart();
@@ -30,12 +34,16 @@ export const CheckoutPage: React.FC = () => {
     country: 'Nigeria',
     postalCode: '',
     deliveryMethod: 'dhl-express', // 'dhl-express' | 'atelier-pickup'
-    paymentMethod: 'whatsapp-concierge', // 'whatsapp-concierge' | 'bank-transfer' | 'paystack-card'
+    paymentMethod: 'paystack-card', // 'whatsapp-concierge' | 'bank-transfer' | 'paystack-card'
     fittingNotes: '',
   });
 
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [orderReference, setOrderReference] = useState('');
+  const [paymentReference, setPaymentReference] = useState('');
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
+
   if (items.length === 0 && !orderPlaced) {
     return (
       <div className="bg-[#0A0A0A] text-[#F5F1E8] min-h-screen pt-40 pb-24 text-center px-6">
@@ -53,8 +61,65 @@ export const CheckoutPage: React.FC = () => {
     );
   }
 
-  const handleSubmitOrder = (e: React.FormEvent) => {
+  const handleSubmitOrder = async (e: React.FormEvent) => {
     e.preventDefault();
+    setPaymentError(null);
+
+    // If client selected Paystack Card Gateway
+    if (shippingDetails.paymentMethod === 'paystack-card') {
+      setIsProcessingPayment(true);
+
+      const generatedOrderNumber = `NS-ORD-${Math.floor(100000 + Math.random() * 900000)}`;
+
+      try {
+        await launchPaystackPopup({
+          email: shippingDetails.email,
+          amountNGN: subtotalNGN,
+          orderNumber: generatedOrderNumber,
+          customerName: `${shippingDetails.firstName} ${shippingDetails.lastName}`,
+          phone: shippingDetails.phoneWhatsApp,
+          onSuccess: (ref: string) => {
+            const newOrder = createOrder({
+              customer: {
+                firstName: shippingDetails.firstName,
+                lastName: shippingDetails.lastName,
+                email: shippingDetails.email,
+                phoneWhatsApp: shippingDetails.phoneWhatsApp,
+                address: shippingDetails.address,
+                city: shippingDetails.city,
+                state: shippingDetails.state,
+                country: shippingDetails.country,
+                deliveryMethod: shippingDetails.deliveryMethod as any,
+                fittingNotes: shippingDetails.fittingNotes
+              },
+              items: [...items],
+              subtotalNGN,
+              subtotalUSD,
+              paymentMethod: 'paystack-card',
+              paymentStatus: 'paid',
+              paymentReference: ref
+            });
+
+            setPaymentReference(ref);
+            setOrderReference(newOrder.orderNumber);
+            clearCart();
+            setOrderPlaced(true);
+            setIsProcessingPayment(false);
+          },
+          onClose: () => {
+            setIsProcessingPayment(false);
+            setPaymentError('Payment window was closed. You can re-attempt anytime.');
+          }
+        });
+      } catch (err) {
+        console.error('Paystack launch error:', err);
+        setIsProcessingPayment(false);
+        setPaymentError('Unable to open payment modal. Please try again or select WhatsApp Concierge.');
+      }
+      return;
+    }
+
+    // Direct WhatsApp Concierge or Bank Transfer Wire
     const newOrder = createOrder({
       customer: {
         firstName: shippingDetails.firstName,
@@ -72,9 +137,11 @@ export const CheckoutPage: React.FC = () => {
       subtotalNGN,
       subtotalUSD,
       paymentMethod: shippingDetails.paymentMethod as any,
-      paymentStatus: shippingDetails.paymentMethod === 'paystack-card' ? 'deposit_paid' : 'pending'
+      paymentStatus: 'pending'
     });
+
     setOrderReference(newOrder.orderNumber);
+    clearCart();
     setOrderPlaced(true);
   };
 
@@ -86,7 +153,10 @@ export const CheckoutPage: React.FC = () => {
     msg += `*Email:* ${shippingDetails.email}\n`;
     msg += `*Delivery Destination:* ${shippingDetails.city}, ${shippingDetails.country}\n`;
     msg += `*Delivery Method:* ${shippingDetails.deliveryMethod === 'dhl-express' ? 'Complimentary DHL Express' : 'Lagos Atelier Fitting Pickup'}\n`;
-    msg += `*Payment Preference:* ${shippingDetails.paymentMethod.toUpperCase()}\n`;
+    msg += `*Payment Preference:* ${shippingDetails.paymentMethod === 'paystack-card' ? 'PAYSTACK CARD (PAID)' : shippingDetails.paymentMethod.toUpperCase()}\n`;
+    if (paymentReference) {
+      msg += `*Paystack Reference:* ${paymentReference}\n`;
+    }
     if (shippingDetails.fittingNotes) {
       msg += `*Fit Notes:* ${shippingDetails.fittingNotes}\n`;
     }
@@ -96,7 +166,9 @@ export const CheckoutPage: React.FC = () => {
     });
     msg += `\n*TOTAL:* ₦${subtotalNGN.toLocaleString('en-NG')} (~$${subtotalUSD.toLocaleString('en-US')})\n`;
     msg += `------------------------------------\n`;
-    msg += `Hello Nelson Atelier, I have initiated this order request on the website. Please confirm bench schedule and deposit details.`;
+    msg += paymentReference 
+      ? `Hello Nelson Atelier, I have completed my order and settled payment via Paystack. Please schedule bench allocation.`
+      : `Hello Nelson Atelier, I have initiated this order request on the website. Please confirm bench schedule and deposit details.`;
     return getWhatsAppUrl(msg);
   };
 
@@ -119,24 +191,30 @@ export const CheckoutPage: React.FC = () => {
             {/* Left: Client & Delivery Information */}
             <div className="lg:col-span-7 space-y-10">
               
-              <div className="space-y-2 border-b border-[#D8CBB8]/15 pb-6">
+              <div>
                 <span className="text-[10px] uppercase tracking-[0.3em] text-[#B89B5E] font-medium block">
-                  BESPOKE CHECKOUT
+                  CLIENT DOSSIER
                 </span>
-                <h1 className="font-serif text-3xl sm:text-4xl text-[#F5F1E8]">
-                  ORDER REQUEST & DELIVERY DOSSIER
+                <h1 className="font-serif text-3xl md:text-4xl text-[#F5F1E8] font-light mt-1">
+                  COMMISSION CHECKOUT
                 </h1>
-                <p className="text-xs text-[#D8CBB8]/70 font-sans">
-                  Provide your destination and fitting specifications. No immediate card charge is made; Nelson Atelier reviews and confirms each bespoke commission individually.
+                <p className="text-xs text-[#D8CBB8]/70 font-sans mt-1">
+                  Each pair is crafted to your individual size specifications and tracked at our Lagos atelier.
                 </p>
               </div>
 
-              {/* Client Contact */}
+              {/* Error Notice */}
+              {paymentError && (
+                <div className="p-3 bg-red-950/60 border border-red-500/40 text-red-200 text-xs rounded font-sans">
+                  {paymentError}
+                </div>
+              )}
+
+              {/* Personal Details */}
               <div className="space-y-4 font-sans text-xs">
-                <h2 className="text-xs uppercase tracking-widest text-[#B89B5E] font-semibold">
-                  01. CLIENT CONTACT
-                </h2>
-                
+                <h3 className="font-serif text-lg text-[#F5F1E8] border-b border-[#D8CBB8]/10 pb-2">
+                  1. Contact Information
+                </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="text-[11px] text-[#D8CBB8]/70 block mb-1">First Name *</label>
@@ -172,13 +250,13 @@ export const CheckoutPage: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <label className="text-[11px] text-[#D8CBB8]/70 block mb-1">Phone / WhatsApp Number *</label>
+                    <label className="text-[11px] text-[#D8CBB8]/70 block mb-1">WhatsApp / Phone Number *</label>
                     <input
-                      type="text"
+                      type="tel"
                       required
+                      placeholder="+234 ..."
                       value={shippingDetails.phoneWhatsApp}
                       onChange={(e) => setShippingDetails({ ...shippingDetails, phoneWhatsApp: e.target.value })}
-                      placeholder="+234 or Country Code"
                       className="w-full bg-[#141414] border border-[#D8CBB8]/20 p-2.5 text-[#F5F1E8] focus:outline-none focus:border-[#B89B5E]"
                     />
                   </div>
@@ -186,16 +264,17 @@ export const CheckoutPage: React.FC = () => {
               </div>
 
               {/* Delivery Destination */}
-              <div className="space-y-4 pt-6 border-t border-[#D8CBB8]/10 font-sans text-xs">
-                <h2 className="text-xs uppercase tracking-widest text-[#B89B5E] font-semibold">
-                  02. DELIVERY DESTINATION
-                </h2>
-
+              <div className="space-y-4 font-sans text-xs">
+                <h3 className="font-serif text-lg text-[#F5F1E8] border-b border-[#D8CBB8]/10 pb-2">
+                  2. Destination & Delivery Logistics
+                </h3>
+                
                 <div>
                   <label className="text-[11px] text-[#D8CBB8]/70 block mb-1">Street Address *</label>
                   <input
                     type="text"
                     required
+                    placeholder="Residential or office address"
                     value={shippingDetails.address}
                     onChange={(e) => setShippingDetails({ ...shippingDetails, address: e.target.value })}
                     className="w-full bg-[#141414] border border-[#D8CBB8]/20 p-2.5 text-[#F5F1E8] focus:outline-none focus:border-[#B89B5E]"
@@ -283,37 +362,72 @@ export const CheckoutPage: React.FC = () => {
                     </label>
                   </div>
                 </div>
-
               </div>
 
-              {/* Payment Architecture Options */}
-              <div className="space-y-4 pt-6 border-t border-[#D8CBB8]/10 font-sans text-xs">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-xs uppercase tracking-widest text-[#B89B5E] font-semibold">
-                    03. COMMISSION SETTLEMENT METHOD
-                  </h2>
-                  <span className="text-[10px] text-[#B89B5E] uppercase tracking-wider">
-                    Secure Atelier Process
+              {/* Payment Settlement Methods */}
+              <div className="space-y-4 font-sans text-xs">
+                <div className="flex items-center justify-between border-b border-[#D8CBB8]/10 pb-2">
+                  <h3 className="font-serif text-lg text-[#F5F1E8]">
+                    3. Payment Settlement Preference
+                  </h3>
+                  <span className="text-[10px] font-mono text-emerald-400 flex items-center gap-1">
+                    <Shield className="w-3 h-3" /> 256-Bit Encrypted
                   </span>
                 </div>
 
                 <div className="space-y-3">
+                  {/* Paystack Card & Online Gateway (Featured) */}
+                  <label 
+                    onClick={() => setShippingDetails({ ...shippingDetails, paymentMethod: 'paystack-card' })}
+                    className={`p-4 border cursor-pointer flex items-start gap-3.5 transition-all ${
+                      shippingDetails.paymentMethod === 'paystack-card'
+                        ? 'border-[#B89B5E] bg-[#161616] ring-1 ring-[#B89B5E]/50'
+                        : 'border-[#D8CBB8]/15 bg-[#101010]'
+                    }`}
+                  >
+                    <div className="w-8 h-8 rounded bg-[#B89B5E]/15 border border-[#B89B5E]/30 flex items-center justify-center shrink-0 mt-0.5 text-[#B89B5E]">
+                      <CreditCard className="w-4 h-4" />
+                    </div>
+                    <div className="space-y-1.5 flex-1">
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold text-xs text-[#F5F1E8] flex items-center gap-2">
+                          <span>Paystack Secure Online Settlement</span>
+                          <span className="text-[9px] uppercase px-1.5 py-0.5 bg-[#B89B5E]/20 text-[#B89B5E] font-mono border border-[#B89B5E]/30">
+                            Instant
+                          </span>
+                        </span>
+                        <span className="text-[10px] font-mono text-emerald-400">
+                          {isPaystackConfigured ? 'Live Gateway' : 'Preview Sandbox'}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-[#D8CBB8]/75 leading-relaxed">
+                        Pay with debit/credit card (Mastercard, Visa, Verve), Apple Pay, or direct Nigerian Bank Transfer. Immediate confirmation reserves your bench slot.
+                      </p>
+                      <div className="flex items-center gap-2 pt-1 text-[10px] text-[#D8CBB8]/50 font-mono">
+                        <Lock className="w-3 h-3 text-[#B89B5E]" />
+                        <span>Secured by Paystack • PCI-DSS Level 1 Certified</span>
+                      </div>
+                    </div>
+                  </label>
+
                   {/* WhatsApp Direct Option */}
                   <label 
                     onClick={() => setShippingDetails({ ...shippingDetails, paymentMethod: 'whatsapp-concierge' })}
-                    className={`p-4 border cursor-pointer flex items-start gap-3 transition-colors ${
+                    className={`p-4 border cursor-pointer flex items-start gap-3.5 transition-colors ${
                       shippingDetails.paymentMethod === 'whatsapp-concierge'
                         ? 'border-[#B89B5E] bg-[#161616]'
                         : 'border-[#D8CBB8]/15 bg-[#101010]'
                     }`}
                   >
-                    <MessageCircle className="w-5 h-5 text-[#B89B5E] shrink-0 mt-0.5" />
-                    <div className="space-y-1">
+                    <div className="w-8 h-8 rounded bg-emerald-950/40 border border-emerald-500/30 flex items-center justify-center shrink-0 mt-0.5 text-emerald-400">
+                      <MessageCircle className="w-4 h-4" />
+                    </div>
+                    <div className="space-y-1 flex-1">
                       <span className="font-semibold text-xs text-[#F5F1E8] block">
-                        Direct Atelier Concierge via WhatsApp (Recommended)
+                        Direct Atelier Concierge via WhatsApp
                       </span>
                       <p className="text-[11px] text-[#D8CBB8]/70 leading-relaxed">
-                        Nelson reviews your fitting requirements directly, sends leather hide photos, and arranges bank wire or card link after mutual consultation.
+                        Nelson reviews your fitting requirements directly, sends leather hide photos, and arranges bank wire after mutual consultation.
                       </p>
                     </div>
                   </label>
@@ -321,39 +435,21 @@ export const CheckoutPage: React.FC = () => {
                   {/* Bank Transfer Wire Option */}
                   <label 
                     onClick={() => setShippingDetails({ ...shippingDetails, paymentMethod: 'bank-transfer' })}
-                    className={`p-4 border cursor-pointer flex items-start gap-3 transition-colors ${
+                    className={`p-4 border cursor-pointer flex items-start gap-3.5 transition-colors ${
                       shippingDetails.paymentMethod === 'bank-transfer'
                         ? 'border-[#B89B5E] bg-[#161616]'
                         : 'border-[#D8CBB8]/15 bg-[#101010]'
                     }`}
                   >
-                    <Building2 className="w-5 h-5 text-[#B89B5E] shrink-0 mt-0.5" />
-                    <div className="space-y-1">
+                    <div className="w-8 h-8 rounded bg-[#181818] border border-[#D8CBB8]/20 flex items-center justify-center shrink-0 mt-0.5 text-[#D8CBB8]">
+                      <Building2 className="w-4 h-4" />
+                    </div>
+                    <div className="space-y-1 flex-1">
                       <span className="font-semibold text-xs text-[#F5F1E8] block">
                         Official Nigerian Corporate Bank Wire Transfer
                       </span>
                       <p className="text-[11px] text-[#D8CBB8]/70 leading-relaxed">
-                        Official invoice with atelier account coordinates issued upon commission approval.
-                      </p>
-                    </div>
-                  </label>
-
-                  {/* Card Gateway Architecture (Paystack/Flutterwave Integration Slot) */}
-                  <label 
-                    onClick={() => setShippingDetails({ ...shippingDetails, paymentMethod: 'paystack-card' })}
-                    className={`p-4 border cursor-pointer flex items-start gap-3 transition-colors ${
-                      shippingDetails.paymentMethod === 'paystack-card'
-                        ? 'border-[#B89B5E] bg-[#161616]'
-                        : 'border-[#D8CBB8]/15 bg-[#101010]'
-                    }`}
-                  >
-                    <CreditCard className="w-5 h-5 text-[#B89B5E] shrink-0 mt-0.5" />
-                    <div className="space-y-1">
-                      <span className="font-semibold text-xs text-[#F5F1E8] block">
-                        Credit / Debit Card Online Settlement
-                      </span>
-                      <p className="text-[11px] text-[#D8CBB8]/70 leading-relaxed">
-                        Integration architecture ready for Paystack / Flutterwave API credentials.
+                        Official invoice with GTBank / Zenith Bank atelier coordinates issued upon commission approval.
                       </p>
                     </div>
                   </label>
@@ -369,7 +465,7 @@ export const CheckoutPage: React.FC = () => {
                   rows={3}
                   value={shippingDetails.fittingNotes}
                   onChange={(e) => setShippingDetails({ ...shippingDetails, fittingNotes: e.target.value })}
-                  placeholder="e.g. Please engrave initials 'N.E.' inside waist..."
+                  placeholder="e.g. Please engrave initials 'N.E.' inside oak waist. High instep on right foot."
                   className="w-full bg-[#141414] border border-[#D8CBB8]/20 p-2.5 text-[#F5F1E8] focus:outline-none focus:border-[#B89B5E]"
                 />
               </div>
@@ -377,16 +473,29 @@ export const CheckoutPage: React.FC = () => {
               <div className="pt-4">
                 <button
                   type="submit"
-                  className="w-full py-4 bg-[#B89B5E] text-[#0A0A0A] font-semibold text-xs tracking-[0.25em] uppercase hover:bg-[#D4BD86] transition-all shadow-xl"
+                  disabled={isProcessingPayment}
+                  className="w-full py-4 bg-[#B89B5E] text-[#0A0A0A] font-semibold text-xs tracking-[0.25em] uppercase hover:bg-[#D4BD86] transition-all shadow-xl flex items-center justify-center gap-2 disabled:opacity-50"
                 >
-                  TRANSMIT BESPOKE ORDER REQUEST
+                  {isProcessingPayment ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin text-[#0A0A0A]" />
+                      <span>INITIALIZING SECURE PAYSTACK GATEWAY...</span>
+                    </>
+                  ) : shippingDetails.paymentMethod === 'paystack-card' ? (
+                    <>
+                      <Lock className="w-4 h-4 text-[#0A0A0A]" />
+                      <span>PAY ₦{subtotalNGN.toLocaleString('en-NG')} WITH PAYSTACK</span>
+                    </>
+                  ) : (
+                    <span>TRANSMIT COMMISSION DOSSIER</span>
+                  )}
                 </button>
               </div>
 
             </div>
 
-            {/* Right: Order Summary Dossier */}
-            <div className="lg:col-span-5 bg-[#121212] border border-[#D8CBB8]/15 p-8 space-y-6 lg:sticky lg:top-28">
+            {/* Right: Order Summary Sidebar */}
+            <div className="lg:col-span-5 bg-[#121212] border border-[#B89B5E]/30 p-6 md:p-8 space-y-6 sticky top-36">
               <h2 className="font-serif text-xl text-[#F5F1E8] border-b border-[#D8CBB8]/10 pb-4">
                 COMMISSION DOSSIER ({totalItems})
               </h2>
@@ -463,6 +572,26 @@ export const CheckoutPage: React.FC = () => {
               </p>
             </div>
 
+            {/* Paystack Settlement Badge */}
+            {paymentReference && (
+              <div className="p-4 bg-emerald-950/40 border border-emerald-500/40 rounded text-left space-y-1.5">
+                <div className="flex items-center gap-2 text-emerald-400 font-mono text-xs font-semibold">
+                  <ShieldCheck className="w-4 h-4" />
+                  <span>PAYMENT SETTLED VIA PAYSTACK GATEWAY</span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] font-mono text-[#D8CBB8] pt-1">
+                  <div>
+                    <span className="text-[#D8CBB8]/50 block">Transaction Reference:</span>
+                    <span className="text-[#F5F1E8] font-bold truncate block">{paymentReference}</span>
+                  </div>
+                  <div>
+                    <span className="text-[#D8CBB8]/50 block">Settlement Status:</span>
+                    <span className="text-emerald-300 font-bold block">PAID • BENCH SLOT RESERVED</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <p className="text-xs text-[#D8CBB8]/75 font-sans leading-relaxed">
               Your bespoke commission request has been received by Nelson Atelier. Click below to transmit the order dossier directly to Nelson on WhatsApp for immediate confirmation and bench slot reservation.
             </p>
@@ -487,7 +616,6 @@ export const CheckoutPage: React.FC = () => {
 
               <button
                 onClick={() => {
-                  clearCart();
                   navigate('/collection');
                 }}
                 className="w-full sm:w-auto px-6 py-4 bg-transparent border border-[#D8CBB8]/20 text-xs tracking-[0.2em] uppercase text-[#D8CBB8] hover:text-[#F5F1E8]"
@@ -502,3 +630,5 @@ export const CheckoutPage: React.FC = () => {
     </div>
   );
 };
+
+export default CheckoutPage;

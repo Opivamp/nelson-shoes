@@ -73,8 +73,8 @@ export const AppLeftSidebar: React.FC = () => {
         </div>
 
         {/* Theme Appearance Switcher */}
-        <div className="pt-2 border-t border-[#D8CBB8]/10 flex items-center justify-between">
-          <span className="text-[11px] font-mono text-[#D8CBB8]/70">Atelier Theme</span>
+        <div className="pt-2.5 border-t border-[#D8CBB8]/10 flex items-center justify-between gap-2">
+          <span className="text-xs font-sans text-[#D8CBB8]/80 font-medium">Appearance</span>
           <ThemeToggle />
         </div>
       </div>

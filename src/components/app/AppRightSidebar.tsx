@@ -22,7 +22,7 @@ export const AppRightSidebar: React.FC = () => {
   const recentOrders = orders.slice(0, 3);
 
   return (
-    <aside className="w-72 xl:w-80 shrink-0 hidden xl:block sticky top-[61px] h-[calc(100vh-61px)] overflow-y-auto no-scrollbar p-4 space-y-5 bg-[#0A0A0A] border-l border-[#D8CBB8]/10 text-xs font-sans">
+    <aside className="w-80 shrink-0 hidden 2xl:block sticky top-[61px] h-[calc(100vh-61px)] overflow-y-auto no-scrollbar p-4 space-y-5 bg-[#0A0A0A] border-l border-[#D8CBB8]/10 text-xs font-sans">
       
       {/* Master Cordwainer Live Status */}
       <div className="p-4 bg-[#121212] border border-[#B89B5E]/30 rounded-xl space-y-3 shadow-md">

@@ -73,94 +73,148 @@
 }
 
 /* ========================================================
-   LUXURY LIGHT THEME ADAPTATION (ATELIER ALABASTER & IVORY)
-   Transforms entire application from Obsidian to Warm Alabaster
+   WORLD-CLASS LUXURY LIGHT THEME (ATELIER PLATINUM & GALLERY WHITE)
+   Ultra-clean, architectural, high-contrast, modern luxury
    ======================================================== */
 html.light,
 html.light body {
-  background-color: #FBF9F5 !important;
-  color: #14120E !important;
+  background-color: #F8F9FA !important;
+  color: #0F172A !important;
 }
 
 html.light ::-webkit-scrollbar-track {
-  background: #F4EFE6 !important;
+  background: #F1F5F9 !important;
 }
 
 html.light ::-webkit-scrollbar-thumb {
-  background: #D8CCA8 !important;
+  background: #CBD5E1 !important;
+  border-radius: 9999px;
 }
 
 html.light ::-webkit-scrollbar-thumb:hover {
-  background: #B89B5E !important;
+  background: #94A3B8 !important;
 }
 
-/* Surface backgrounds */
-html.light .bg-\[\#0A0A0A\] { background-color: #FBF9F5 !important; }
-html.light .bg-\[\#070707\] { background-color: #F2ECE0 !important; }
-html.light .bg-\[\#0B0B0B\] { background-color: #F8F5EE !important; }
-html.light .bg-\[\#0D0D0D\] { background-color: #F5EFE5 !important; }
-html.light .bg-\[\#0E0E0E\] { background-color: #F4ECE1 !important; }
-html.light .bg-\[\#0E0E0E\]\/95 { background-color: rgba(244, 236, 225, 0.95) !important; }
-html.light .bg-\[\#0A0A0A\]\/95 { background-color: rgba(251, 249, 245, 0.95) !important; }
-html.light .bg-\[\#0A0A0A\]\/90 { background-color: rgba(251, 249, 245, 0.9) !important; }
-html.light .bg-\[\#0A0A0A\]\/80 { background-color: rgba(251, 249, 245, 0.8) !important; }
-html.light .bg-\[\#0A0A0A\]\/75 { background-color: rgba(251, 249, 245, 0.75) !important; }
-html.light .bg-\[\#0A0A0A\]\/70 { background-color: rgba(251, 249, 245, 0.7) !important; }
-html.light .bg-\[\#0A0A0A\]\/60 { background-color: rgba(251, 249, 245, 0.6) !important; }
+/* Surface backgrounds in Light Mode */
+html.light .bg-\[\#0A0A0A\] { background-color: #F8F9FA !important; }
+html.light .bg-\[\#070707\] { background-color: #F1F5F9 !important; }
+html.light .bg-\[\#0B0B0B\] { background-color: #F8F9FA !important; }
+html.light .bg-\[\#0D0D0D\] { background-color: #F1F5F9 !important; }
+html.light .bg-\[\#0E0E0E\] { background-color: #FFFFFF !important; }
+html.light .bg-\[\#0E0E0E\]\/95 { background-color: rgba(255, 255, 255, 0.94) !important; }
+html.light .bg-\[\#0A0A0A\]\/95 { background-color: rgba(248, 249, 250, 0.95) !important; }
+html.light .bg-\[\#0A0A0A\]\/90 { background-color: rgba(248, 249, 250, 0.9) !important; }
+html.light .bg-\[\#0A0A0A\]\/80 { background-color: rgba(248, 249, 250, 0.8) !important; }
+html.light .bg-\[\#0A0A0A\]\/75 { background-color: rgba(248, 249, 250, 0.75) !important; }
+html.light .bg-\[\#0A0A0A\]\/70 { background-color: rgba(248, 249, 250, 0.7) !important; }
+html.light .bg-\[\#0A0A0A\]\/60 { background-color: rgba(248, 249, 250, 0.6) !important; }
+
+/* Elevated Card Surfaces in Light Mode */
 html.light .bg-\[\#111111\] { background-color: #FFFFFF !important; }
 html.light .bg-\[\#121212\] { background-color: #FFFFFF !important; }
-html.light .bg-\[\#141414\] { background-color: #F7F3EB !important; }
+html.light .bg-\[\#141414\] { background-color: #F8FAFC !important; }
 html.light .bg-\[\#161616\] { background-color: #FFFFFF !important; }
-html.light .bg-\[\#181818\] { background-color: #F2EBE0 !important; }
-html.light .bg-\[\#1A1A1A\] { background-color: #EAE2D3 !important; }
-html.light .bg-\[\#202020\], html.light .bg-\[\#222222\] { background-color: #E2D9C8 !important; }
-html.light .bg-black { background-color: #EFE7DA !important; }
+html.light .bg-\[\#181818\] { background-color: #F1F5F9 !important; }
+html.light .bg-\[\#1A1A1A\] { background-color: #E2E8F0 !important; }
+html.light .bg-\[\#202020\], html.light .bg-\[\#222222\] { background-color: #E2E8F0 !important; }
+
+/* Frosted glass / backdrop tags */
+html.light .bg-black { background-color: #E2E8F0 !important; }
 html.light .bg-black\/80,
 html.light .bg-black\/75,
 html.light .bg-black\/70,
 html.light .bg-black\/60 {
-  background-color: rgba(255, 255, 255, 0.88) !important;
+  background-color: rgba(255, 255, 255, 0.9) !important;
 }
 html.light .bg-black\/40 {
-  background-color: rgba(240, 233, 222, 0.7) !important;
+  background-color: rgba(241, 245, 249, 0.85) !important;
 }
 
-/* Typography contrast */
-html.light .text-\[\#F5F1E8\] { color: #14120E !important; }
-html.light .text-\[\#F5F1E8\]\/90 { color: #231E18 !important; }
-html.light .text-\[\#D8CBB8\] { color: #4B4234 !important; }
-html.light .text-\[\#D8CBB8\]\/90 { color: #2B251D !important; }
-html.light .text-\[\#D8CBB8\]\/85 { color: #3A3227 !important; }
-html.light .text-\[\#D8CBB8\]\/80 { color: #4B4234 !important; }
-html.light .text-\[\#D8CBB8\]\/75 { color: #5B503F !important; }
-html.light .text-\[\#D8CBB8\]\/70 { color: #695D4A !important; }
-html.light .text-\[\#D8CBB8\]\/60 { color: #7B6E58 !important; }
-html.light .text-\[\#D8CBB8\]\/50 { color: #8F8169 !important; }
-html.light .text-\[\#D8CBB8\]\/40 { color: #A5967E !important; }
-html.light .text-\[\#D8CBB8\]\/30 { color: #BAAC93 !important; }
+/* Header & Sidebar in Light Mode */
+html.light header {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  border-bottom-color: rgba(0, 0, 0, 0.07) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+}
+html.light header .bg-\[\#141414\] { background-color: #FFFFFF !important; }
+html.light header .bg-\[\#181818\] { background-color: #F8FAFC !important; }
+html.light header .bg-\[\#181818\]:hover { background-color: #F1F5F9 !important; }
 
-/* Borders & Dividers */
-html.light .border-\[\#D8CBB8\]\/10 { border-color: rgba(184, 155, 94, 0.16) !important; }
-html.light .border-\[\#D8CBB8\]\/15 { border-color: rgba(184, 155, 94, 0.22) !important; }
-html.light .border-\[\#D8CBB8\]\/20 { border-color: rgba(184, 155, 94, 0.28) !important; }
-html.light .border-\[\#D8CBB8\]\/25 { border-color: rgba(184, 155, 94, 0.35) !important; }
-html.light .border-\[\#D8CBB8\]\/30 { border-color: rgba(184, 155, 94, 0.42) !important; }
-html.light .border-\[\#D8CBB8\]\/40 { border-color: rgba(184, 155, 94, 0.5) !important; }
+html.light aside {
+  background-color: #FFFFFF !important;
+  border-color: rgba(0, 0, 0, 0.07) !important;
+}
+
+/* Typography High-Contrast in Light Mode */
+html.light .text-\[\#F5F1E8\] { color: #0F172A !important; }
+html.light .text-\[\#F5F1E8\]\/90 { color: #1E293B !important; }
+html.light .text-\[\#D8CBB8\] { color: #475569 !important; }
+html.light .text-\[\#D8CBB8\]\/90 { color: #334155 !important; }
+html.light .text-\[\#D8CBB8\]\/85 { color: #334155 !important; }
+html.light .text-\[\#D8CBB8\]\/80 { color: #475569 !important; }
+html.light .text-\[\#D8CBB8\]\/75 { color: #64748B !important; }
+html.light .text-\[\#D8CBB8\]\/70 { color: #64748B !important; }
+html.light .text-\[\#D8CBB8\]\/60 { color: #64748B !important; }
+html.light .text-\[\#D8CBB8\]\/50 { color: #94A3B8 !important; }
+html.light .text-\[\#D8CBB8\]\/40 { color: #94A3B8 !important; }
+html.light .text-\[\#D8CBB8\]\/30 { color: #CBD5E1 !important; }
+
+/* Rich burnished gold accents */
+html.light .text-\[\#B89B5E\] { color: #A17A38 !important; }
+
+/* Borders & Hairlines in Light Mode */
+html.light .border-\[\#D8CBB8\]\/10 { border-color: rgba(0, 0, 0, 0.06) !important; }
+html.light .border-\[\#D8CBB8\]\/15 { border-color: rgba(0, 0, 0, 0.08) !important; }
+html.light .border-\[\#D8CBB8\]\/20 { border-color: rgba(0, 0, 0, 0.1) !important; }
+html.light .border-\[\#D8CBB8\]\/25 { border-color: rgba(0, 0, 0, 0.12) !important; }
+html.light .border-\[\#D8CBB8\]\/30 { border-color: rgba(0, 0, 0, 0.14) !important; }
+html.light .border-\[\#D8CBB8\]\/40 { border-color: rgba(0, 0, 0, 0.18) !important; }
+
+html.light .border-\[\#B89B5E\]\/20 { border-color: rgba(184, 155, 94, 0.25) !important; }
+html.light .border-\[\#B89B5E\]\/30 { border-color: rgba(184, 155, 94, 0.35) !important; }
+html.light .border-\[\#B89B5E\]\/40 { border-color: rgba(184, 155, 94, 0.45) !important; }
+
+/* Liquid Gold Primary Buttons in Light Mode */
+html.light .bg-\[\#B89B5E\] {
+  background: linear-gradient(135deg, #DFBA73 0%, #C5A059 50%, #A8833E 100%) !important;
+  color: #0A0A0A !important;
+  box-shadow: 0 4px 14px -2px rgba(197, 160, 89, 0.32) !important;
+}
+
+html.light .hover\:bg-\[\#C9AD70\]:hover {
+  background: linear-gradient(135deg, #E5C482 0%, #D4AF67 50%, #B8934E 100%) !important;
+}
+
+/* WhatsApp CTA Button in Light Mode */
+html.light .bg-emerald-950\/80,
+html.light .bg-emerald-950\/60 {
+  background-color: #059669 !important;
+  color: #FFFFFF !important;
+  border-color: #047857 !important;
+}
+html.light .bg-emerald-950\/80:hover,
+html.light .bg-emerald-950\/60:hover {
+  background-color: #047857 !important;
+}
+html.light .text-emerald-300 {
+  color: #FFFFFF !important;
+}
 
 /* Cards & Modals Elevation in Light Mode */
+html.light .shadow-md,
+html.light .shadow-lg,
 html.light .shadow-xl, 
-html.light .shadow-2xl,
-html.light .shadow-lg {
-  box-shadow: 0 10px 30px -5px rgba(100, 80, 50, 0.08), 0 4px 12px -2px rgba(100, 80, 50, 0.04) !important;
+html.light .shadow-2xl {
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.02) !important;
 }
 
-/* Gradients in Light Mode */
+/* Gradients in Light Mode (outside hero slider) */
 html.light .bg-gradient-to-t.from-\[\#0A0A0A\] {
-  --tw-gradient-from: rgba(251, 249, 245, 0.95) !important;
+  --tw-gradient-from: rgba(248, 249, 250, 0.95) !important;
 }
 html.light .bg-gradient-to-r.from-\[\#0A0A0A\]\/90,
 html.light .bg-gradient-to-r.from-\[\#0A0A0A\]\/85 {
-  --tw-gradient-from: rgba(251, 249, 245, 0.94) !important;
+  --tw-gradient-from: rgba(248, 249, 250, 0.92) !important;
 }
 
 /* Forms & Inputs in Light Mode */
@@ -168,13 +222,86 @@ html.light input,
 html.light select, 
 html.light textarea {
   background-color: #FFFFFF !important;
-  color: #14120E !important;
-  border-color: #D8CCA8 !important;
+  color: #0F172A !important;
+  border-color: #CBD5E1 !important;
 }
 
 html.light input::placeholder, 
 html.light textarea::placeholder {
-  color: #9A8D77 !important;
+  color: #94A3B8 !important;
+}
+
+/* ========================================================
+   CRUCIAL: PRESERVE DRAMATIC OBSIDIAN VITRINE FOR HERO SLIDER
+   Keeps the shoe photography studio lighting, dark cinematic
+   depth, crisp white Cormorant typography, and radiant gold.
+   ======================================================== */
+html.light .atelier-hero-slider {
+  background-color: #0E0E0E !important;
+  border-color: rgba(184, 155, 94, 0.35) !important;
+  box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.22), 0 4px 14px rgba(184, 155, 94, 0.12) !important;
+}
+
+html.light .atelier-hero-slider .bg-\[\#0E0E0E\],
+html.light .atelier-hero-slider .bg-\[\#0A0A0A\] {
+  background-color: #0E0E0E !important;
+}
+
+html.light .atelier-hero-slider .text-\[\#F5F1E8\] {
+  color: #FFFFFF !important;
+}
+
+html.light .atelier-hero-slider .text-\[\#D8CBB8\],
+html.light .atelier-hero-slider .text-\[\#D8CBB8\]\/90,
+html.light .atelier-hero-slider .text-\[\#D8CBB8\]\/80,
+html.light .atelier-hero-slider .text-\[\#D8CBB8\]\/70,
+html.light .atelier-hero-slider .text-\[\#D8CBB8\]\/60 {
+  color: #D8CBB8 !important;
+}
+
+html.light .atelier-hero-slider .text-\[\#B89B5E\] {
+  color: #C5A059 !important;
+}
+
+html.light .atelier-hero-slider .bg-gradient-to-t.from-\[\#0A0A0A\] {
+  --tw-gradient-from: #0A0A0A !important;
+}
+
+html.light .atelier-hero-slider .bg-gradient-to-r.from-\[\#0A0A0A\]\/90 {
+  --tw-gradient-from: rgba(10, 10, 10, 0.9) !important;
+}
+
+html.light .atelier-hero-slider .bg-black\/75,
+html.light .atelier-hero-slider .bg-black\/70,
+html.light .atelier-hero-slider .bg-black\/60 {
+  background-color: rgba(0, 0, 0, 0.75) !important;
+}
+
+html.light .atelier-hero-slider .bg-black\/40 {
+  background-color: rgba(0, 0, 0, 0.45) !important;
+}
+
+html.light .atelier-hero-slider .bg-black\/90 {
+  background-color: rgba(0, 0, 0, 0.9) !important;
+}
+
+html.light .atelier-hero-slider .border-\[\#D8CBB8\]\/20,
+html.light .atelier-hero-slider .border-\[\#D8CBB8\]\/25,
+html.light .atelier-hero-slider .border-\[\#D8CBB8\]\/30,
+html.light .atelier-hero-slider .border-\[\#D8CBB8\]\/15 {
+  border-color: rgba(216, 203, 184, 0.25) !important;
+}
+
+html.light .atelier-hero-slider .border-\[\#B89B5E\]\/30,
+html.light .atelier-hero-slider .border-\[\#B89B5E\]\/40 {
+  border-color: rgba(184, 155, 94, 0.4) !important;
+}
+
+/* Mobile Bottom Nav in Light Mode */
+html.light nav.fixed.bottom-0 {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  border-top-color: rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06) !important;
 }
 
 @layer utilities {

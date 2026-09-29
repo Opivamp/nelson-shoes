@@ -150,7 +150,7 @@ export const CreativeAppSlider: React.FC<CreativeAppSliderProps> = ({ onQuickVie
 
   return (
     <div 
-      className="relative rounded-2xl overflow-hidden border border-[#D8CBB8]/20 bg-[#0E0E0E] shadow-2xl group select-none w-full min-w-0"
+      className="atelier-hero-slider relative rounded-2xl overflow-hidden border border-[#D8CBB8]/20 bg-[#0E0E0E] shadow-2xl group select-none w-full min-w-0"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
       onTouchStart={() => setIsPaused(true)}

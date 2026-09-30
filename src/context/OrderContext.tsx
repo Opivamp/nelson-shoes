@@ -31,9 +31,12 @@ interface OrderContextType {
   resetOrders: () => void;
 }
 
-const ORDERS_STORAGE_KEY = 'nelson_shoes_orders_v2';
+import { useAdminAuth } from './AdminAuthContext';
 
-// Realistic initial seed orders so the admin dashboard is immediately active and impressive
+const CLIENT_ORDERS_KEY = 'nelson_client_orders_v1';
+const LEGACY_ORDERS_KEY = 'nelson_shoes_orders_v2';
+
+// Seed orders reserved strictly for admin demo/development
 export const SEED_ORDERS: CustomerOrder[] = [
   {
     id: "ord-882190",
@@ -145,44 +148,63 @@ export const SEED_ORDERS: CustomerOrder[] = [
 const OrderContext = createContext<OrderContextType | undefined>(undefined);
 
 export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [orders, setOrders] = useState<CustomerOrder[]>(() => {
+  const { isAdmin } = useAdminAuth();
+
+  // Purge legacy leaked order cache from localStorage if present
+  useEffect(() => {
     try {
-      const stored = localStorage.getItem(ORDERS_STORAGE_KEY);
+      localStorage.removeItem(LEGACY_ORDERS_KEY);
+    } catch {
+      // Ignore storage errors
+    }
+  }, []);
+
+  // Client-specific placed orders (Only orders placed in this browser session)
+  const [clientOrders, setClientOrders] = useState<CustomerOrder[]>(() => {
+    try {
+      const stored = localStorage.getItem(CLIENT_ORDERS_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed;
-        }
+        if (Array.isArray(parsed)) return parsed;
       }
     } catch (e) {
-      console.error('Failed to parse orders:', e);
+      console.error('Failed to parse client orders:', e);
     }
-    return SEED_ORDERS;
+    return [];
   });
 
-  const [isCloudSyncActive, setIsCloudSyncActive] = useState(isFirebaseConfigured);
+  // Administrative orders state (Only loaded when an administrator is authenticated)
+  const [adminOrders, setAdminOrders] = useState<CustomerOrder[]>(SEED_ORDERS);
+  const [isCloudSyncActive, setIsCloudSyncActive] = useState(false);
 
-  // Firestore Real-Time Orders Synchronization Listener
+  // Synchronize client orders to local storage for their own session
   useEffect(() => {
-    if (!isFirebaseConfigured) return;
+    try {
+      localStorage.setItem(CLIENT_ORDERS_KEY, JSON.stringify(clientOrders));
+    } catch (e) {
+      console.error('Failed to persist client orders:', e);
+    }
+  }, [clientOrders]);
+
+  // Firestore Real-Time Orders Synchronization: STRICTLY restricted to authenticated admins
+  useEffect(() => {
+    if (!isFirebaseConfigured || !isAdmin) {
+      setIsCloudSyncActive(false);
+      return;
+    }
 
     setIsCloudSyncActive(true);
     const unsubscribe = subscribeToOrders((cloudOrders) => {
       if (cloudOrders && cloudOrders.length > 0) {
-        setOrders(cloudOrders);
+        setAdminOrders(cloudOrders);
       }
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [isAdmin]);
 
-  useEffect(() => {
-    try {
-      localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(orders));
-    } catch (e) {
-      console.error('Failed to persist orders:', e);
-    }
-  }, [orders]);
+  // Context consumers receive adminOrders if authenticated as admin; otherwise only their own clientOrders
+  const activeOrders = isAdmin ? adminOrders : clientOrders;
 
   const createOrder = (orderData: {
     customer: CustomerOrder['customer'];
@@ -212,8 +234,15 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       updatedAt: now
     };
 
-    setOrders(prev => [newOrder, ...prev]);
+    // Add to client's personal session orders
+    setClientOrders(prev => [newOrder, ...prev]);
 
+    // If an admin is creating the order, also update adminOrders state
+    if (isAdmin) {
+      setAdminOrders(prev => [newOrder, ...prev]);
+    }
+
+    // Persist to Cloud Firestore via authorized create rule
     if (isFirebaseConfigured) {
       saveOrderToFirestore(newOrder).catch(err => {
         console.warn('Could not sync order to Firestore:', err);
@@ -230,7 +259,7 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     artisanNotes?: string
   ) => {
     const now = new Date().toISOString();
-    setOrders(prev =>
+    const updateFn = (prev: CustomerOrder[]) =>
       prev.map(ord => {
         if (ord.id === orderId || ord.orderNumber === orderId) {
           return {
@@ -242,8 +271,10 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           };
         }
         return ord;
-      })
-    );
+      });
+
+    setAdminOrders(updateFn);
+    setClientOrders(updateFn);
 
     if (isFirebaseConfigured) {
       updateOrderStatusInFirestore(orderId, newStatus, trackingNumber, artisanNotes).catch(err => {
@@ -254,13 +285,14 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const getOrderByIdOrNumber = (idOrNumber: string): CustomerOrder | undefined => {
     const clean = idOrNumber.trim().toUpperCase();
-    return orders.find(
+    return activeOrders.find(
       o => o.id.toUpperCase() === clean || o.orderNumber.toUpperCase() === clean
     );
   };
 
   const deleteOrder = (orderId: string) => {
-    setOrders(prev => prev.filter(o => o.id !== orderId && o.orderNumber !== orderId));
+    setAdminOrders(prev => prev.filter(o => o.id !== orderId && o.orderNumber !== orderId));
+    setClientOrders(prev => prev.filter(o => o.id !== orderId && o.orderNumber !== orderId));
 
     if (isFirebaseConfigured) {
       deleteOrderFromFirestore(orderId).catch(err => {
@@ -270,14 +302,18 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const resetOrders = () => {
-    setOrders(SEED_ORDERS);
-    localStorage.removeItem(ORDERS_STORAGE_KEY);
+    if (isAdmin) {
+      setAdminOrders(SEED_ORDERS);
+    } else {
+      setClientOrders([]);
+      localStorage.removeItem(CLIENT_ORDERS_KEY);
+    }
   };
 
   return (
     <OrderContext.Provider
       value={{
-        orders,
+        orders: activeOrders,
         isCloudSyncActive,
         createOrder,
         updateOrderStatus,

@@ -16,7 +16,10 @@ import {
   ArrowLeft,
   Lock,
   Mail,
-  ArrowRight
+  ArrowRight,
+  Eye,
+  EyeOff,
+  Loader2
 } from 'lucide-react';
 import { useAdminAuth } from '../../context/AdminAuthContext';
 import { useOrders } from '../../context/OrderContext';
@@ -25,7 +28,7 @@ import { BRAND_CONFIG } from '../../data/config';
 import { isFirebaseConfigured } from '../../services/firebase';
 
 export const AdminLayout: React.FC = () => {
-  const { isAdmin, adminUser, loginAdmin, logoutAdmin, quickDemoLogin } = useAdminAuth();
+  const { isAdmin, adminUser, isAuthLoading, loginAdmin, logoutAdmin, authError } = useAdminAuth();
   const { orders } = useOrders();
   const { products } = useProducts();
   const location = useLocation();
@@ -34,23 +37,32 @@ export const AdminLayout: React.FC = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPass, setLoginPass] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
 
   const pendingOrdersCount = orders.filter(
     o => o.status === 'Pending Confirmation' || o.status === 'At Workbench (Lasting)'
   ).length;
 
-  const handleLoginSubmit = (e: React.FormEvent) => {
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!loginEmail) {
-      setLoginError('Please enter your administrator email.');
+    setLoginError(null);
+    if (!loginEmail.trim()) {
+      setLoginError('Please enter your administrator email address.');
       return;
     }
-    const success = loginAdmin(loginEmail, loginPass);
-    if (!success) {
-      setLoginError('Invalid credentials. Use admin@nelsonshoes.com or click Quick Demo Access.');
-    } else {
-      setLoginError(null);
+    if (!loginPass) {
+      setLoginError('Please enter your master passkey.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    const res = await loginAdmin(loginEmail, loginPass);
+    setIsSubmitting(false);
+
+    if (!res.success) {
+      setLoginError(res.error || 'Authentication failed. Please verify credentials.');
     }
   };
 
@@ -94,8 +106,22 @@ export const AdminLayout: React.FC = () => {
     return false;
   };
 
+  // Auth Loading Screen while Firebase restores persistent session
+  if (isAuthLoading) {
+    return (
+      <div className="min-h-screen bg-[#0A0A0A] text-[#F5F1E8] flex flex-col justify-center items-center space-y-4">
+        <div className="w-10 h-10 border-2 border-[#B89B5E] border-t-transparent rounded-full animate-spin" />
+        <p className="text-xs uppercase tracking-[0.25em] text-[#B89B5E] font-mono">
+          Verifying Atelier Credentials...
+        </p>
+      </div>
+    );
+  }
+
   // If not authenticated as Admin, show luxury Login Screen
   if (!isAdmin) {
+    const displayedError = loginError || authError;
+
     return (
       <div className="min-h-screen bg-[#0A0A0A] text-[#F5F1E8] flex flex-col justify-center items-center px-4 py-16 relative overflow-hidden">
         {/* Subtle background ambient aura */}
@@ -128,13 +154,13 @@ export const AdminLayout: React.FC = () => {
             <div className="space-y-1 text-center">
               <h2 className="font-serif text-xl text-[#F5F1E8]">Atelier Administrator Login</h2>
               <p className="text-xs text-[#D8CBB8]/60 font-sans">
-                Sign in to manage footwear catalog, update live orders, and review customer commissions.
+                Sign in to manage the footwear catalog, update live orders, and review bespoke commissions.
               </p>
             </div>
 
-            {loginError && (
-              <div className="p-3 bg-red-950/60 border border-red-500/30 text-red-300 text-xs text-center rounded">
-                {loginError}
+            {displayedError && (
+              <div className="p-3 bg-red-950/60 border border-red-500/30 text-red-300 text-xs text-center rounded leading-relaxed">
+                {displayedError}
               </div>
             )}
 
@@ -150,6 +176,8 @@ export const AdminLayout: React.FC = () => {
                     value={loginEmail}
                     onChange={(e) => setLoginEmail(e.target.value)}
                     placeholder="admin@nelsonshoes.com"
+                    autoComplete="email"
+                    disabled={isSubmitting}
                     className="w-full bg-[#181818] border border-[#D8CBB8]/20 pl-9 pr-3 py-2.5 text-xs text-[#F5F1E8] focus:outline-none focus:border-[#B89B5E]"
                   />
                 </div>
@@ -162,37 +190,53 @@ export const AdminLayout: React.FC = () => {
                 <div className="relative">
                   <Lock className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#D8CBB8]/40" />
                   <input
-                    type="password"
+                    type={showPassword ? 'text' : 'password'}
                     value={loginPass}
                     onChange={(e) => setLoginPass(e.target.value)}
                     placeholder="••••••••••••"
-                    className="w-full bg-[#181818] border border-[#D8CBB8]/20 pl-9 pr-3 py-2.5 text-xs text-[#F5F1E8] focus:outline-none focus:border-[#B89B5E]"
+                    autoComplete="current-password"
+                    disabled={isSubmitting}
+                    className="w-full bg-[#181818] border border-[#D8CBB8]/20 pl-9 pr-10 py-2.5 text-xs text-[#F5F1E8] focus:outline-none focus:border-[#B89B5E]"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    tabIndex={-1}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#D8CBB8]/40 hover:text-[#B89B5E] transition-colors"
+                  >
+                    {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                  </button>
                 </div>
               </div>
 
               <button
                 type="submit"
-                className="w-full py-3 bg-[#B89B5E] text-[#0A0A0A] font-semibold text-xs tracking-widest uppercase hover:bg-[#D4BD86] transition-colors flex items-center justify-center gap-2"
+                disabled={isSubmitting}
+                className="w-full py-3 bg-[#B89B5E] text-[#0A0A0A] font-semibold text-xs tracking-widest uppercase hover:bg-[#D4BD86] disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
               >
-                <span>ENTER ATELIER CONSOLE</span>
-                <ArrowRight className="w-3.5 h-3.5" />
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>AUTHENTICATING...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>ENTER ATELIER CONSOLE</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </>
+                )}
               </button>
             </form>
 
-            {/* Quick 1-Click Demo Login */}
-            <div className="pt-4 border-t border-[#D8CBB8]/10 text-center space-y-2">
-              <span className="text-[10px] uppercase tracking-widest text-[#D8CBB8]/50 block">
-                Instant Evaluation Access
+            {/* Authenticated Security Perimeter Notice */}
+            <div className="pt-4 border-t border-[#D8CBB8]/10 text-center space-y-1.5">
+              <span className="text-[10px] uppercase tracking-widest text-[#D8CBB8]/50 flex items-center justify-center gap-1.5">
+                <ShieldCheck size={13} className="text-[#B89B5E]" />
+                <span>Authorized Atelier Access Only</span>
               </span>
-              <button
-                type="button"
-                onClick={quickDemoLogin}
-                className="w-full py-2.5 bg-[#181818] hover:bg-[#202020] border border-[#B89B5E]/40 text-[#B89B5E] text-xs font-mono uppercase tracking-wider transition-colors flex items-center justify-center gap-2"
-              >
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>1-Click Sign In as Master Nelson</span>
-              </button>
+              <p className="text-[10px] text-[#D8CBB8]/40 font-mono">
+                Protected by Cloud Security Rules & Firebase Authentication.
+              </p>
             </div>
           </div>
         </div>
@@ -248,11 +292,18 @@ export const AdminLayout: React.FC = () => {
           </Link>
 
           {/* Quick Active Operator Pill */}
-          <div className="mt-4 p-2.5 bg-[#141414] border border-[#D8CBB8]/10 rounded flex items-center gap-2 text-xs font-mono">
+          <div className="mt-4 p-2.5 bg-[#141414] border border-[#D8CBB8]/10 rounded flex items-center gap-2.5 text-xs font-mono">
             <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
-            <div className="truncate">
-              <span className="text-[#F5F1E8] block font-medium truncate">{adminUser?.name || 'Master Nelson'}</span>
-              <span className="text-[10px] text-[#B89B5E] uppercase block">Master Cordwainer</span>
+            <div className="truncate min-w-0">
+              <span className="text-[#F5F1E8] block font-medium truncate text-[11px]">{adminUser?.name || 'Nelson Atelier'}</span>
+              <span className="text-[10px] text-[#B89B5E] uppercase block font-semibold">
+                {adminUser?.role === 'master_artisan' ? 'Master Cordwainer' : 'Atelier Staff'}
+              </span>
+              {adminUser?.email && (
+                <span className="text-[9px] text-[#D8CBB8]/50 truncate block mt-0.5 font-sans">
+                  {adminUser.email}
+                </span>
+              )}
             </div>
           </div>
         </div>

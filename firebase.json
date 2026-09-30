@@ -5,6 +5,9 @@
   "storage": {
     "rules": "storage.rules"
   },
+  "functions": {
+    "source": "functions"
+  },
   "hosting": {
     "public": "dist",
     "ignore": [
@@ -13,6 +16,10 @@
       "**/node_modules/**"
     ],
     "rewrites": [
+      {
+        "source": "/api/verify-order",
+        "function": "verifyOrderTrackingHttp"
+      },
       {
         "source": "**",
         "destination": "/index.html"

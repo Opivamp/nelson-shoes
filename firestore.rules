@@ -1,24 +1,164 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Products Catalog: Publicly readable for storefront, writeable by authenticated admin
+
+    // ===============================================================
+    // Assumed Data Models & Schema Definitions
+    // ===============================================================
+    //
+    // Collection: products
+    // Document ID: prod-{slug}-{timestamp}
+    // Fields:
+    //   - id: string (required)
+    //   - name: string (required, 2-150 chars)
+    //   - slug: string (required)
+    //   - priceNGN: number (required, >= 0)
+    //   - priceUSD: number (required, >= 0)
+    //   - category: string (required)
+    //   - primaryImage: string (required)
+    //   - status: string (required)
+    //   - sizesAvailable: list of numbers
+    //
+    // Collection: orders
+    // Document ID: ord-{timestamp/random}
+    // Fields:
+    //   - id: string (required)
+    //   - orderNumber: string (required)
+    //   - customer: map containing firstName, lastName, email, phoneWhatsApp, address, city
+    //   - items: list (required, at least 1 item)
+    //   - subtotalNGN: number (required, >= 0)
+    //   - subtotalUSD: number (required, >= 0)
+    //   - paymentMethod: string (required)
+    //   - paymentStatus: string (required)
+    //   - status: string (required)
+    //   - createdAt: string (required)
+    //
+    // Collection: bespoke_inquiries
+    // Document ID: auto-generated or NS-BESPOKE-{random}
+    // Fields:
+    //   - fullName: string (required)
+    //   - email: string (required)
+    //   - phoneWhatsApp: string (required)
+    //   - shoeType or silhouette: string
+    //   - createdAt: string (required)
+    //   - status: string (required)
+    // ===============================================================
+
+    // Global Default Deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // -------------------------------------------------------------
+    // Helper Functions: Authentication & Role Verification
+    // -------------------------------------------------------------
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Identifies master artisans and atelier staff
+    // Evaluates custom token claims strictly (zero email-based authorization)
+    function isAdmin() {
+      return isAuthenticated() && (
+        request.auth.token.admin == true ||
+        request.auth.token.role == 'master_artisan' ||
+        request.auth.token.role == 'atelier_staff'
+      );
+    }
+
+    // -------------------------------------------------------------
+    // Helper Functions: Data Validation
+    // -------------------------------------------------------------
+    function isValidProduct(data) {
+      return data.keys().hasAll(['id', 'name', 'priceNGN', 'priceUSD', 'category', 'primaryImage']) &&
+             data.id is string && data.id.size() > 0 &&
+             data.name is string && data.name.size() >= 2 && data.name.size() <= 150 &&
+             data.priceNGN is number && data.priceNGN >= 0 &&
+             data.priceUSD is number && data.priceUSD >= 0 &&
+             data.category is string &&
+             data.primaryImage is string;
+    }
+
+    function isValidOrderCreate(data) {
+      return data.keys().hasAll(['id', 'orderNumber', 'customer', 'items', 'subtotalNGN', 'subtotalUSD', 'paymentMethod', 'paymentStatus', 'status']) &&
+             data.id is string && data.id.size() > 0 &&
+             data.orderNumber is string && data.orderNumber.size() > 0 &&
+             data.customer is map &&
+             data.customer.keys().hasAll(['firstName', 'lastName', 'email', 'phoneWhatsApp', 'address', 'city']) &&
+             data.customer.firstName is string && data.customer.firstName.size() > 0 &&
+             data.customer.lastName is string && data.customer.lastName.size() > 0 &&
+             data.customer.email is string && data.customer.email.matches('.*@.*[.].*') &&
+             data.customer.phoneWhatsApp is string && data.customer.phoneWhatsApp.size() >= 7 &&
+             data.items is list && data.items.size() > 0 &&
+             data.subtotalNGN is number && data.subtotalNGN >= 0 &&
+             data.subtotalUSD is number && data.subtotalUSD >= 0 &&
+             data.paymentStatus in ['pending', 'deposit_paid', 'paid'] &&
+             data.status in ['Pending Confirmation', 'At Workbench (Lasting)', 'Welt Inseam Stitching', 'Patina & Glacage', 'Quality Inspection', 'Dispatched', 'Delivered'];
+    }
+
+    function isValidBespokeInquiry(data) {
+      return (
+        data.fullName is string && data.fullName.size() >= 2 &&
+        data.email is string && data.email.matches('.*@.*[.].*') &&
+        (
+          (data.phoneWhatsApp is string && data.phoneWhatsApp.size() >= 7) ||
+          (data.phoneOrWhatsApp is string && data.phoneOrWhatsApp.size() >= 7)
+        )
+      );
+    }
+
+    // -------------------------------------------------------------
+    // Products Collection
+    // Public: Read-only access to published catalog
+    // Admin: Full CRUD with strict schema validation
+    // -------------------------------------------------------------
     match /products/{productId} {
       allow read: if true;
-      allow write: if request.auth != null || request.auth == null; // Allows initial setup and admin updates
+      allow create: if isAdmin() && isValidProduct(request.resource.data);
+      allow update: if isAdmin() && isValidProduct(request.resource.data);
+      allow delete: if isAdmin();
     }
-    
-    // Orders Workbench: Publicly createable upon checkout, read and writeable by tracking/admin
+
+    // -------------------------------------------------------------
+    // Orders Collection
+    // Public: Only authorized to CREATE new orders during checkout
+    // Public LIST/DOWNLOAD: STRICTLY FORBIDDEN (Eliminates PII leak)
+    // Admin: Full read/update/delete permissions
+    // -------------------------------------------------------------
     match /orders/{orderId} {
-      allow read: if true;
-      allow create: if true;
-      allow update, delete: if true;
+      // Listing all orders requires administrator credentials
+      allow list: if isAdmin();
+      
+      // Individual order retrieval is restricted to admins
+      // (Customer single-order tracking is prepared for Task 4 lookup)
+      allow get: if isAdmin();
+      
+      // Storefront checkout can create an order with schema verification
+      allow create: if isValidOrderCreate(request.resource.data);
+      
+      // Status progression, tracking updates, and cancellations restricted to atelier admins
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
     }
-    
-    // Bespoke Dossiers: Publicly submitted, managed by atelier
+
+    // -------------------------------------------------------------
+    // Bespoke Inquiries Collection
+    // Public: Can submit bespoke dossiers, CANNOT read or tamper
+    // Admin: Full review and status management
+    // -------------------------------------------------------------
     match /bespoke_inquiries/{inquiryId} {
-      allow create: if true;
-      allow read, update, delete: if true;
+      allow create: if isValidBespokeInquiry(request.resource.data);
+      allow read, update, delete: if isAdmin();
+    }
+
+    // -------------------------------------------------------------
+    // Configuration & Store Settings
+    // Public: Non-sensitive config read if needed
+    // Admin: Settings mutation
+    // -------------------------------------------------------------
+    match /config/{configId} {
+      allow read: if true;
+      allow write: if isAdmin();
     }
   }
 }

@@ -1,12 +1,39 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
-    match /products/{allPaths=**} {
-      // Anyone can view product photos on the luxury storefront
+
+    // Default deny for all paths
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions for authentication and file validation
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Evaluates custom token claims strictly (zero email-based authorization)
+    function isAdmin() {
+      return isAuthenticated() && (
+        request.auth.token.admin == true ||
+        request.auth.token.role == 'master_artisan' ||
+        request.auth.token.role == 'atelier_staff'
+      );
+    }
+
+    function isValidImage() {
+      return request.resource.size < 10 * 1024 * 1024 &&
+             request.resource.contentType.matches('image/(jpeg|png|webp|avif)');
+    }
+
+    // Product photography path
+    // Public can read product images on storefront
+    // Only authenticated administrators can upload or delete assets
+    match /products/{slug}/{fileName} {
       allow read: if true;
-      // Allow image uploads under 15MB
-      allow write: if request.resource.size < 15 * 1024 * 1024
-                   && request.resource.contentType.matches('image/.*');
+      allow write: if isAdmin() && isValidImage();
+      allow delete: if isAdmin();
     }
   }
 }
+

@@ -7,19 +7,48 @@ import {
   MessageCircle, 
   CheckCircle, 
   Clock, 
-  ArrowRight,
-  TrendingUp
+  ArrowRight, 
+  TrendingUp 
 } from 'lucide-react';
-import { useOrders } from '../../context/OrderContext';
 import { useProducts } from '../../context/ProductContext';
-import { formatCurrencyNGN, formatCurrencyUSD, getWhatsAppUrl } from '../../data/config';
+import { formatCurrencyNGN, getWhatsAppUrl } from '../../data/config';
+
+interface AtelierBenchItem {
+  id: string;
+  orderCode: string;
+  model: string;
+  stage: string;
+  location: string;
+}
+
+const ATELIER_PIPELINE: AtelierBenchItem[] = [
+  {
+    id: "bench-1",
+    orderCode: "NS-ORD-882190",
+    model: "The Sovereign Wholecut Oxford",
+    stage: "At Workbench (Lasting)",
+    location: "Lagos Atelier"
+  },
+  {
+    id: "bench-2",
+    orderCode: "NS-ORD-449120",
+    model: "The Èkó Tassel Loafer",
+    stage: "Patina & Glacage",
+    location: "Finishing Room"
+  },
+  {
+    id: "bench-3",
+    orderCode: "NS-ORD-612044",
+    model: "The Balmoral Monks",
+    stage: "Welt Inseam Stitching",
+    location: "Cordwainer Bench"
+  }
+];
 
 export const AppRightSidebar: React.FC = () => {
-  const { orders } = useOrders();
   const { products } = useProducts();
 
   const trendingProduct = products.find(p => p.isFeatured) || products[0];
-  const recentOrders = orders.slice(0, 3);
 
   return (
     <aside className="w-80 shrink-0 hidden 2xl:block sticky top-[61px] h-[calc(100vh-61px)] overflow-y-auto no-scrollbar p-4 space-y-5 bg-[#0A0A0A] border-l border-[#D8CBB8]/10 text-xs font-sans">
@@ -69,29 +98,31 @@ export const AppRightSidebar: React.FC = () => {
             <span>LIVE WORKBENCH PIPELINE</span>
           </span>
           <Link to="/track" className="text-[10px] font-mono text-[#B89B5E] hover:underline">
-            View All
+            Track Order
           </Link>
         </div>
 
         <div className="space-y-2">
-          {recentOrders.map((ord) => (
-            <Link
-              key={ord.id}
-              to={`/track?order=${ord.orderNumber}`}
+          {ATELIER_PIPELINE.map((item) => (
+            <div
+              key={item.id}
               className="block p-3 bg-[#121212] hover:bg-[#161616] border border-[#D8CBB8]/10 hover:border-[#B89B5E]/30 rounded-lg transition-all"
             >
               <div className="flex items-center justify-between text-[10px] font-mono">
-                <span className="text-[#B89B5E] font-bold">{ord.orderNumber}</span>
-                <span className="text-emerald-400">● Live</span>
+                <span className="text-[#B89B5E] font-bold">{item.orderCode}</span>
+                <span className="text-emerald-400">● Live Bench</span>
               </div>
-              <p className="text-[11px] text-[#F5F1E8] font-medium mt-1 truncate">
-                {ord.customer.firstName} {ord.customer.lastName} • {ord.items[0]?.product.name || 'Bespoke Pair'}
+              <p className="text-[11px] text-[#F5F1E8] font-medium mt-1 truncate font-serif">
+                {item.model}
               </p>
-              <div className="flex items-center gap-1 mt-1 text-[10px] text-[#D8CBB8]/60 font-mono">
-                <Truck size={10} className="text-[#B89B5E]" />
-                <span className="truncate">{ord.status}</span>
+              <div className="flex items-center justify-between mt-1 text-[10px] text-[#D8CBB8]/60 font-mono">
+                <div className="flex items-center gap-1">
+                  <Truck size={10} className="text-[#B89B5E]" />
+                  <span className="truncate">{item.stage}</span>
+                </div>
+                <span className="text-[#D8CBB8]/40">{item.location}</span>
               </div>
-            </Link>
+            </div>
           ))}
         </div>
       </div>

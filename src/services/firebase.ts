@@ -178,20 +178,40 @@ export const submitBespokeInquiryToFirestore = async (inquiry: BespokeInquiry): 
 // FIREBASE STORAGE: Footwear Photography Upload
 // ---------------------------------------------------------------------------
 
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/avif'];
+const MAX_IMAGE_SIZE_BYTES = 10 * 1024 * 1024; // 10 Megabytes
+
 export const uploadProductImageToStorage = async (file: File, slug: string): Promise<string> => {
   if (!storage || !isFirebaseConfigured) {
     throw new Error('Firebase Storage is not initialized or configured.');
   }
 
+  // Validate MIME type
+  if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+    throw new Error(`Invalid file type (${file.type || 'unknown'}). Only JPEG, PNG, WebP, and AVIF image formats are permitted.`);
+  }
+
+  // Validate File Size
+  if (file.size > MAX_IMAGE_SIZE_BYTES) {
+    throw new Error(`File size (${(file.size / (1024 * 1024)).toFixed(1)}MB) exceeds the 10MB limit.`);
+  }
+
+  // Sanitize slug to prevent path traversal
+  const sanitizedSlug = slug
+    .toLowerCase()
+    .replace(/[^a-z0-9-]/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/(^-|-$)/g, '') || 'nelson-creation';
+
   const cleanFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-  const storagePath = `products/${slug}/${Date.now()}_${cleanFileName}`;
+  const storagePath = `products/${sanitizedSlug}/${Date.now()}_${cleanFileName}`;
   const fileRef = ref(storage, storagePath);
 
   const snapshot = await uploadBytes(fileRef, file, {
     contentType: file.type,
     customMetadata: {
       uploadedBy: 'Nelson Master Atelier',
-      shoeSlug: slug
+      shoeSlug: sanitizedSlug
     }
   });
 
@@ -202,8 +222,10 @@ export const uploadProductImageToStorage = async (file: File, slug: string): Pro
 // FIREBASE AUTHENTICATION: Admin Cordwainer Auth
 // ---------------------------------------------------------------------------
 
-export const signInAdminWithFirebase = async (email: string, pass: string): Promise<User | null> => {
-  if (!auth || !isFirebaseConfigured) return null;
+export const signInAdminWithFirebase = async (email: string, pass: string): Promise<User> => {
+  if (!auth || !isFirebaseConfigured) {
+    throw new Error('Firebase cloud services are not initialized.');
+  }
   const userCredential = await signInWithEmailAndPassword(auth, email, pass);
   return userCredential.user;
 };
@@ -214,6 +236,10 @@ export const signOutAdminFromFirebase = async (): Promise<void> => {
 };
 
 export const onAdminAuthListener = (callback: (user: User | null) => void): (() => void) => {
-  if (!auth || !isFirebaseConfigured) return () => {};
+  if (!auth || !isFirebaseConfigured) {
+    callback(null);
+    return () => {};
+  }
   return onAuthStateChanged(auth, callback);
 };
+

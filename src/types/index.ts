@@ -152,3 +152,49 @@ export interface AdminUser {
   name: string;
   role: 'master_artisan' | 'atelier_staff';
 }
+
+// ---------------------------------------------------------------------------
+// Public Customer Order Tracking Types (Sanitized, Privacy-First)
+// ---------------------------------------------------------------------------
+
+export interface PublicOrderTrackingItem {
+  productName: string;
+  primaryImage?: string;
+  size?: number | string;
+  quantity: number;
+  isBespokeFitting?: boolean;
+}
+
+export interface OrderTimelineStep {
+  status: OrderStatus;
+  label: string;
+  description: string;
+  completed: boolean;
+  current: boolean;
+}
+
+export interface PublicOrderTracking {
+  orderReference: string;
+  status: OrderStatus;
+  statusLabel: string;
+  timeline: OrderTimelineStep[];
+  progressPercent: number;
+  estimatedDelivery?: string | null;
+  trackingNumber?: string | null;
+  carrier?: string | null;
+  destinationCity?: string | null;
+  items: PublicOrderTrackingItem[];
+  verifiedAt: string;
+}
+
+export interface OrderVerificationRequest {
+  orderReference: string;
+  email?: string;
+  phone?: string;
+}
+
+export interface OrderVerificationResult {
+  success: boolean;
+  data?: PublicOrderTracking;
+  error?: string;
+}

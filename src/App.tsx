@@ -101,8 +101,8 @@ export function App() {
   return (
     <BrowserRouter>
       <ProductProvider>
-        <OrderProvider>
-          <AdminAuthProvider>
+        <AdminAuthProvider>
+          <OrderProvider>
             <CartProvider>
               <WishlistProvider>
                 <SearchProvider>
@@ -112,8 +112,8 @@ export function App() {
                 </SearchProvider>
               </WishlistProvider>
             </CartProvider>
-          </AdminAuthProvider>
-        </OrderProvider>
+          </OrderProvider>
+        </AdminAuthProvider>
       </ProductProvider>
     </BrowserRouter>
   );

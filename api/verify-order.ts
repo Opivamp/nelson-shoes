@@ -128,6 +128,7 @@ export default async function handler(req: IncomingMessage & { body?: any; query
       hasRawKey: Boolean(rawKey),
       rawKeyLength: rawKey ? rawKey.length : 0,
       cleanKeyLength: rawKey ? cleanPrivateKey(rawKey).length : 0,
+      keyPrefix: rawKey ? rawKey.trim().substring(0, 35) : null,
       dbInitialized: Boolean(db),
       lastInitError
     }));

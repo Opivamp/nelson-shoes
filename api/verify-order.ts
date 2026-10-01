@@ -130,6 +130,16 @@ export default async function handler(req: IncomingMessage & { body?: any; query
     const rawKey = process.env.FIREBASE_PRIVATE_KEY;
     const db = getAdminFirestore();
 
+    let queryTestResult = 'not-tested';
+    if (db) {
+      try {
+        const snap = await db.collection('orders').limit(1).get();
+        queryTestResult = `success-found-${snap.size}`;
+      } catch (qErr: any) {
+        queryTestResult = `query-error: ${qErr?.message || qErr}`;
+      }
+    }
+
     res.statusCode = 200;
     res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify({
@@ -141,6 +151,7 @@ export default async function handler(req: IncomingMessage & { body?: any; query
       cleanKeyLength: rawKey ? cleanPrivateKey(rawKey).length : 0,
       keyPrefix: rawKey ? rawKey.trim().substring(0, 35) : null,
       dbInitialized: Boolean(db),
+      queryTestResult,
       lastInitError
     }));
     return;

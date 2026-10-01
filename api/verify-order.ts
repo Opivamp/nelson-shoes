@@ -72,8 +72,19 @@ function cleanPrivateKey(key: string): string {
   }
   // Replace literal escaped \n with real newline characters
   cleaned = cleaned.replace(/\\n/g, '\n');
-  // Normalize Windows-style carriage returns
   cleaned = cleaned.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+
+  // Reconstruct standard PEM format if newlines were flattened by the web input box
+  const beginMarker = '-----BEGIN PRIVATE KEY-----';
+  const endMarker = '-----END PRIVATE KEY-----';
+  if (cleaned.includes(beginMarker) && cleaned.includes(endMarker)) {
+    const startIdx = cleaned.indexOf(beginMarker) + beginMarker.length;
+    const endIdx = cleaned.indexOf(endMarker);
+    const base64Body = cleaned.substring(startIdx, endIdx).replace(/\s+/g, '');
+    const chunked = base64Body.match(/.{1,64}/g)?.join('\n') || base64Body;
+    return `${beginMarker}\n${chunked}\n${endMarker}\n`;
+  }
+
   return cleaned;
 }
 

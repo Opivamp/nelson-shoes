@@ -146,6 +146,7 @@ export default async function handler(req: IncomingMessage & { body?: any; query
       hasProjectId: Boolean(projectId),
       projectIdVal: projectId,
       hasClientEmail: Boolean(clientEmail),
+      clientEmailVal: clientEmail,
       hasRawKey: Boolean(rawKey),
       rawKeyLength: rawKey ? rawKey.length : 0,
       cleanKeyLength: rawKey ? cleanPrivateKey(rawKey).length : 0,

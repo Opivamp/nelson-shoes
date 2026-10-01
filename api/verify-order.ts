@@ -64,27 +64,46 @@ const ALLOWED_ORIGINS = [
   'http://localhost:4173'
 ];
 
-function getAdminFirestore() {
-  const projectId = process.env.FIREBASE_PROJECT_ID || process.env.VITE_FIREBASE_PROJECT_ID;
-  const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
-  const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
+function cleanPrivateKey(key: string): string {
+  let cleaned = key.trim();
+  // Strip surrounding quotes if present from copy-pasting JSON string
+  if ((cleaned.startsWith('"') && cleaned.endsWith('"')) || (cleaned.startsWith("'") && cleaned.endsWith("'"))) {
+    cleaned = cleaned.slice(1, -1).trim();
+  }
+  // Replace literal escaped \n with real newline characters
+  cleaned = cleaned.replace(/\\n/g, '\n');
+  // Normalize Windows-style carriage returns
+  cleaned = cleaned.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  return cleaned;
+}
 
-  if (!projectId || !clientEmail || !privateKey) {
+function getAdminFirestore() {
+  const projectId = (process.env.FIREBASE_PROJECT_ID || process.env.VITE_FIREBASE_PROJECT_ID || '').trim();
+  const clientEmail = (process.env.FIREBASE_CLIENT_EMAIL || '').trim();
+  const rawKey = process.env.FIREBASE_PRIVATE_KEY;
+
+  if (!projectId || !clientEmail || !rawKey) {
     return null;
   }
 
-  const existingApps = getApps();
-  const app = existingApps.length > 0 
-    ? existingApps[0] 
-    : initializeApp({
-        credential: cert({
-          projectId,
-          clientEmail,
-          privateKey
-        })
-      });
+  try {
+    const privateKey = cleanPrivateKey(rawKey);
+    const existingApps = getApps();
+    const app = existingApps.length > 0 
+      ? existingApps[0] 
+      : initializeApp({
+          credential: cert({
+            projectId,
+            clientEmail,
+            privateKey
+          })
+        });
 
-  return getFirestore(app);
+    return getFirestore(app);
+  } catch (err: any) {
+    console.error('[Vercel Serverless] Failed to initialize Firebase Admin SDK:', err?.message || err);
+    return null;
+  }
 }
 
 export default async function handler(req: IncomingMessage & { body?: any; query?: any }, res: ServerResponse) {

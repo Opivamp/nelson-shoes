@@ -88,15 +88,12 @@ function cleanPrivateKey(key: string): string {
   return cleaned;
 }
 
-let lastInitError: string | null = null;
-
 function getAdminFirestore() {
   const projectId = (process.env.FIREBASE_PROJECT_ID || process.env.VITE_FIREBASE_PROJECT_ID || '').trim();
   const clientEmail = (process.env.FIREBASE_CLIENT_EMAIL || '').trim();
   const rawKey = process.env.FIREBASE_PRIVATE_KEY;
 
   if (!projectId || !clientEmail || !rawKey) {
-    lastInitError = `Missing env vars: projectId=${Boolean(projectId)}, clientEmail=${Boolean(clientEmail)}, rawKey=${Boolean(rawKey)}`;
     return null;
   }
 
@@ -113,50 +110,14 @@ function getAdminFirestore() {
           })
         });
 
-    lastInitError = null;
     return getFirestore(app);
   } catch (err: any) {
-    lastInitError = err?.message || String(err);
-    console.error('[Vercel Serverless] Failed to initialize Firebase Admin SDK:', lastInitError);
+    console.error('[Vercel Serverless] Failed to initialize Firebase Admin SDK:', err?.message || err);
     return null;
   }
 }
 
 export default async function handler(req: IncomingMessage & { body?: any; query?: any }, res: ServerResponse) {
-  // Safe diagnostic hook for production verification (zero credentials leaked)
-  if (req.headers['x-verify-debug'] === 'nelson-secure-test-2026') {
-    const projectId = (process.env.FIREBASE_PROJECT_ID || process.env.VITE_FIREBASE_PROJECT_ID || '').trim();
-    const clientEmail = (process.env.FIREBASE_CLIENT_EMAIL || '').trim();
-    const rawKey = process.env.FIREBASE_PRIVATE_KEY;
-    const db = getAdminFirestore();
-
-    let queryTestResult = 'not-tested';
-    if (db) {
-      try {
-        const snap = await db.collection('orders').limit(1).get();
-        queryTestResult = `success-found-${snap.size}`;
-      } catch (qErr: any) {
-        queryTestResult = `query-error: ${qErr?.message || qErr}`;
-      }
-    }
-
-    res.statusCode = 200;
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify({
-      hasProjectId: Boolean(projectId),
-      projectIdVal: projectId,
-      hasClientEmail: Boolean(clientEmail),
-      clientEmailVal: clientEmail,
-      hasRawKey: Boolean(rawKey),
-      rawKeyLength: rawKey ? rawKey.length : 0,
-      cleanKeyLength: rawKey ? cleanPrivateKey(rawKey).length : 0,
-      keyPrefix: rawKey ? rawKey.trim().substring(0, 35) : null,
-      dbInitialized: Boolean(db),
-      queryTestResult,
-      lastInitError
-    }));
-    return;
-  }
   // CORS Origin handling
   const origin = (req.headers.origin as string) || '';
   if (ALLOWED_ORIGINS.includes(origin)) {
@@ -177,6 +138,15 @@ export default async function handler(req: IncomingMessage & { body?: any; query
     res.statusCode = 405;
     res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify({ error: 'Method Not Allowed' }));
+    return;
+  }
+
+  // Enforce payload size limit upfront via Content-Length or streaming
+  const contentLength = Number(req.headers['content-length'] || 0);
+  if (contentLength > MAX_BODY_BYTES) {
+    res.statusCode = 413;
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify({ error: 'Payload Too Large' }));
     return;
   }
 

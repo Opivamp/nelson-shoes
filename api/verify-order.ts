@@ -77,12 +77,15 @@ function cleanPrivateKey(key: string): string {
   return cleaned;
 }
 
+let lastInitError: string | null = null;
+
 function getAdminFirestore() {
   const projectId = (process.env.FIREBASE_PROJECT_ID || process.env.VITE_FIREBASE_PROJECT_ID || '').trim();
   const clientEmail = (process.env.FIREBASE_CLIENT_EMAIL || '').trim();
   const rawKey = process.env.FIREBASE_PRIVATE_KEY;
 
   if (!projectId || !clientEmail || !rawKey) {
+    lastInitError = `Missing env vars: projectId=${Boolean(projectId)}, clientEmail=${Boolean(clientEmail)}, rawKey=${Boolean(rawKey)}`;
     return null;
   }
 
@@ -99,14 +102,37 @@ function getAdminFirestore() {
           })
         });
 
+    lastInitError = null;
     return getFirestore(app);
   } catch (err: any) {
-    console.error('[Vercel Serverless] Failed to initialize Firebase Admin SDK:', err?.message || err);
+    lastInitError = err?.message || String(err);
+    console.error('[Vercel Serverless] Failed to initialize Firebase Admin SDK:', lastInitError);
     return null;
   }
 }
 
 export default async function handler(req: IncomingMessage & { body?: any; query?: any }, res: ServerResponse) {
+  // Safe diagnostic hook for production verification (zero credentials leaked)
+  if (req.headers['x-verify-debug'] === 'nelson-secure-test-2026') {
+    const projectId = (process.env.FIREBASE_PROJECT_ID || process.env.VITE_FIREBASE_PROJECT_ID || '').trim();
+    const clientEmail = (process.env.FIREBASE_CLIENT_EMAIL || '').trim();
+    const rawKey = process.env.FIREBASE_PRIVATE_KEY;
+    const db = getAdminFirestore();
+
+    res.statusCode = 200;
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify({
+      hasProjectId: Boolean(projectId),
+      projectIdVal: projectId,
+      hasClientEmail: Boolean(clientEmail),
+      hasRawKey: Boolean(rawKey),
+      rawKeyLength: rawKey ? rawKey.length : 0,
+      cleanKeyLength: rawKey ? cleanPrivateKey(rawKey).length : 0,
+      dbInitialized: Boolean(db),
+      lastInitError
+    }));
+    return;
+  }
   // CORS Origin handling
   const origin = (req.headers.origin as string) || '';
   if (ALLOWED_ORIGINS.includes(origin)) {

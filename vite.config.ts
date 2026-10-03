@@ -151,6 +151,87 @@ function orderTrackingApiPlugin(): Plugin {
           res.end(JSON.stringify({ success: true, data: sanitized }));
         });
       });
+
+      server.middlewares.use('/api/claim-order', (req: IncomingMessage, res: ServerResponse) => {
+        if (req.method !== 'POST') {
+          res.statusCode = 405;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ success: false, error: 'Method Not Allowed' }));
+          return;
+        }
+
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+          res.statusCode = 401;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ success: false, error: 'Authentication required. Please sign in.' }));
+          return;
+        }
+
+        const chunks: Buffer[] = [];
+        req.on('data', chunk => chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk));
+        req.on('end', () => {
+          let body: { orderReference?: string; email?: string; phone?: string } = {};
+          try {
+            body = JSON.parse(Buffer.concat(chunks).toString('utf-8'));
+          } catch {
+            body = {};
+          }
+
+          const cleanRef = (body.orderReference || '').replace(/^#/, '').trim().toUpperCase();
+          const cleanEmail = (body.email || '').trim().toLowerCase();
+          const cleanPhone = (body.phone || '').replace(/[\s\-\(\)\.]/g, '');
+
+          if (!cleanRef || (!cleanEmail && !cleanPhone)) {
+            res.statusCode = 400;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({ success: false, error: 'Missing required order reference or customer contact identifier.' }));
+            return;
+          }
+
+          const match = SEED_ORDERS_DATA.find(o => o.orderNumber.toUpperCase() === cleanRef);
+          if (!match) {
+            res.statusCode = 404;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({ success: false, error: 'No order matching this reference was found.' }));
+            return;
+          }
+
+          const storedEmail = match.customer.email.toLowerCase();
+          const storedPhone = match.customer.phoneWhatsApp.replace(/[\s\-\(\)\.]/g, '');
+
+          let verified = false;
+          if (cleanEmail && cleanEmail === storedEmail) {
+            verified = true;
+          } else if (cleanPhone) {
+            const digitsInput = cleanPhone.replace(/^\+/, '').replace(/^00/, '');
+            const digitsStored = storedPhone.replace(/^\+/, '').replace(/^00/, '');
+            if (digitsInput === digitsStored || (digitsInput.length >= 10 && digitsStored.length >= 10 && digitsInput.slice(-10) === digitsStored.slice(-10))) {
+              verified = true;
+            }
+          }
+
+          if (!verified) {
+            res.statusCode = 403;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({ success: false, error: 'The email address or phone number provided does not match the contact details on file for this order.' }));
+            return;
+          }
+
+          res.statusCode = 200;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({
+            success: true,
+            message: 'Order successfully linked to your customer account.',
+            order: {
+              id: `ord-${cleanRef.toLowerCase()}`,
+              orderNumber: match.orderNumber,
+              status: match.status,
+              createdAt: new Date().toISOString()
+            }
+          }));
+        });
+      });
     }
   };
 }

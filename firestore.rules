@@ -173,12 +173,15 @@ service cloud.firestore {
 
     // -------------------------------------------------------------
     // Bespoke Inquiries Collection
-    // Public: Can submit bespoke dossiers, CANNOT read or tamper
+    // Public: Can submit bespoke dossiers with schema validation and UID anti-forgery
+    // Authenticated Customers: Can read and list their own bespoke inquiries
     // Admin: Full review and status management
     // -------------------------------------------------------------
     match /bespoke_inquiries/{inquiryId} {
-      allow create: if isValidBespokeInquiry(request.resource.data);
-      allow read, update, delete: if isAdmin();
+      allow create: if isValidBespokeInquiry(request.resource.data) && isValidCustomerUidOnCreate(request.resource.data);
+      allow get: if isAdmin() || (isAuthenticated() && resource.data.customerUid == request.auth.uid);
+      allow list: if isAdmin() || (isAuthenticated() && resource.data.customerUid == request.auth.uid);
+      allow update, delete: if isAdmin();
     }
 
     // -------------------------------------------------------------

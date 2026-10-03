@@ -12,12 +12,16 @@ import {
 } from 'lucide-react';
 import { SectionHeading } from '../components/common/SectionHeading';
 import { getWhatsAppUrl } from '../data/config';
+import { useCustomerAuth } from '../context/CustomerAuthContext';
+import { submitBespokeInquiryToFirestore } from '../services/firebase';
 
 export const BespokePage: React.FC = () => {
+  const { customerUser, profile } = useCustomerAuth();
+
   const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
-    phoneWhatsApp: '',
+    fullName: profile?.fullName || customerUser?.displayName || '',
+    email: customerUser?.email || '',
+    phoneWhatsApp: profile?.phone || '',
     shoeType: 'Oxford Wholecut',
     colorPreference: 'Espresso & Burgundy Patina',
     materialPreference: 'French Full-Grain Box Calf',
@@ -29,6 +33,7 @@ export const BespokePage: React.FC = () => {
 
   const [uploadedFile, setUploadedFile] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [inquiryId, setInquiryId] = useState('');
 
   const timelineSteps = [
@@ -69,11 +74,36 @@ export const BespokePage: React.FC = () => {
     }
   ];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const id = `NS-BESPOKE-${Math.floor(1000 + Math.random() * 9000)}`;
-    setInquiryId(id);
-    setSubmitted(true);
+    setIsSubmitting(true);
+    const fallbackId = `NS-BESPOKE-${Math.floor(1000 + Math.random() * 9000)}`;
+
+    try {
+      const docId = await submitBespokeInquiryToFirestore({
+        fullName: formData.fullName,
+        email: formData.email,
+        phoneOrWhatsApp: formData.phoneWhatsApp,
+        country: 'Nigeria',
+        city: 'Lagos',
+        silhouette: formData.shoeType,
+        leatherType: formData.materialPreference,
+        colorPreference: formData.colorPreference,
+        footSize: formData.footSize,
+        occasion: formData.occasion,
+        budgetRange: formData.budgetRange,
+        specialRequests: formData.additionalDetails,
+        fittingPreference: 'atelier-measurement',
+        customerUid: customerUser?.uid
+      });
+      setInquiryId(docId || fallbackId);
+    } catch (err) {
+      console.warn('Could not persist bespoke inquiry to Firestore:', err);
+      setInquiryId(fallbackId);
+    } finally {
+      setIsSubmitting(false);
+      setSubmitted(true);
+    }
   };
 
   const getConfirmationWhatsAppMessage = () => {

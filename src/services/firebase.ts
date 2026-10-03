@@ -163,7 +163,7 @@ export const deleteOrderFromFirestore = async (orderId: string): Promise<void> =
 // FIRESTORE: Bespoke Inquiries Service
 // ---------------------------------------------------------------------------
 
-export const submitBespokeInquiryToFirestore = async (inquiry: BespokeInquiry): Promise<string | null> => {
+export const submitBespokeInquiryToFirestore = async (inquiry: BespokeInquiry & { customerUid?: string }): Promise<string | null> => {
   if (!db || !isFirebaseConfigured) return null;
   const inquiriesRef = collection(db, 'bespoke_inquiries');
   const res = await addDoc(inquiriesRef, {

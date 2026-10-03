@@ -38,7 +38,15 @@ const CustomerLoginPage = React.lazy(() => import('./pages/account/CustomerLogin
 const CustomerRegisterPage = React.lazy(() => import('./pages/account/CustomerRegisterPage').then(m => ({ default: m.CustomerRegisterPage })));
 const CustomerForgotPasswordPage = React.lazy(() => import('./pages/account/CustomerForgotPasswordPage').then(m => ({ default: m.CustomerForgotPasswordPage })));
 const CustomerResetPasswordPage = React.lazy(() => import('./pages/account/CustomerResetPasswordPage').then(m => ({ default: m.CustomerResetPasswordPage })));
-const AccountDashboardPage = React.lazy(() => import('./pages/account/AccountDashboardPage').then(m => ({ default: m.AccountDashboardPage })));
+const CustomerDashboardPage = React.lazy(() => import('./pages/account/CustomerDashboardPage').then(m => ({ default: m.CustomerDashboardPage })));
+const CustomerOrdersPage = React.lazy(() => import('./pages/account/CustomerOrdersPage').then(m => ({ default: m.CustomerOrdersPage })));
+const CustomerOrderDetailPage = React.lazy(() => import('./pages/account/CustomerOrderDetailPage').then(m => ({ default: m.CustomerOrderDetailPage })));
+const CustomerBespokePage = React.lazy(() => import('./pages/account/CustomerBespokePage').then(m => ({ default: m.CustomerBespokePage })));
+const CustomerBespokeDetailPage = React.lazy(() => import('./pages/account/CustomerBespokeDetailPage').then(m => ({ default: m.CustomerBespokeDetailPage })));
+const CustomerSavedItemsPage = React.lazy(() => import('./pages/account/CustomerSavedItemsPage').then(m => ({ default: m.CustomerSavedItemsPage })));
+const CustomerAddressesPage = React.lazy(() => import('./pages/account/CustomerAddressesPage').then(m => ({ default: m.CustomerAddressesPage })));
+const CustomerProfilePage = React.lazy(() => import('./pages/account/CustomerProfilePage').then(m => ({ default: m.CustomerProfilePage })));
+const CustomerSecurityPage = React.lazy(() => import('./pages/account/CustomerSecurityPage').then(m => ({ default: m.CustomerSecurityPage })));
 
 // Lazy-loaded Admin Atelier Pages
 const AdminLayout = React.lazy(() => import('./pages/admin/AdminLayout').then(m => ({ default: m.AdminLayout })));
@@ -106,8 +114,16 @@ function AppContent() {
             <Route path="/account/reset-password" element={<CustomerGuestRoute><CustomerResetPasswordPage /></CustomerGuestRoute>} />
 
             {/* Customer Portal Protected Routes */}
-            <Route path="/account" element={<CustomerProtectedRoute><AccountDashboardPage /></CustomerProtectedRoute>} />
-            <Route path="/account/*" element={<CustomerProtectedRoute><AccountDashboardPage /></CustomerProtectedRoute>} />
+            <Route path="/account" element={<CustomerProtectedRoute><CustomerDashboardPage /></CustomerProtectedRoute>} />
+            <Route path="/account/orders" element={<CustomerProtectedRoute><CustomerOrdersPage /></CustomerProtectedRoute>} />
+            <Route path="/account/orders/:orderId" element={<CustomerProtectedRoute><CustomerOrderDetailPage /></CustomerProtectedRoute>} />
+            <Route path="/account/bespoke" element={<CustomerProtectedRoute><CustomerBespokePage /></CustomerProtectedRoute>} />
+            <Route path="/account/bespoke/:inquiryId" element={<CustomerProtectedRoute><CustomerBespokeDetailPage /></CustomerProtectedRoute>} />
+            <Route path="/account/saved" element={<CustomerProtectedRoute><CustomerSavedItemsPage /></CustomerProtectedRoute>} />
+            <Route path="/account/addresses" element={<CustomerProtectedRoute><CustomerAddressesPage /></CustomerProtectedRoute>} />
+            <Route path="/account/profile" element={<CustomerProtectedRoute><CustomerProfilePage /></CustomerProtectedRoute>} />
+            <Route path="/account/security" element={<CustomerProtectedRoute><CustomerSecurityPage /></CustomerProtectedRoute>} />
+            <Route path="/account/*" element={<CustomerProtectedRoute><CustomerDashboardPage /></CustomerProtectedRoute>} />
 
             <Route path="*" element={<NotFoundPage />} />
           </Routes>

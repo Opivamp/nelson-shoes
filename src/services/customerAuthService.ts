@@ -12,6 +12,10 @@ import {
   doc, 
   getDoc, 
   setDoc, 
+  addDoc,
+  deleteDoc,
+  getDocs,
+  updateDoc,
   onSnapshot,
   collection,
   query,
@@ -23,7 +27,11 @@ import type {
   CustomerProfile, 
   CustomerSignUpData, 
   CustomerProfileUpdateData,
-  CustomerOrder 
+  CustomerOrder,
+  CustomerAddress,
+  CustomerBespokeInquiry,
+  ClaimOrderRequest,
+  ClaimOrderResponse
 } from '../types';
 
 // Helper to translate Firebase Authentication error codes into luxury, customer-friendly notifications
@@ -300,4 +308,365 @@ export const subscribeToCustomerOrders = (
       callback([]);
     }
   );
+};
+
+/**
+ * Fetches a single customer-owned order by document ID or order reference.
+ * Strictly verifies that the order belongs to the requesting customer (customerUid == uid).
+ */
+export const fetchCustomerOrderById = async (
+  uid: string, 
+  orderIdOrRef: string
+): Promise<CustomerOrder | null> => {
+  if (!db || !isFirebaseConfigured || !uid) return null;
+
+  try {
+    // 1. First try direct document ID lookup
+    const docRef = doc(db, 'orders', orderIdOrRef);
+    const snap = await getDoc(docRef);
+    if (snap.exists()) {
+      const data = snap.data() as CustomerOrder;
+      if (data.customerUid === uid) {
+        return { ...data, id: snap.id };
+      }
+    }
+
+    // 2. Fallback to orderNumber query if orderIdOrRef was a reference number (e.g. NS-ORD-123456)
+    const ordersRef = collection(db, 'orders');
+    const q = query(
+      ordersRef, 
+      where('customerUid', '==', uid), 
+      where('orderNumber', '==', orderIdOrRef.trim().toUpperCase())
+    );
+    const querySnap = await getDocs(q);
+    if (!querySnap.empty) {
+      const matched = querySnap.docs[0];
+      return { id: matched.id, ...(matched.data() as Omit<CustomerOrder, 'id'>) };
+    }
+
+    return null;
+  } catch (err) {
+    console.error('Error fetching customer order:', err);
+    return null;
+  }
+};
+
+// ---------------------------------------------------------------------------
+// CUSTOMER ADDRESS BOOK SERVICES (Subcollection: customers/{uid}/addresses)
+// ---------------------------------------------------------------------------
+
+/**
+ * Fetches all delivery addresses for a customer.
+ */
+export const fetchCustomerAddresses = async (uid: string): Promise<CustomerAddress[]> => {
+  if (!db || !isFirebaseConfigured || !uid) return [];
+  try {
+    const addressesRef = collection(db, 'customers', uid, 'addresses');
+    const snap = await getDocs(addressesRef);
+    const list: CustomerAddress[] = [];
+    snap.forEach((d) => {
+      list.push({ id: d.id, ...(d.data() as Omit<CustomerAddress, 'id'>) });
+    });
+    return list.sort((a, b) => (b.isDefault ? 1 : 0) - (a.isDefault ? 1 : 0));
+  } catch (err) {
+    console.error('Error fetching customer addresses:', err);
+    return [];
+  }
+};
+
+/**
+ * Adds a new delivery address for the customer.
+ * If set as default, automatically unsets any previous default address.
+ */
+export const addCustomerAddress = async (
+  uid: string, 
+  addressData: Omit<CustomerAddress, 'id' | 'createdAt'>
+): Promise<string> => {
+  if (!db || !isFirebaseConfigured || !uid) {
+    throw new Error('Database not initialized or unauthenticated.');
+  }
+
+  const addressesRef = collection(db, 'customers', uid, 'addresses');
+  const now = new Date().toISOString();
+
+  // If this address is default, unset previous defaults
+  if (addressData.isDefault) {
+    const existing = await fetchCustomerAddresses(uid);
+    for (const item of existing) {
+      if (item.isDefault) {
+        await updateDoc(doc(db, 'customers', uid, 'addresses', item.id), { isDefault: false });
+      }
+    }
+  }
+
+  const newDocRef = await addDoc(addressesRef, {
+    ...addressData,
+    createdAt: now
+  });
+
+  // If marked as default, sync defaultAddressId in profile document
+  if (addressData.isDefault) {
+    await updateCustomerProfileDoc(uid, { defaultAddressId: newDocRef.id } as any);
+  }
+
+  return newDocRef.id;
+};
+
+/**
+ * Updates an existing delivery address.
+ */
+export const updateCustomerAddress = async (
+  uid: string, 
+  addressId: string, 
+  updates: Partial<CustomerAddress>
+): Promise<void> => {
+  if (!db || !isFirebaseConfigured || !uid) return;
+
+  // If setting this address as default, unset others first
+  if (updates.isDefault) {
+    const existing = await fetchCustomerAddresses(uid);
+    for (const item of existing) {
+      if (item.id !== addressId && item.isDefault) {
+        await updateDoc(doc(db, 'customers', uid, 'addresses', item.id), { isDefault: false });
+      }
+    }
+    await updateCustomerProfileDoc(uid, { defaultAddressId: addressId } as any);
+  }
+
+  const addrRef = doc(db, 'customers', uid, 'addresses', addressId);
+  await updateDoc(addrRef, updates);
+};
+
+/**
+ * Deletes a delivery address.
+ */
+export const deleteCustomerAddress = async (uid: string, addressId: string): Promise<void> => {
+  if (!db || !isFirebaseConfigured || !uid) return;
+  const addrRef = doc(db, 'customers', uid, 'addresses', addressId);
+  await deleteDoc(addrRef);
+};
+
+/**
+ * Sets a specific address as the default delivery address.
+ */
+export const setDefaultCustomerAddress = async (uid: string, addressId: string): Promise<void> => {
+  await updateCustomerAddress(uid, addressId, { isDefault: true });
+};
+
+/**
+ * Real-time listener for customer delivery addresses.
+ */
+export const subscribeToCustomerAddresses = (
+  uid: string,
+  callback: (addresses: CustomerAddress[]) => void
+): (() => void) => {
+  if (!db || !isFirebaseConfigured || !uid) {
+    callback([]);
+    return () => {};
+  }
+
+  const addressesRef = collection(db, 'customers', uid, 'addresses');
+  return onSnapshot(
+    addressesRef,
+    (snapshot) => {
+      const items: CustomerAddress[] = [];
+      snapshot.forEach((d) => {
+        items.push({ id: d.id, ...(d.data() as Omit<CustomerAddress, 'id'>) });
+      });
+      // Sort default first, then newest
+      items.sort((a, b) => {
+        if (a.isDefault) return -1;
+        if (b.isDefault) return 1;
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      });
+      callback(items);
+    },
+    (err) => {
+      console.warn('Error listening to addresses:', err);
+      callback([]);
+    }
+  );
+};
+
+// ---------------------------------------------------------------------------
+// SAVED ITEMS SERVICES (Subcollection: customers/{uid}/savedItems)
+// ---------------------------------------------------------------------------
+
+/**
+ * Fetches all saved product IDs for the authenticated customer.
+ */
+export const fetchCustomerSavedItemIds = async (uid: string): Promise<string[]> => {
+  if (!db || !isFirebaseConfigured || !uid) return [];
+  try {
+    const savedRef = collection(db, 'customers', uid, 'savedItems');
+    const snap = await getDocs(savedRef);
+    const ids: string[] = [];
+    snap.forEach((d) => ids.push(d.id));
+    return ids;
+  } catch (err) {
+    console.error('Error fetching saved items:', err);
+    return [];
+  }
+};
+
+/**
+ * Adds a product to customer's saved items.
+ */
+export const saveCustomerItem = async (uid: string, productId: string): Promise<void> => {
+  if (!db || !isFirebaseConfigured || !uid) return;
+  const itemRef = doc(db, 'customers', uid, 'savedItems', productId);
+  await setDoc(itemRef, {
+    productId,
+    addedAt: new Date().toISOString()
+  });
+};
+
+/**
+ * Removes a product from customer's saved items.
+ */
+export const removeCustomerItem = async (uid: string, productId: string): Promise<void> => {
+  if (!db || !isFirebaseConfigured || !uid) return;
+  const itemRef = doc(db, 'customers', uid, 'savedItems', productId);
+  await deleteDoc(itemRef);
+};
+
+/**
+ * Real-time listener for customer saved items.
+ */
+export const subscribeToCustomerSavedItems = (
+  uid: string,
+  callback: (productIds: string[]) => void
+): (() => void) => {
+  if (!db || !isFirebaseConfigured || !uid) {
+    callback([]);
+    return () => {};
+  }
+
+  const savedRef = collection(db, 'customers', uid, 'savedItems');
+  return onSnapshot(
+    savedRef,
+    (snapshot) => {
+      const ids: string[] = [];
+      snapshot.forEach((d) => ids.push(d.id));
+      callback(ids);
+    },
+    (err) => {
+      console.warn('Error listening to saved items:', err);
+      callback([]);
+    }
+  );
+};
+
+// ---------------------------------------------------------------------------
+// BESPOKE COMMISSIONS SERVICES (Collection: bespoke_inquiries)
+// ---------------------------------------------------------------------------
+
+/**
+ * Real-time listener for customer-owned bespoke inquiries.
+ * Strictly queries `bespoke_inquiries` where `customerUid == uid`.
+ */
+export const subscribeToCustomerBespokeInquiries = (
+  uid: string,
+  callback: (inquiries: CustomerBespokeInquiry[]) => void
+): (() => void) => {
+  if (!db || !isFirebaseConfigured || !uid) {
+    callback([]);
+    return () => {};
+  }
+
+  const inquiriesRef = collection(db, 'bespoke_inquiries');
+  const q = query(inquiriesRef, where('customerUid', '==', uid));
+
+  return onSnapshot(
+    q,
+    (snapshot) => {
+      const items: CustomerBespokeInquiry[] = [];
+      snapshot.forEach((d) => {
+        items.push({ id: d.id, ...(d.data() as Omit<CustomerBespokeInquiry, 'id'>) });
+      });
+      items.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      callback(items);
+    },
+    (err) => {
+      console.warn('Error listening to bespoke inquiries:', err);
+      callback([]);
+    }
+  );
+};
+
+/**
+ * Fetches a single bespoke inquiry by ID for the customer.
+ */
+export const fetchCustomerBespokeInquiryById = async (
+  uid: string,
+  inquiryId: string
+): Promise<CustomerBespokeInquiry | null> => {
+  if (!db || !isFirebaseConfigured || !uid) return null;
+  try {
+    const docRef = doc(db, 'bespoke_inquiries', inquiryId);
+    const snap = await getDoc(docRef);
+    if (snap.exists()) {
+      const data = snap.data() as CustomerBespokeInquiry;
+      if (data.customerUid === uid) {
+        return { ...data, id: snap.id };
+      }
+    }
+    return null;
+  } catch (err) {
+    console.error('Error fetching bespoke inquiry:', err);
+    return null;
+  }
+};
+
+// ---------------------------------------------------------------------------
+// LEGACY GUEST ORDER CLAIMING SERVICE (Serverless Endpoint: /api/claim-order)
+// ---------------------------------------------------------------------------
+
+/**
+ * Securely links an eligible historical guest order to the authenticated customer's account.
+ * Dispatches request with Firebase ID token for server-side Admin SDK verification.
+ */
+export const claimHistoricalOrder = async (
+  req: ClaimOrderRequest
+): Promise<ClaimOrderResponse> => {
+  if (!auth?.currentUser) {
+    return {
+      success: false,
+      error: 'You must be signed in to your customer account to claim an order.'
+    };
+  }
+
+  try {
+    const idToken = await auth.currentUser.getIdToken();
+    const response = await fetch('/api/claim-order', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${idToken}`
+      },
+      body: JSON.stringify(req)
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.success) {
+      return {
+        success: false,
+        error: data.error || 'We could not link this order. Please verify your order reference and contact details.'
+      };
+    }
+
+    return {
+      success: true,
+      message: data.message || 'Order successfully linked to your customer account.',
+      alreadyClaimed: data.alreadyClaimed,
+      order: data.order
+    };
+  } catch (err: any) {
+    console.error('Error in claimHistoricalOrder:', err);
+    return {
+      success: false,
+      error: 'Unable to reach the verification server. Please check your internet connection and try again.'
+    };
+  }
 };

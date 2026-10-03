@@ -289,7 +289,7 @@ export const Navbar: React.FC = () => {
                     <User className="w-3.5 h-3.5 text-[#B89B5E]" />
                     <div>
                       <div className="font-serif flex items-center gap-2">
-                        <span>{customerUser ? 'Patron Portal' : 'Patron Sign In'}</span>
+                        <span>{customerUser ? 'Customer Portal' : 'Customer Sign In'}</span>
                         <span className="text-[9px] font-mono px-1 bg-[#B89B5E]/20 text-[#B89B5E]">ACCOUNT</span>
                       </div>
                       <div className="text-[10px] text-[#D8CBB8]/60 font-sans">View orders & profile</div>
@@ -344,7 +344,7 @@ export const Navbar: React.FC = () => {
 
             {/* Wishlist Link */}
             <Link
-              to="/collection?saved=true"
+              to={customerUser ? "/account/saved" : "/collection?saved=true"}
               className="relative p-2 text-[#D8CBB8]/80 hover:text-[#B89B5E] transition-colors duration-200 hidden sm:block"
               aria-label="Saved Pieces"
               title="Wishlist"
@@ -357,12 +357,12 @@ export const Navbar: React.FC = () => {
               )}
             </Link>
 
-            {/* Patron Account Link */}
+            {/* Customer Account Link */}
             <Link
               to={customerUser ? "/account" : "/account/login"}
               className="relative p-2 text-[#D8CBB8]/80 hover:text-[#B89B5E] transition-colors duration-200"
-              aria-label="Patron Account"
-              title={customerUser ? "Patron Dashboard" : "Sign In / Register"}
+              aria-label="Customer Account"
+              title={customerUser ? "Customer Portal" : "Sign In / Register"}
             >
               <User className="w-4 h-4 stroke-[1.5]" />
             </Link>
@@ -476,7 +476,7 @@ export const Navbar: React.FC = () => {
                 to={customerUser ? "/account" : "/account/login"}
                 className="font-serif text-xl text-[#B89B5E] hover:text-[#F5F1E8] transition-colors flex items-center justify-between"
               >
-                <span>{customerUser ? 'PATRON PORTAL' : 'PATRON SIGN IN'}</span>
+                <span>{customerUser ? 'CUSTOMER PORTAL' : 'CUSTOMER SIGN IN'}</span>
                 <span className="text-xs font-mono bg-[#B89B5E]/20 text-[#B89B5E] px-1.5 py-0.5">
                   {customerUser ? 'ACTIVE' : 'JOIN'}
                 </span>

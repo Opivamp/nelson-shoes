@@ -3,7 +3,10 @@ import type { User } from 'firebase/auth';
 import type { 
   CustomerProfile, 
   CustomerSignUpData, 
-  CustomerProfileUpdateData 
+  CustomerProfileUpdateData,
+  CustomerAddress,
+  ClaimOrderRequest,
+  ClaimOrderResponse
 } from '../types';
 import { 
   isFirebaseConfigured, 
@@ -18,6 +21,15 @@ import {
   fetchCustomerProfile, 
   updateCustomerProfileDoc, 
   subscribeToCustomerProfile,
+  subscribeToCustomerAddresses,
+  addCustomerAddress,
+  updateCustomerAddress as serviceUpdateAddress,
+  deleteCustomerAddress as serviceDeleteAddress,
+  setDefaultCustomerAddress as serviceSetDefaultAddress,
+  subscribeToCustomerSavedItems,
+  saveCustomerItem,
+  removeCustomerItem,
+  claimHistoricalOrder,
   formatCustomerAuthError 
 } from '../services/customerAuthService';
 
@@ -27,6 +39,8 @@ interface CustomerAuthContextType {
   isAuthenticated: boolean;
   isAuthLoading: boolean;
   authError: string | null;
+  addresses: CustomerAddress[];
+  savedItemIds: string[];
   signUp: (data: CustomerSignUpData) => Promise<{ success: boolean; error?: string }>;
   signIn: (email: string, pass: string) => Promise<{ success: boolean; error?: string }>;
   signOut: () => Promise<void>;
@@ -34,6 +48,14 @@ interface CustomerAuthContextType {
   resendVerification: () => Promise<{ success: boolean; error?: string }>;
   updateProfile: (updates: CustomerProfileUpdateData) => Promise<{ success: boolean; error?: string }>;
   refreshProfile: () => Promise<void>;
+  addAddress: (address: Omit<CustomerAddress, 'id' | 'createdAt'>) => Promise<string>;
+  updateAddress: (addressId: string, address: Partial<CustomerAddress>) => Promise<void>;
+  deleteAddress: (addressId: string) => Promise<void>;
+  setDefaultAddress: (addressId: string) => Promise<void>;
+  saveItem: (productId: string) => Promise<void>;
+  removeItem: (productId: string) => Promise<void>;
+  isSaved: (productId: string) => boolean;
+  claimOrder: (req: ClaimOrderRequest) => Promise<ClaimOrderResponse>;
   clearError: () => void;
 }
 
@@ -42,10 +64,12 @@ const CustomerAuthContext = createContext<CustomerAuthContextType | undefined>(u
 export const CustomerAuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [customerUser, setCustomerUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<CustomerProfile | null>(null);
+  const [addresses, setAddresses] = useState<CustomerAddress[]>([]);
+  const [savedItemIds, setSavedItemIds] = useState<string[]>([]);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
   const [authError, setAuthError] = useState<string | null>(null);
 
-  // Synchronize Firebase Auth state
+  // Synchronize Firebase Auth state, profile, addresses, and saved items
   useEffect(() => {
     if (!isFirebaseConfigured) {
       setIsAuthLoading(false);
@@ -53,17 +77,29 @@ export const CustomerAuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
     }
 
     let unsubscribeProfile: (() => void) | null = null;
+    let unsubscribeAddresses: (() => void) | null = null;
+    let unsubscribeSavedItems: (() => void) | null = null;
 
     const unsubscribeAuth = onAdminAuthListener(async (fbUser) => {
       if (fbUser) {
         setCustomerUser(fbUser);
 
-        // Subscribe to customer profile document in Firestore
+        // 1. Subscribe to customer profile document in Firestore
         unsubscribeProfile = subscribeToCustomerProfile(fbUser.uid, (p) => {
           setProfile(p);
         });
 
-        // If profile hasn't loaded yet via listener, try initial fetch
+        // 2. Subscribe to customer addresses subcollection
+        unsubscribeAddresses = subscribeToCustomerAddresses(fbUser.uid, (addrs) => {
+          setAddresses(addrs);
+        });
+
+        // 3. Subscribe to customer saved items subcollection
+        unsubscribeSavedItems = subscribeToCustomerSavedItems(fbUser.uid, (items) => {
+          setSavedItemIds(items);
+        });
+
+        // Initial eager fetch
         try {
           const initialProfile = await fetchCustomerProfile(fbUser.uid);
           if (initialProfile) {
@@ -77,17 +113,27 @@ export const CustomerAuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
           unsubscribeProfile();
           unsubscribeProfile = null;
         }
+        if (unsubscribeAddresses) {
+          unsubscribeAddresses();
+          unsubscribeAddresses = null;
+        }
+        if (unsubscribeSavedItems) {
+          unsubscribeSavedItems();
+          unsubscribeSavedItems = null;
+        }
         setCustomerUser(null);
         setProfile(null);
+        setAddresses([]);
+        setSavedItemIds([]);
       }
       setIsAuthLoading(false);
     });
 
     return () => {
       unsubscribeAuth();
-      if (unsubscribeProfile) {
-        unsubscribeProfile();
-      }
+      if (unsubscribeProfile) unsubscribeProfile();
+      if (unsubscribeAddresses) unsubscribeAddresses();
+      if (unsubscribeSavedItems) unsubscribeSavedItems();
     };
   }, []);
 
@@ -144,6 +190,8 @@ export const CustomerAuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
     }
     setCustomerUser(null);
     setProfile(null);
+    setAddresses([]);
+    setSavedItemIds([]);
   };
 
   const sendPasswordReset = async (email: string): Promise<{ success: boolean; error?: string }> => {
@@ -157,14 +205,14 @@ export const CustomerAuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
   const resendVerification = async (): Promise<{ success: boolean; error?: string }> => {
     if (!customerUser) {
-      return { success: false, error: 'No active patron session.' };
+      return { success: false, error: 'No active customer session.' };
     }
     return await resendCustomerEmailVerification(customerUser);
   };
 
   const updateProfile = async (updates: CustomerProfileUpdateData): Promise<{ success: boolean; error?: string }> => {
     if (!customerUser) {
-      return { success: false, error: 'No active patron session.' };
+      return { success: false, error: 'No active customer session.' };
     }
     try {
       await updateCustomerProfileDoc(customerUser.uid, updates);
@@ -185,6 +233,45 @@ export const CustomerAuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
     }
   };
 
+  const addAddress = async (address: Omit<CustomerAddress, 'id' | 'createdAt'>): Promise<string> => {
+    if (!customerUser) throw new Error('Unauthenticated');
+    return await addCustomerAddress(customerUser.uid, address);
+  };
+
+  const updateAddress = async (addressId: string, address: Partial<CustomerAddress>): Promise<void> => {
+    if (!customerUser) throw new Error('Unauthenticated');
+    await serviceUpdateAddress(customerUser.uid, addressId, address);
+  };
+
+  const deleteAddress = async (addressId: string): Promise<void> => {
+    if (!customerUser) throw new Error('Unauthenticated');
+    await serviceDeleteAddress(customerUser.uid, addressId);
+  };
+
+  const setDefaultAddress = async (addressId: string): Promise<void> => {
+    if (!customerUser) throw new Error('Unauthenticated');
+    await serviceSetDefaultAddress(customerUser.uid, addressId);
+    await refreshProfile();
+  };
+
+  const saveItem = async (productId: string): Promise<void> => {
+    if (!customerUser) return;
+    await saveCustomerItem(customerUser.uid, productId);
+  };
+
+  const removeItem = async (productId: string): Promise<void> => {
+    if (!customerUser) return;
+    await removeCustomerItem(customerUser.uid, productId);
+  };
+
+  const isSaved = (productId: string): boolean => {
+    return savedItemIds.includes(productId);
+  };
+
+  const claimOrder = async (req: ClaimOrderRequest): Promise<ClaimOrderResponse> => {
+    return await claimHistoricalOrder(req);
+  };
+
   return (
     <CustomerAuthContext.Provider
       value={{
@@ -193,6 +280,8 @@ export const CustomerAuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
         isAuthenticated: Boolean(customerUser),
         isAuthLoading,
         authError,
+        addresses,
+        savedItemIds,
         signUp,
         signIn,
         signOut,
@@ -200,6 +289,14 @@ export const CustomerAuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
         resendVerification,
         updateProfile,
         refreshProfile,
+        addAddress,
+        updateAddress,
+        deleteAddress,
+        setDefaultAddress,
+        saveItem,
+        removeItem,
+        isSaved,
+        claimOrder,
         clearError
       }}
     >

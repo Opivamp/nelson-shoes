@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useCustomerAuth } from './CustomerAuthContext';
 
 interface WishlistContextType {
   wishlistIds: string[];
@@ -12,7 +13,9 @@ const WishlistContext = createContext<WishlistContextType | undefined>(undefined
 const WISHLIST_STORAGE_KEY = 'nelson_shoes_wishlist_v1';
 
 export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [wishlistIds, setWishlistIds] = useState<string[]>(() => {
+  const { customerUser, savedItemIds, saveItem, removeItem } = useCustomerAuth();
+
+  const [localWishlistIds, setLocalWishlistIds] = useState<string[]>(() => {
     try {
       const saved = localStorage.getItem(WISHLIST_STORAGE_KEY);
       return saved ? JSON.parse(saved) : [];
@@ -21,20 +24,34 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   });
 
+  // Effective list: if customer is signed in, use Firestore savedItemIds, else local storage
+  const wishlistIds = customerUser ? savedItemIds : localWishlistIds;
+
+  // Persist guest wishlist to localStorage
   useEffect(() => {
-    try {
-      localStorage.setItem(WISHLIST_STORAGE_KEY, JSON.stringify(wishlistIds));
-    } catch (e) {
-      console.error('Failed to save wishlist:', e);
+    if (!customerUser) {
+      try {
+        localStorage.setItem(WISHLIST_STORAGE_KEY, JSON.stringify(localWishlistIds));
+      } catch (e) {
+        console.error('Failed to save wishlist:', e);
+      }
     }
-  }, [wishlistIds]);
+  }, [localWishlistIds, customerUser]);
 
   const toggleWishlist = (productId: string) => {
-    setWishlistIds(prev => 
-      prev.includes(productId) 
-        ? prev.filter(id => id !== productId)
-        : [...prev, productId]
-    );
+    if (customerUser) {
+      if (savedItemIds.includes(productId)) {
+        removeItem(productId);
+      } else {
+        saveItem(productId);
+      }
+    } else {
+      setLocalWishlistIds(prev => 
+        prev.includes(productId) 
+          ? prev.filter(id => id !== productId)
+          : [...prev, productId]
+      );
+    }
   };
 
   const isInWishlist = (productId: string) => wishlistIds.includes(productId);

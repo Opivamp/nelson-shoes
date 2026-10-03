@@ -14,13 +14,13 @@ import {
   Shield
 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
-import { useOrders } from '../context/OrderContext';
+import { useCustomerAuth } from '../context/CustomerAuthContext';
 import { formatCurrencyNGN, formatCurrencyUSD, BRAND_CONFIG, getWhatsAppUrl } from '../data/config';
 import { launchPaystackPopup, isPaystackConfigured } from '../services/paystack';
 
 export const CheckoutPage: React.FC = () => {
   const { items, totalItems, subtotalNGN, subtotalUSD, clearCart } = useCart();
-  const { createOrder } = useOrders();
+  const { customerUser, profile } = useCustomerAuth();
   const navigate = useNavigate();
 
   const [shippingDetails, setShippingDetails] = useState({
@@ -44,6 +44,24 @@ export const CheckoutPage: React.FC = () => {
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
 
+  // Prefill contact details from authenticated customer profile
+  React.useEffect(() => {
+    if (profile) {
+      setShippingDetails(prev => ({
+        ...prev,
+        firstName: prev.firstName || profile.firstName || '',
+        lastName: prev.lastName || profile.lastName || '',
+        email: prev.email || profile.email || customerUser?.email || '',
+        phoneWhatsApp: prev.phoneWhatsApp || profile.phoneWhatsApp || ''
+      }));
+    } else if (customerUser?.email) {
+      setShippingDetails(prev => ({
+        ...prev,
+        email: prev.email || customerUser.email || ''
+      }));
+    }
+  }, [profile, customerUser]);
+
   if (items.length === 0 && !orderPlaced) {
     return (
       <div className="bg-[#0A0A0A] text-[#F5F1E8] min-h-screen pt-40 pb-24 text-center px-6">
@@ -64,85 +82,110 @@ export const CheckoutPage: React.FC = () => {
   const handleSubmitOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     setPaymentError(null);
+    setIsProcessingPayment(true);
 
-    // If client selected Paystack Card Gateway
-    if (shippingDetails.paymentMethod === 'paystack-card') {
-      setIsProcessingPayment(true);
-
-      const generatedOrderNumber = `NS-ORD-${Math.floor(100000 + Math.random() * 900000)}`;
-
-      try {
-        await launchPaystackPopup({
-          email: shippingDetails.email,
-          amountNGN: subtotalNGN,
-          orderNumber: generatedOrderNumber,
-          customerName: `${shippingDetails.firstName} ${shippingDetails.lastName}`,
-          phone: shippingDetails.phoneWhatsApp,
-          onSuccess: (ref: string) => {
-            const newOrder = createOrder({
-              customer: {
-                firstName: shippingDetails.firstName,
-                lastName: shippingDetails.lastName,
-                email: shippingDetails.email,
-                phoneWhatsApp: shippingDetails.phoneWhatsApp,
-                address: shippingDetails.address,
-                city: shippingDetails.city,
-                state: shippingDetails.state,
-                country: shippingDetails.country,
-                deliveryMethod: shippingDetails.deliveryMethod as any,
-                fittingNotes: shippingDetails.fittingNotes
-              },
-              items: [...items],
-              subtotalNGN,
-              subtotalUSD,
-              paymentMethod: 'paystack-card',
-              paymentStatus: 'paid',
-              paymentReference: ref
-            });
-
-            setPaymentReference(ref);
-            setOrderReference(newOrder.orderNumber);
-            clearCart();
-            setOrderPlaced(true);
-            setIsProcessingPayment(false);
-          },
-          onClose: () => {
-            setIsProcessingPayment(false);
-            setPaymentError('Payment window was closed. You can re-attempt anytime.');
-          }
-        });
-      } catch (err) {
-        console.error('Paystack launch error:', err);
-        setIsProcessingPayment(false);
-        setPaymentError('Unable to open payment modal. Please try again or select WhatsApp Concierge.');
+    try {
+      // 1. Obtain verified Firebase ID token if customer is authenticated
+      let authToken: string | undefined = undefined;
+      if (customerUser) {
+        try {
+          authToken = await customerUser.getIdToken();
+        } catch (tokErr) {
+          console.warn('Could not retrieve customer ID token for checkout:', tokErr);
+        }
       }
-      return;
+
+      // 2. Build sanitized order payload without client-authoritative financial values
+      const idempotencyKey = `idem_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+      const orderPayload = {
+        items: items.map(item => ({
+          productId: item.product.id,
+          quantity: item.quantity,
+          size: item.size,
+          isBespokeFitting: item.isBespokeFitting,
+          customNotes: item.customNotes
+        })),
+        customer: {
+          firstName: shippingDetails.firstName.trim(),
+          lastName: shippingDetails.lastName.trim(),
+          email: shippingDetails.email.trim(),
+          phoneWhatsApp: shippingDetails.phoneWhatsApp.trim(),
+          address: shippingDetails.address.trim(),
+          city: shippingDetails.city.trim(),
+          state: shippingDetails.state.trim(),
+          country: shippingDetails.country.trim() || 'Nigeria',
+          deliveryMethod: shippingDetails.deliveryMethod,
+          fittingNotes: shippingDetails.fittingNotes.trim() || undefined
+        },
+        currency: 'NGN',
+        paymentMethod: shippingDetails.paymentMethod,
+        idempotencyKey
+      };
+
+      // 3. Submit to server-authoritative order endpoint
+      const response = await fetch('/api/create-order', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
+          'X-Idempotency-Key': idempotencyKey
+        },
+        body: JSON.stringify(orderPayload)
+      });
+
+      const result = await response.json();
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Failed to place commission on atelier server.');
+      }
+
+      const authoritativeOrderNumber = result.orderNumber;
+      const authoritativeAmountNGN = result.total;
+
+      // 4. Handle Paystack flow (if selected)
+      if (shippingDetails.paymentMethod === 'paystack-card') {
+        try {
+          await launchPaystackPopup({
+            email: shippingDetails.email,
+            amountNGN: authoritativeAmountNGN,
+            orderNumber: authoritativeOrderNumber,
+            customerName: `${shippingDetails.firstName} ${shippingDetails.lastName}`,
+            phone: shippingDetails.phoneWhatsApp,
+            onSuccess: (ref: string) => {
+              setPaymentReference(ref);
+              setOrderReference(authoritativeOrderNumber);
+              clearCart();
+              setOrderPlaced(true);
+              setIsProcessingPayment(false);
+            },
+            onClose: () => {
+              // Order was created as pending on server
+              setPaymentReference('Pending Payment');
+              setOrderReference(authoritativeOrderNumber);
+              clearCart();
+              setOrderPlaced(true);
+              setIsProcessingPayment(false);
+            }
+          });
+        } catch (payErr) {
+          console.error('Paystack popup error:', payErr);
+          setOrderReference(authoritativeOrderNumber);
+          clearCart();
+          setOrderPlaced(true);
+          setIsProcessingPayment(false);
+        }
+        return;
+      }
+
+      // Bank Transfer / WhatsApp Concierge wire
+      setOrderReference(authoritativeOrderNumber);
+      clearCart();
+      setOrderPlaced(true);
+      setIsProcessingPayment(false);
+    } catch (err: any) {
+      console.error('Checkout error:', err);
+      setIsProcessingPayment(false);
+      setPaymentError(err.message || 'An unexpected error occurred while placing your commission. Please try again.');
     }
-
-    // Direct WhatsApp Concierge or Bank Transfer Wire
-    const newOrder = createOrder({
-      customer: {
-        firstName: shippingDetails.firstName,
-        lastName: shippingDetails.lastName,
-        email: shippingDetails.email,
-        phoneWhatsApp: shippingDetails.phoneWhatsApp,
-        address: shippingDetails.address,
-        city: shippingDetails.city,
-        state: shippingDetails.state,
-        country: shippingDetails.country,
-        deliveryMethod: shippingDetails.deliveryMethod as any,
-        fittingNotes: shippingDetails.fittingNotes
-      },
-      items: [...items],
-      subtotalNGN,
-      subtotalUSD,
-      paymentMethod: shippingDetails.paymentMethod as any,
-      paymentStatus: 'pending'
-    });
-
-    setOrderReference(newOrder.orderNumber);
-    clearCart();
-    setOrderPlaced(true);
   };
 
   const generateWhatsAppOrderSummary = () => {

@@ -245,10 +245,11 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setAdminOrders(prev => [newOrder, ...prev]);
     }
 
-    // Persist to Cloud Firestore via authorized create rule
-    if (isFirebaseConfigured) {
+    // Only authorized atelier admins can create orders directly via Client SDK
+    // Customer storefront commissions are strictly created server-side via /api/create-order
+    if (isAdmin && isFirebaseConfigured) {
       saveOrderToFirestore(newOrder).catch(err => {
-        console.warn('Could not sync order to Firestore:', err);
+        console.warn('Could not sync admin-created order to Firestore:', err);
       });
     }
 

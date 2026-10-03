@@ -151,7 +151,8 @@ service cloud.firestore {
 
     // -------------------------------------------------------------
     // Orders Collection
-    // Public: Only authorized to CREATE new orders during checkout
+    // Public: Direct client-side order creation is strictly PROHIBITED.
+    // All orders must be created server-side via /api/create-order (Firebase Admin SDK).
     // Authenticated Customers: Can only retrieve or list their own orders (customerUid == request.auth.uid)
     // Anonymous / Public LIST: STRICTLY FORBIDDEN (Eliminates PII leak)
     // Admin: Full read/update/delete permissions
@@ -163,12 +164,20 @@ service cloud.firestore {
       // Retrieval: Admins or owner customer
       allow get: if isAdmin() || (isAuthenticated() && resource.data.customerUid == request.auth.uid);
       
-      // Storefront checkout can create an order with schema verification and customer ownership check
-      allow create: if isValidOrderCreate(request.resource.data) && isValidCustomerUidOnCreate(request.resource.data);
+      // Order Creation: Strictly restricted to authorized Admins (Storefront creates via Firebase Admin SDK)
+      allow create: if isAdmin();
       
       // Status progression, tracking updates, and cancellations restricted to atelier admins
       allow update: if isAdmin();
       allow delete: if isAdmin();
+    }
+
+    // -------------------------------------------------------------
+    // Idempotency Keys Collection (Internal Serverless Ledger)
+    // Client access completely blocked; managed by Firebase Admin SDK
+    // -------------------------------------------------------------
+    match /idempotency_keys/{keyId} {
+      allow read, write: if isAdmin();
     }
 
     // -------------------------------------------------------------

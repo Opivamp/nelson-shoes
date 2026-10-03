@@ -15,12 +15,14 @@ import {
   BookOpen, 
   Image, 
   MapPin, 
-  UserCheck 
+  UserCheck,
+  User 
 } from 'lucide-react';
 import { BRAND_CONFIG } from '../../data/config';
 import { useCart } from '../../context/CartContext';
 import { useWishlist } from '../../context/WishlistContext';
 import { useSearch } from '../../context/SearchContext';
+import { useCustomerAuth } from '../../context/CustomerAuthContext';
 
 export const Navbar: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -28,6 +30,7 @@ export const Navbar: React.FC = () => {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const dropdownTimeoutRef = useRef<any>(null);
   const location = useLocation();
+  const { customerUser } = useCustomerAuth();
 
   const { totalItems, openCart } = useCart();
   const { totalWishlist } = useWishlist();
@@ -280,6 +283,20 @@ export const Navbar: React.FC = () => {
                   </div>
 
                   <Link
+                    to={customerUser ? "/account" : "/account/login"}
+                    className="px-3 py-2 text-xs text-[#F5F1E8] hover:text-[#B89B5E] hover:bg-[#B89B5E]/10 transition-colors flex items-center gap-2.5"
+                  >
+                    <User className="w-3.5 h-3.5 text-[#B89B5E]" />
+                    <div>
+                      <div className="font-serif flex items-center gap-2">
+                        <span>{customerUser ? 'Patron Portal' : 'Patron Sign In'}</span>
+                        <span className="text-[9px] font-mono px-1 bg-[#B89B5E]/20 text-[#B89B5E]">ACCOUNT</span>
+                      </div>
+                      <div className="text-[10px] text-[#D8CBB8]/60 font-sans">View orders & profile</div>
+                    </div>
+                  </Link>
+
+                  <Link
                     to="/track"
                     className="px-3 py-2 text-xs text-[#F5F1E8] hover:text-[#B89B5E] hover:bg-[#B89B5E]/10 transition-colors flex items-center gap-2.5"
                   >
@@ -338,6 +355,16 @@ export const Navbar: React.FC = () => {
                   {totalWishlist}
                 </span>
               )}
+            </Link>
+
+            {/* Patron Account Link */}
+            <Link
+              to={customerUser ? "/account" : "/account/login"}
+              className="relative p-2 text-[#D8CBB8]/80 hover:text-[#B89B5E] transition-colors duration-200"
+              aria-label="Patron Account"
+              title={customerUser ? "Patron Dashboard" : "Sign In / Register"}
+            >
+              <User className="w-4 h-4 stroke-[1.5]" />
             </Link>
 
             {/* Cart Trigger */}
@@ -445,6 +472,15 @@ export const Navbar: React.FC = () => {
             </Link>
             
             <div className="pt-3 border-t border-[#D8CBB8]/15 space-y-2">
+              <Link
+                to={customerUser ? "/account" : "/account/login"}
+                className="font-serif text-xl text-[#B89B5E] hover:text-[#F5F1E8] transition-colors flex items-center justify-between"
+              >
+                <span>{customerUser ? 'PATRON PORTAL' : 'PATRON SIGN IN'}</span>
+                <span className="text-xs font-mono bg-[#B89B5E]/20 text-[#B89B5E] px-1.5 py-0.5">
+                  {customerUser ? 'ACTIVE' : 'JOIN'}
+                </span>
+              </Link>
               <Link
                 to="/track"
                 className="font-serif text-xl text-[#B89B5E] hover:text-[#F5F1E8] transition-colors flex items-center justify-between"

@@ -96,6 +96,13 @@ service cloud.firestore {
              data.status in ['Pending Confirmation', 'At Workbench (Lasting)', 'Welt Inseam Stitching', 'Patina & Glacage', 'Quality Inspection', 'Dispatched', 'Delivered'];
     }
 
+    function isValidCustomerUidOnCreate(data) {
+      return !('customerUid' in data) || 
+             data.customerUid == null || 
+             (isAuthenticated() && data.customerUid == request.auth.uid) ||
+             isAdmin();
+    }
+
     function isValidBespokeInquiry(data) {
       return (
         data.fullName is string && data.fullName.size() >= 2 &&
@@ -120,21 +127,44 @@ service cloud.firestore {
     }
 
     // -------------------------------------------------------------
+    // Customers Collection (Private Patron Profiles)
+    // Owner: Strictly authorized to read and update their own document
+    // Admin: Full oversight for concierge management
+    // -------------------------------------------------------------
+    match /customers/{customerId} {
+      allow get: if isAuthenticated() && (request.auth.uid == customerId || isAdmin());
+      allow list: if isAdmin();
+      allow create: if isAuthenticated() && request.auth.uid == customerId;
+      allow update: if isAuthenticated() && (request.auth.uid == customerId || isAdmin());
+      allow delete: if isAdmin();
+
+      // Subcollection: Addresses (Owner-only access)
+      match /addresses/{addressId} {
+        allow read, write: if isAuthenticated() && request.auth.uid == customerId;
+      }
+
+      // Subcollection: Saved Items (Owner-only access)
+      match /savedItems/{productId} {
+        allow read, write: if isAuthenticated() && request.auth.uid == customerId;
+      }
+    }
+
+    // -------------------------------------------------------------
     // Orders Collection
     // Public: Only authorized to CREATE new orders during checkout
-    // Public LIST/DOWNLOAD: STRICTLY FORBIDDEN (Eliminates PII leak)
+    // Authenticated Customers: Can only retrieve or list their own orders (customerUid == request.auth.uid)
+    // Anonymous / Public LIST: STRICTLY FORBIDDEN (Eliminates PII leak)
     // Admin: Full read/update/delete permissions
     // -------------------------------------------------------------
     match /orders/{orderId} {
-      // Listing all orders requires administrator credentials
-      allow list: if isAdmin();
+      // Listing: Admins can list all orders; authenticated customers can list only their own
+      allow list: if isAdmin() || (isAuthenticated() && resource.data.customerUid == request.auth.uid);
       
-      // Individual order retrieval is restricted to admins
-      // (Customer single-order tracking is prepared for Task 4 lookup)
-      allow get: if isAdmin();
+      // Retrieval: Admins or owner customer
+      allow get: if isAdmin() || (isAuthenticated() && resource.data.customerUid == request.auth.uid);
       
-      // Storefront checkout can create an order with schema verification
-      allow create: if isValidOrderCreate(request.resource.data);
+      // Storefront checkout can create an order with schema verification and customer ownership check
+      allow create: if isValidOrderCreate(request.resource.data) && isValidCustomerUidOnCreate(request.resource.data);
       
       // Status progression, tracking updates, and cancellations restricted to atelier admins
       allow update: if isAdmin();

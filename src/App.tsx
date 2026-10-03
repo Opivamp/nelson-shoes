@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { ProductProvider } from './context/ProductContext';
 import { OrderProvider } from './context/OrderContext';
 import { AdminAuthProvider } from './context/AdminAuthContext';
+import { CustomerAuthProvider } from './context/CustomerAuthContext';
 import { CartProvider } from './context/CartContext';
 import { WishlistProvider } from './context/WishlistContext';
 import { SearchProvider } from './context/SearchContext';
@@ -13,6 +14,7 @@ import { ScrollToTop } from './components/common/ScrollToTop';
 
 import { HomePage } from './pages/HomePage';
 import { RouteLoader } from './components/common/RouteLoader';
+import { CustomerProtectedRoute, CustomerGuestRoute } from './components/common/CustomerRoute';
 
 // Lazy-loaded Public Storefront Pages
 const CollectionPage = React.lazy(() => import('./pages/CollectionPage').then(m => ({ default: m.CollectionPage })));
@@ -30,6 +32,13 @@ const OrderTrackingPage = React.lazy(() => import('./pages/OrderTrackingPage').t
 const PrivacyPage = React.lazy(() => import('./pages/PrivacyPage').then(m => ({ default: m.PrivacyPage })));
 const TermsPage = React.lazy(() => import('./pages/TermsPage').then(m => ({ default: m.TermsPage })));
 const NotFoundPage = React.lazy(() => import('./pages/NotFoundPage').then(m => ({ default: m.NotFoundPage })));
+
+// Lazy-loaded Customer Account & Portal Pages
+const CustomerLoginPage = React.lazy(() => import('./pages/account/CustomerLoginPage').then(m => ({ default: m.CustomerLoginPage })));
+const CustomerRegisterPage = React.lazy(() => import('./pages/account/CustomerRegisterPage').then(m => ({ default: m.CustomerRegisterPage })));
+const CustomerForgotPasswordPage = React.lazy(() => import('./pages/account/CustomerForgotPasswordPage').then(m => ({ default: m.CustomerForgotPasswordPage })));
+const CustomerResetPasswordPage = React.lazy(() => import('./pages/account/CustomerResetPasswordPage').then(m => ({ default: m.CustomerResetPasswordPage })));
+const AccountDashboardPage = React.lazy(() => import('./pages/account/AccountDashboardPage').then(m => ({ default: m.AccountDashboardPage })));
 
 // Lazy-loaded Admin Atelier Pages
 const AdminLayout = React.lazy(() => import('./pages/admin/AdminLayout').then(m => ({ default: m.AdminLayout })));
@@ -89,6 +98,17 @@ function AppContent() {
             <Route path="/track" element={<OrderTrackingPage />} />
             <Route path="/privacy" element={<PrivacyPage />} />
             <Route path="/terms" element={<TermsPage />} />
+
+            {/* Customer Authentication Routes (Guest Only) */}
+            <Route path="/account/login" element={<CustomerGuestRoute><CustomerLoginPage /></CustomerGuestRoute>} />
+            <Route path="/account/register" element={<CustomerGuestRoute><CustomerRegisterPage /></CustomerGuestRoute>} />
+            <Route path="/account/forgot-password" element={<CustomerGuestRoute><CustomerForgotPasswordPage /></CustomerGuestRoute>} />
+            <Route path="/account/reset-password" element={<CustomerGuestRoute><CustomerResetPasswordPage /></CustomerGuestRoute>} />
+
+            {/* Customer Portal Protected Routes */}
+            <Route path="/account" element={<CustomerProtectedRoute><AccountDashboardPage /></CustomerProtectedRoute>} />
+            <Route path="/account/*" element={<CustomerProtectedRoute><AccountDashboardPage /></CustomerProtectedRoute>} />
+
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </React.Suspense>
@@ -102,17 +122,19 @@ export function App() {
     <BrowserRouter>
       <ProductProvider>
         <AdminAuthProvider>
-          <OrderProvider>
-            <CartProvider>
-              <WishlistProvider>
-                <SearchProvider>
-                  <ThemeProvider>
-                    <AppContent />
-                  </ThemeProvider>
-                </SearchProvider>
-              </WishlistProvider>
-            </CartProvider>
-          </OrderProvider>
+          <CustomerAuthProvider>
+            <OrderProvider>
+              <CartProvider>
+                <WishlistProvider>
+                  <SearchProvider>
+                    <ThemeProvider>
+                      <AppContent />
+                    </ThemeProvider>
+                  </SearchProvider>
+                </WishlistProvider>
+              </CartProvider>
+            </OrderProvider>
+          </CustomerAuthProvider>
         </AdminAuthProvider>
       </ProductProvider>
     </BrowserRouter>

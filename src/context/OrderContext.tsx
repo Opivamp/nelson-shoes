@@ -32,6 +32,7 @@ interface OrderContextType {
 }
 
 import { useAdminAuth } from './AdminAuthContext';
+import { useCustomerAuth } from './CustomerAuthContext';
 
 const CLIENT_ORDERS_KEY = 'nelson_client_orders_v1';
 const LEGACY_ORDERS_KEY = 'nelson_shoes_orders_v2';
@@ -149,6 +150,7 @@ const OrderContext = createContext<OrderContextType | undefined>(undefined);
 
 export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAdmin } = useAdminAuth();
+  const { customerUser } = useCustomerAuth();
 
   // Purge legacy leaked order cache from localStorage if present
   useEffect(() => {
@@ -229,6 +231,7 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       paymentStatus: orderData.paymentStatus || 'pending',
       paymentReference: orderData.paymentReference,
       status: 'Pending Confirmation',
+      customerUid: customerUser?.uid || undefined,
       artisanNotes: 'Order received through atelier website. Awaiting workbench allocation.',
       createdAt: now,
       updatedAt: now

@@ -141,11 +141,14 @@ export interface CustomerOrder {
   paymentStatus: 'pending' | 'deposit_paid' | 'paid';
   paymentReference?: string;
   status: OrderStatus;
+  customerUid?: string;
   trackingNumber?: string;
   artisanNotes?: string;
   createdAt: string;
   updatedAt: string;
 }
+
+export * from './customer';
 
 export interface AdminUser {
   email: string;

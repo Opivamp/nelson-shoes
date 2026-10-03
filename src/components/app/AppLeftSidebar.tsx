@@ -14,10 +14,12 @@ import {
   Settings, 
   Heart,
   ArrowRight,
-  UserCheck
+  UserCheck,
+  User
 } from 'lucide-react';
 import { useWishlist } from '../../context/WishlistContext';
 import { useCart } from '../../context/CartContext';
+import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { BRAND_CONFIG, getWhatsAppUrl } from '../../data/config';
 import { ThemeToggle } from '../common/ThemeToggle';
 
@@ -25,12 +27,14 @@ export const AppLeftSidebar: React.FC = () => {
   const location = useLocation();
   const { totalWishlist } = useWishlist();
   const { totalItems } = useCart();
+  const { customerUser, profile } = useCustomerAuth();
 
   const primaryNav = [
     { label: 'Atelier Feed', path: '/', icon: Home, exact: true },
     { label: 'Footwear Catalog', path: '/collection', icon: Package, badge: 'Collection' },
     { label: 'Bespoke Studio', path: '/bespoke', icon: Scissors, badge: 'Custom Last' },
     { label: 'Workbench Tracker', path: '/track', icon: Truck, badge: 'Live DHL' },
+    { label: 'Patron Portal', path: customerUser ? '/account' : '/account/login', icon: User, badge: customerUser ? 'Active' : 'Sign In' },
     { label: 'Artisanal Craft', path: '/craft', icon: Sparkles },
     { label: 'The Journal', path: '/journal', icon: BookOpen },
     { label: 'Visual Gallery', path: '/gallery', icon: Image },
@@ -42,24 +46,36 @@ export const AppLeftSidebar: React.FC = () => {
     return location.pathname.startsWith(path);
   };
 
+  const patronMonogram = (profile?.fullName || customerUser?.displayName || 'N')
+    .split(' ')
+    .map(p => p[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+
   return (
     <aside className="w-64 xl:w-72 shrink-0 hidden lg:block sticky top-[61px] h-[calc(100vh-61px)] overflow-y-auto no-scrollbar p-4 space-y-5 bg-[#0A0A0A] border-r border-[#D8CBB8]/10 text-xs font-sans">
       
       {/* Patron Dossier Card (Facebook profile style) */}
       <div className="p-3.5 bg-[#121212] border border-[#B89B5E]/20 rounded-xl space-y-2.5 shadow-md">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full border border-[#B89B5E] bg-[#1A1A1A] flex items-center justify-center text-[#B89B5E] font-serif text-lg font-light shrink-0">
-            N
+        <Link 
+          to={customerUser ? "/account" : "/account/login"} 
+          className="flex items-center gap-3 group focus:outline-none"
+        >
+          <div className="w-10 h-10 rounded-full border border-[#B89B5E] bg-[#1A1A1A] flex items-center justify-center text-[#B89B5E] font-serif text-sm font-light shrink-0 group-hover:border-[#D4BD86] transition-colors">
+            {patronMonogram}
           </div>
           <div className="min-w-0">
-            <span className="font-serif text-sm text-[#F5F1E8] font-medium block truncate">
-              Patron Dossier
+            <span className="font-serif text-sm text-[#F5F1E8] font-medium block truncate group-hover:text-[#B89B5E] transition-colors">
+              {profile?.fullName || customerUser?.displayName || 'Patron Dossier'}
             </span>
             <span className="text-[10px] text-[#B89B5E] font-mono block">
-              Bespoke Client ID: #NS-VIP
+              {customerUser 
+                ? `ID: #NS-${customerUser.uid.slice(0, 6).toUpperCase()}` 
+                : 'Sign In / Join Atelier'}
             </span>
           </div>
-        </div>
+        </Link>
 
         <div className="grid grid-cols-2 gap-2 pt-1 border-t border-[#D8CBB8]/10 text-[10px] font-mono">
           <div className="p-1.5 bg-[#181818] rounded text-center">

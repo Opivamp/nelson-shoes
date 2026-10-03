@@ -1,18 +1,20 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Package, Scissors, Truck, ShoppingBag } from 'lucide-react';
+import { Home, Package, Scissors, ShoppingBag, User } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
+import { useCustomerAuth } from '../../context/CustomerAuthContext';
 
 export const MobileBottomNav: React.FC = () => {
   const location = useLocation();
   const { totalItems } = useCart();
+  const { customerUser } = useCustomerAuth();
 
   const tabs = [
     { label: 'Atelier', path: '/', icon: Home, exact: true },
     { label: 'Catalog', path: '/collection', icon: Package },
     { label: 'Bespoke', path: '/bespoke', icon: Scissors },
-    { label: 'Tracker', path: '/track', icon: Truck },
-    { label: 'Dossier', path: '/cart', icon: ShoppingBag, badge: totalItems }
+    { label: 'Dossier', path: '/cart', icon: ShoppingBag, badge: totalItems },
+    { label: customerUser ? 'Account' : 'Sign In', path: customerUser ? '/account' : '/account/login', icon: User }
   ];
 
   const isActive = (path: string, exact = false) => {

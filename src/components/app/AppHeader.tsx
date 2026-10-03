@@ -13,11 +13,13 @@ import {
   Lock,
   ArrowLeft,
   MessageCircle,
-  ShieldCheck
+  ShieldCheck,
+  User
 } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { useWishlist } from '../../context/WishlistContext';
 import { useSearch } from '../../context/SearchContext';
+import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { formatCurrencyNGN, getWhatsAppUrl } from '../../data/config';
 import { NotificationsPanel } from './NotificationsPanel';
 import { ThemeToggle } from '../common/ThemeToggle';
@@ -31,6 +33,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ onToggleMobileMenu }) => {
   const { totalItems, openCart, subtotalNGN } = useCart();
   const { totalWishlist } = useWishlist();
   const { openSearch } = useSearch();
+  const { customerUser, profile } = useCustomerAuth();
 
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
@@ -216,6 +219,18 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ onToggleMobileMenu }) => {
               {totalItems}
             </span>
           </button>
+
+          {/* Patron Account Link / Avatar */}
+          <Link
+            to={customerUser ? "/account" : "/account/login"}
+            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full bg-[#181818] hover:bg-[#222222] border border-[#D8CBB8]/20 hover:border-[#B89B5E]/50 text-xs font-mono text-[#D8CBB8] hover:text-[#B89B5E] transition-all shrink-0 cursor-pointer"
+            title={customerUser ? `Patron Account: ${profile?.fullName || customerUser.email}` : "Patron Sign In / Register"}
+          >
+            <User size={13} className={customerUser ? "text-[#B89B5E]" : "text-[#D8CBB8]/70"} />
+            <span className="hidden sm:inline text-[11px] font-sans">
+              {customerUser ? (profile?.fullName ? profile.fullName.split(' ')[0] : 'Account') : 'Sign In'}
+            </span>
+          </Link>
 
           {/* Admin Atelier Switch (Cleanly visible on screens >= lg where room is guaranteed) */}
           <Link

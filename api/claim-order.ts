@@ -75,7 +75,7 @@ function cleanPrivateKey(key: string): string {
 }
 
 function getAdminServices() {
-  const projectId = (process.env.FIREBASE_PROJECT_ID || process.env.VITE_FIREBASE_PROJECT_ID || '').trim();
+  const projectId = (process.env.FIREBASE_PROJECT_ID || process.env.VITE_FIREBASE_PROJECT_ID || 'nelson-shoes-62767').trim();
   const clientEmail = (process.env.FIREBASE_CLIENT_EMAIL || '').trim();
   const rawKey = process.env.FIREBASE_PRIVATE_KEY;
 

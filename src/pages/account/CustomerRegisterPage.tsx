@@ -82,13 +82,13 @@ export const CustomerRegisterPage: React.FC = () => {
           <div className="space-y-2">
             <h2 className="font-serif text-2xl text-[#F5F1E8]">Welcome to the Atelier</h2>
             <p className="text-xs text-[#D8CBB8]/70 font-sans leading-relaxed">
-              Your patron profile has been created. A verification dispatch has been sent to{' '}
+              Your customer account has been created. A verification dispatch has been sent to{' '}
               <span className="font-mono text-[#B89B5E]">{email}</span>.
             </p>
           </div>
 
           <div className="p-3 bg-[#181818] border border-[#D8CBB8]/15 rounded text-[11px] text-[#D8CBB8]/60 text-left font-mono space-y-1">
-            <div className="text-[#B89B5E] font-semibold">PATRON PROFILE ACTIVE:</div>
+            <div className="text-[#B89B5E] font-semibold">CUSTOMER ACCOUNT ACTIVE:</div>
             <div>• Name: {fullName}</div>
             <div>• Identifier: {email}</div>
           </div>
@@ -97,7 +97,7 @@ export const CustomerRegisterPage: React.FC = () => {
             onClick={() => navigate('/account', { replace: true })}
             className="w-full py-3 bg-[#B89B5E] text-[#0A0A0A] font-semibold text-xs tracking-widest uppercase hover:bg-[#D4BD86] transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-md"
           >
-            <span>GO TO PATRON DASHBOARD</span>
+            <span>GO TO CUSTOMER DASHBOARD</span>
             <ArrowRight size={14} />
           </button>
         </div>
@@ -121,14 +121,14 @@ export const CustomerRegisterPage: React.FC = () => {
             NELSON ATELIER
           </h1>
           <p className="text-[10px] uppercase tracking-[0.3em] text-[#B89B5E] font-mono">
-            New Patron Registration
+            New Customer Registration
           </p>
         </div>
 
         {/* Register Card */}
         <div className="bg-[#121212] border border-[#D8CBB8]/15 p-6 sm:p-8 shadow-2xl space-y-6">
           <div className="space-y-1 text-center">
-            <h2 className="font-serif text-xl text-[#F5F1E8]">Create Patron Profile</h2>
+            <h2 className="font-serif text-xl text-[#F5F1E8]">Create Customer Account</h2>
             <p className="text-xs text-[#D8CBB8]/60 font-sans">
               Register to track custom commissions, save your anatomical preferences, and expedite future commissions.
             </p>
@@ -169,7 +169,7 @@ export const CustomerRegisterPage: React.FC = () => {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="patron@domain.com"
+                  placeholder="client@domain.com"
                   autoComplete="email"
                   disabled={isSubmitting}
                   className="w-full bg-[#181818] border border-[#D8CBB8]/20 pl-9 pr-3 py-2.5 text-xs text-[#F5F1E8] focus:outline-none focus:border-[#B89B5E] transition-colors"
@@ -248,11 +248,11 @@ export const CustomerRegisterPage: React.FC = () => {
               {isSubmitting ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>CREATING PATRON ACCOUNT...</span>
+                  <span>CREATING CUSTOMER ACCOUNT...</span>
                 </>
               ) : (
                 <>
-                  <span>CREATE PATRON ACCOUNT</span>
+                  <span>CREATE CUSTOMER ACCOUNT</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </>
               )}

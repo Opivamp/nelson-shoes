@@ -63,7 +63,7 @@ export const CustomerForgotPasswordPage: React.FC = () => {
             NELSON ATELIER
           </h1>
           <p className="text-[10px] uppercase tracking-[0.3em] text-[#B89B5E] font-mono">
-            Recover Patron Passphrase
+            Recover Customer Passphrase
           </p>
         </div>
 
@@ -79,7 +79,7 @@ export const CustomerForgotPasswordPage: React.FC = () => {
               <div className="space-y-2">
                 <h2 className="font-serif text-xl text-[#F5F1E8]">Instructions Dispatched</h2>
                 <p className="text-xs text-[#D8CBB8]/70 font-sans leading-relaxed">
-                  If an atelier patron account is registered under{' '}
+                  If an atelier customer account is registered under{' '}
                   <span className="font-mono text-[#B89B5E]">{email}</span>, you will receive a secure password recovery link shortly.
                 </p>
               </div>
@@ -121,7 +121,7 @@ export const CustomerForgotPasswordPage: React.FC = () => {
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="patron@domain.com"
+                      placeholder="client@domain.com"
                       autoComplete="email"
                       disabled={isSubmitting}
                       className="w-full bg-[#181818] border border-[#D8CBB8]/20 pl-9 pr-3 py-2.5 text-xs text-[#F5F1E8] focus:outline-none focus:border-[#B89B5E] transition-colors"

@@ -27,15 +27,15 @@ import {
 } from 'firebase/storage';
 import type { Product, CustomerOrder, OrderStatus, BespokeInquiry } from '../types';
 
-// Read config from Vite environment variables
+// Read config from Vite environment variables with production project fallback
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || '',
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || '',
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || '',
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || '',
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '',
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || '',
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || ''
+  apiKey: (import.meta.env.VITE_FIREBASE_API_KEY || 'AIzaSyAh4Lz1XEE6_Kl_DPZIMEWksxaXd6GPD48').trim(),
+  authDomain: (import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || 'nelson-shoes-62767.firebaseapp.com').trim(),
+  projectId: (import.meta.env.VITE_FIREBASE_PROJECT_ID || 'nelson-shoes-62767').trim(),
+  storageBucket: (import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || 'nelson-shoes-62767.firebasestorage.app').trim(),
+  messagingSenderId: (import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '899217722625').trim(),
+  appId: (import.meta.env.VITE_FIREBASE_APP_ID || '1:899217722625:web:62c441d3cbb3f2bb68df00').trim(),
+  measurementId: (import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || 'G-02EV30PRLK').trim()
 };
 
 // Check if valid credentials have been supplied

@@ -65,7 +65,7 @@ export const CustomerLoginPage: React.FC = () => {
             NELSON ATELIER
           </h1>
           <p className="text-[10px] uppercase tracking-[0.3em] text-[#B89B5E] font-mono">
-            Patron Sign In
+            Customer Sign In
           </p>
         </div>
 
@@ -95,7 +95,7 @@ export const CustomerLoginPage: React.FC = () => {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="patron@domain.com"
+                  placeholder="client@domain.com"
                   autoComplete="email"
                   disabled={isSubmitting}
                   className="w-full bg-[#181818] border border-[#D8CBB8]/20 pl-9 pr-3 py-2.5 text-xs text-[#F5F1E8] focus:outline-none focus:border-[#B89B5E] transition-colors"
@@ -150,7 +150,7 @@ export const CustomerLoginPage: React.FC = () => {
                 </>
               ) : (
                 <>
-                  <span>ENTER PATRON PORTAL</span>
+                  <span>ENTER CUSTOMER PORTAL</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </>
               )}
@@ -167,7 +167,7 @@ export const CustomerLoginPage: React.FC = () => {
               className="inline-flex items-center gap-1.5 text-xs text-[#B89B5E] hover:text-[#D4BD86] font-medium tracking-wide uppercase transition-colors"
             >
               <Sparkles size={13} />
-              <span>Create Patron Account</span>
+              <span>Create Customer Account</span>
             </Link>
           </div>
 

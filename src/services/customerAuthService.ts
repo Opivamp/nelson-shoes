@@ -48,7 +48,7 @@ export const formatCustomerAuthError = (code: string): string => {
     case 'auth/weak-password':
       return 'For the security of your atelier dossier, your passphrase must be at least 6 characters.';
     case 'auth/user-disabled':
-      return 'This patron account has been deactivated. Please contact the atelier concierge for assistance.';
+      return 'This customer account has been deactivated. Please contact the atelier concierge for assistance.';
     case 'auth/too-many-requests':
       return 'Access has been temporarily restricted due to repeated attempts. Please wait a few moments before trying again.';
     case 'auth/network-request-failed':
@@ -57,6 +57,9 @@ export const formatCustomerAuthError = (code: string): string => {
       return 'This password reset link has expired. Please request a fresh reset link.';
     case 'auth/invalid-action-code':
       return 'This password reset link is invalid or has already been used.';
+    case 'auth/configuration-not-found':
+    case 'auth/operation-not-allowed':
+      return 'Email/Password sign-in is not yet enabled in the Firebase Console for this project. Please go to Firebase Console > Authentication > Sign-in method and enable the Email/Password provider.';
     default:
       return 'We could not complete your request at this moment. Please try again or contact concierge.';
   }

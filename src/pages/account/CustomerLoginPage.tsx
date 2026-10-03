@@ -79,8 +79,18 @@ export const CustomerLoginPage: React.FC = () => {
           </div>
 
           {displayedError && (
-            <div className="p-3 bg-red-950/60 border border-red-500/30 text-red-300 text-xs text-center rounded leading-relaxed animate-fadeIn">
-              {displayedError}
+            <div className="p-3 bg-red-950/60 border border-red-500/30 text-red-300 text-xs text-center rounded leading-relaxed animate-fadeIn space-y-2">
+              <p>{displayedError}</p>
+              {displayedError.includes('Firebase Console') && (
+                <a
+                  href="https://console.firebase.google.com/project/nelson-shoes-62767/authentication/providers"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block mt-1 px-3 py-1.5 bg-[#B89B5E] text-[#0A0A0A] font-semibold text-[11px] uppercase tracking-wider rounded hover:bg-[#D4BD86] transition-colors"
+                >
+                  Open Firebase Console → Enable Email/Password
+                </a>
+              )}
             </div>
           )}
 

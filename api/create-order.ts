@@ -165,6 +165,46 @@ const AUTHORITATIVE_CATALOG: Record<string, CatalogProduct> = {
   }
 };
 
+// ---------------------------------------------------------------------------
+// Centralized Authoritative Shipping Rules
+// Nelson Shoes Business Pricing:
+// DHL Express International: ₦25,000 NGN / $50 USD
+// Atelier Pickup (Lagos): ₦0 NGN / $0 USD
+// ---------------------------------------------------------------------------
+export interface ShippingRule {
+  feeNGN: number;
+  feeUSD: number;
+  label: string;
+}
+
+export const AUTHORITATIVE_SHIPPING_RULES: Record<string, ShippingRule> = {
+  'dhl-express': {
+    feeNGN: 25000,
+    feeUSD: 50,
+    label: 'DHL Express International Courier'
+  },
+  'atelier-pickup': {
+    feeNGN: 0,
+    feeUSD: 0,
+    label: 'Lagos Atelier Fitting & Pickup'
+  }
+};
+
+export function calculateAuthoritativeShipping(deliveryMethod: string, currency: 'NGN' | 'USD') {
+  const normMethod = (deliveryMethod || '').trim().toLowerCase();
+  const rule = AUTHORITATIVE_SHIPPING_RULES[normMethod];
+  if (!rule) {
+    throw new Error(`Invalid or unsupported delivery method: '${deliveryMethod}'. Supported methods are 'dhl-express' and 'atelier-pickup'.`);
+  }
+  return {
+    deliveryMethod: normMethod as 'dhl-express' | 'atelier-pickup',
+    shippingFeeNGN: rule.feeNGN,
+    shippingFeeUSD: rule.feeUSD,
+    authoritativeShippingFee: currency === 'USD' ? rule.feeUSD : rule.feeNGN,
+    label: rule.label
+  };
+}
+
 function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
 }
@@ -308,7 +348,7 @@ export default async function handler(req: IncomingMessage & { body?: any }, res
   const country = typeof customer.country === 'string' ? customer.country.trim() : 'Nigeria';
   const fittingNotes = typeof customer.fittingNotes === 'string' ? customer.fittingNotes.trim().slice(0, 500) : undefined;
   const rawDeliveryMethod = typeof customer.deliveryMethod === 'string' ? customer.deliveryMethod.trim() : 
-                            typeof body.deliveryMethod === 'string' ? body.deliveryMethod.trim() : 'dhl-express';
+                            typeof body.deliveryMethod === 'string' ? body.deliveryMethod.trim() : '';
 
   if (!firstName || firstName.length > 60 || !lastName || lastName.length > 60) {
     res.statusCode = 400;
@@ -341,8 +381,16 @@ export default async function handler(req: IncomingMessage & { body?: any }, res
     return;
   }
 
-  const validDeliveryMethods = ['dhl-express', 'atelier-pickup'];
-  const deliveryMethod = validDeliveryMethods.includes(rawDeliveryMethod) ? rawDeliveryMethod : 'dhl-express';
+  // Authoritative Delivery Method Validation
+  if (!rawDeliveryMethod || !AUTHORITATIVE_SHIPPING_RULES[rawDeliveryMethod.toLowerCase()]) {
+    res.statusCode = 400;
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify({ 
+      success: false, 
+      error: `Invalid or unsupported delivery method: '${rawDeliveryMethod}'. Supported methods are 'dhl-express' and 'atelier-pickup'.` 
+    }));
+    return;
+  }
 
   // 3. Validate Currency & Payment Method
   const rawCurrency = typeof body.currency === 'string' ? body.currency.trim().toUpperCase() : 'NGN';
@@ -384,45 +432,11 @@ export default async function handler(req: IncomingMessage & { body?: any }, res
     return;
   }
 
-  // 5. Idempotency Check
-  const rawIdempotencyKey = req.headers['x-idempotency-key'] || body.idempotencyKey;
-  let idempotencyDocId: string | null = null;
-
-  if (rawIdempotencyKey && typeof rawIdempotencyKey === 'string' && rawIdempotencyKey.trim().length > 0) {
-    const cleanKey = rawIdempotencyKey.trim().slice(0, 128);
-    const scope = customerUid ? `usr_${customerUid}` : `gst_${email}`;
-    const hash = crypto.createHash('sha256').update(`${scope}:${cleanKey}`).digest('hex');
-    idempotencyDocId = `idem_${hash}`;
-
-    try {
-      const existingIdemDoc = await db.collection('idempotency_keys').doc(idempotencyDocId).get();
-      if (existingIdemDoc.exists) {
-        const idemData = existingIdemDoc.data();
-        if (idemData?.orderId) {
-          const existingOrderDoc = await db.collection('orders').doc(idemData.orderId).get();
-          if (existingOrderDoc.exists) {
-            const existingOrder = existingOrderDoc.data();
-            res.statusCode = 200;
-            res.setHeader('Content-Type', 'application/json');
-            res.end(JSON.stringify({
-              success: true,
-              isDeduplicated: true,
-              orderId: existingOrder?.id,
-              orderNumber: existingOrder?.orderNumber,
-              paymentStatus: existingOrder?.paymentStatus,
-              status: existingOrder?.status,
-              currency: existingOrder?.currency || 'NGN',
-              total: currency === 'USD' ? existingOrder?.subtotalUSD : existingOrder?.subtotalNGN,
-              createdAt: existingOrder?.createdAt
-            }));
-            return;
-          }
-        }
-      }
-    } catch (e: any) {
-      console.warn('[Vercel Serverless] Idempotency lookup error:', e?.message || e);
-    }
-  }
+  // 5. Authoritative Shipping Fee Calculation (Preserving Nelson Shoes Business Pricing)
+  const shippingCalculation = calculateAuthoritativeShipping(rawDeliveryMethod, currency);
+  const deliveryMethod = shippingCalculation.deliveryMethod;
+  const authoritativeShippingFeeNGN = shippingCalculation.shippingFeeNGN;
+  const authoritativeShippingFeeUSD = shippingCalculation.shippingFeeUSD;
 
   // 6. Look Up Authoritative Product Data & Recompute Prices
   const validatedItems: any[] = [];
@@ -531,11 +545,7 @@ export default async function handler(req: IncomingMessage & { body?: any }, res
     });
   }
 
-  // 7. Authoritative Shipping Fee Calculation
-  // Nelson Shoes Atelier Policy: Complimentary worldwide express courier on bespoke commissions
-  const authoritativeShippingFeeNGN = 0;
-  const authoritativeShippingFeeUSD = 0;
-
+  // 7. Authoritative Totals Calculation
   const totalNGN = calculatedSubtotalNGN + authoritativeShippingFeeNGN;
   const totalUSD = calculatedSubtotalUSD + authoritativeShippingFeeUSD;
 
@@ -578,27 +588,69 @@ export default async function handler(req: IncomingMessage & { body?: any }, res
     updatedAt: now
   };
 
-  // 10. Persist to Firestore via Admin SDK
+  // 10. Scoped Idempotency Key Document Reference
+  const rawIdempotencyKey = req.headers['x-idempotency-key'] || body.idempotencyKey;
+  let idempotencyDocRef: any = null;
+
+  if (rawIdempotencyKey && typeof rawIdempotencyKey === 'string' && rawIdempotencyKey.trim().length > 0) {
+    const cleanKey = rawIdempotencyKey.trim().slice(0, 128);
+    // Verified UID for authenticated users; server-safe hash for guests
+    const scope = customerUid ? `usr_${customerUid}` : `gst_${email}`;
+    const hash = crypto.createHash('sha256').update(`${scope}:${cleanKey}`).digest('hex');
+    const idempotencyDocId = `idem_${hash}`;
+    idempotencyDocRef = db.collection('idempotency_keys').doc(idempotencyDocId);
+  }
+
+  // 11. Atomic Execution via Firestore Transaction
+  // Guarantees strictly single-order creation even under high concurrency
+  let finalOrderData: any = null;
+  let isDeduplicatedOrder = false;
+
   try {
-    const batch = db.batch();
-    const orderRef = db.collection('orders').doc(orderDocId);
-    batch.set(orderRef, authoritativeOrder);
+    const transactionResult = await db.runTransaction(async (transaction) => {
+      // Step A: If idempotency key is present, read the key document within the transaction
+      if (idempotencyDocRef) {
+        const existingIdemSnap = await transaction.get(idempotencyDocRef);
+        if (existingIdemSnap.exists) {
+          const existingIdemData = existingIdemSnap.data();
+          if (existingIdemData?.orderId) {
+            const existingOrderRef = db.collection('orders').doc(existingIdemData.orderId);
+            const existingOrderSnap = await transaction.get(existingOrderRef);
+            if (existingOrderSnap.exists) {
+              return {
+                isDeduplicated: true,
+                order: existingOrderSnap.data()
+              };
+            }
+          }
+        }
+      }
 
-    if (idempotencyDocId) {
-      const idemRef = db.collection('idempotency_keys').doc(idempotencyDocId);
-      batch.set(idemRef, {
-        orderId: orderDocId,
-        orderNumber,
-        customerUid: customerUid || null,
-        email,
-        createdAt: now,
-        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
-      });
-    }
+      // Step B: Atomically create the order and record the idempotency key
+      const orderRef = db.collection('orders').doc(orderDocId);
+      transaction.set(orderRef, authoritativeOrder);
 
-    await batch.commit();
+      if (idempotencyDocRef) {
+        transaction.set(idempotencyDocRef, {
+          orderId: orderDocId,
+          orderNumber,
+          customerUid: customerUid || null,
+          email,
+          createdAt: now,
+          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+        });
+      }
+
+      return {
+        isDeduplicated: false,
+        order: authoritativeOrder
+      };
+    });
+
+    finalOrderData = transactionResult.order;
+    isDeduplicatedOrder = transactionResult.isDeduplicated;
   } catch (err: any) {
-    console.error('[Vercel Serverless] Error writing authoritative order to Firestore:', err?.message || err);
+    console.error('[Vercel Serverless] Atomic transaction error creating order:', err?.message || err);
     res.statusCode = 500;
     res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify({ 
@@ -608,20 +660,22 @@ export default async function handler(req: IncomingMessage & { body?: any }, res
     return;
   }
 
-  // 11. Sanitized Public Response
-  res.statusCode = 201;
+  // 12. Sanitized Public Response
+  const responseStatusCode = isDeduplicatedOrder ? 200 : 201;
+  res.statusCode = responseStatusCode;
   res.setHeader('Content-Type', 'application/json');
   res.end(JSON.stringify({
     success: true,
-    orderId: orderDocId,
-    orderNumber,
-    paymentStatus: 'pending',
-    status: 'Pending Confirmation',
+    isDeduplicated: isDeduplicatedOrder,
+    orderId: finalOrderData.id,
+    orderNumber: finalOrderData.orderNumber,
+    paymentStatus: finalOrderData.paymentStatus,
+    status: finalOrderData.status,
     currency,
-    subtotal: currency === 'USD' ? calculatedSubtotalUSD : calculatedSubtotalNGN,
-    shippingFee: 0,
-    total: currency === 'USD' ? totalUSD : totalNGN,
-    customerUid: customerUid || undefined,
-    createdAt: now
+    subtotal: currency === 'USD' ? finalOrderData.subtotalUSD : finalOrderData.subtotalNGN,
+    shippingFee: currency === 'USD' ? finalOrderData.shippingFeeUSD : finalOrderData.shippingFeeNGN,
+    total: currency === 'USD' ? finalOrderData.totalUSD : finalOrderData.totalNGN,
+    customerUid: finalOrderData.customerUid || undefined,
+    createdAt: finalOrderData.createdAt
   }));
 }

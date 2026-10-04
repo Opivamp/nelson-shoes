@@ -47,12 +47,15 @@ export const CheckoutPage: React.FC = () => {
   // Prefill contact details from authenticated customer profile
   React.useEffect(() => {
     if (profile) {
+      const nameParts = (profile.fullName || '').trim().split(/\s+/);
+      const pFirst = nameParts[0] || '';
+      const pLast = nameParts.slice(1).join(' ') || '';
       setShippingDetails(prev => ({
         ...prev,
-        firstName: prev.firstName || profile.firstName || '',
-        lastName: prev.lastName || profile.lastName || '',
+        firstName: prev.firstName || pFirst,
+        lastName: prev.lastName || pLast,
         email: prev.email || profile.email || customerUser?.email || '',
-        phoneWhatsApp: prev.phoneWhatsApp || profile.phoneWhatsApp || ''
+        phoneWhatsApp: prev.phoneWhatsApp || profile.phone || ''
       }));
     } else if (customerUser?.email) {
       setShippingDetails(prev => ({
@@ -188,6 +191,12 @@ export const CheckoutPage: React.FC = () => {
     }
   };
 
+  const isDHL = shippingDetails.deliveryMethod === 'dhl-express';
+  const estimatedShippingFeeNGN = isDHL ? 25000 : 0;
+  const estimatedShippingFeeUSD = isDHL ? 50 : 0;
+  const estimatedTotalNGN = subtotalNGN + estimatedShippingFeeNGN;
+  const estimatedTotalUSD = subtotalUSD + estimatedShippingFeeUSD;
+
   const generateWhatsAppOrderSummary = () => {
     let msg = `*NEW BESPOKE ORDER CONFIRMATION: ${orderReference}*\n`;
     msg += `------------------------------------\n`;
@@ -195,7 +204,7 @@ export const CheckoutPage: React.FC = () => {
     msg += `*WhatsApp:* ${shippingDetails.phoneWhatsApp}\n`;
     msg += `*Email:* ${shippingDetails.email}\n`;
     msg += `*Delivery Destination:* ${shippingDetails.city}, ${shippingDetails.country}\n`;
-    msg += `*Delivery Method:* ${shippingDetails.deliveryMethod === 'dhl-express' ? 'Complimentary DHL Express' : 'Lagos Atelier Fitting Pickup'}\n`;
+    msg += `*Delivery Method:* ${isDHL ? 'DHL Express Courier (₦25,000 / $50)' : 'Lagos Atelier Fitting Pickup (Complimentary)'}\n`;
     msg += `*Payment Preference:* ${shippingDetails.paymentMethod === 'paystack-card' ? 'PAYSTACK CARD (PAID)' : shippingDetails.paymentMethod.toUpperCase()}\n`;
     if (paymentReference) {
       msg += `*Paystack Reference:* ${paymentReference}\n`;
@@ -207,7 +216,7 @@ export const CheckoutPage: React.FC = () => {
     items.forEach((item, i) => {
       msg += `${i + 1}. ${item.product.name} (EU ${item.size}) x${item.quantity} - ₦${(item.product.priceNGN * item.quantity).toLocaleString('en-NG')}\n`;
     });
-    msg += `\n*TOTAL:* ₦${subtotalNGN.toLocaleString('en-NG')} (~$${subtotalUSD.toLocaleString('en-US')})\n`;
+    msg += `\n*TOTAL:* ₦${estimatedTotalNGN.toLocaleString('en-NG')} (~$${estimatedTotalUSD.toLocaleString('en-US')})\n`;
     msg += `------------------------------------\n`;
     msg += paymentReference 
       ? `Hello Nelson Atelier, I have completed my order and settled payment via Paystack. Please schedule bench allocation.`
@@ -373,11 +382,11 @@ export const CheckoutPage: React.FC = () => {
                         <span className="font-semibold text-xs text-[#F5F1E8] block">
                           DHL Express Courier
                         </span>
-                        <span className="text-[11px] text-[#B89B5E] block">
-                          Complimentary Worldwide
+                        <span className="text-[11px] text-[#B89B5E] block font-mono">
+                          ₦25,000 NGN / $50 USD
                         </span>
                         <span className="text-[10px] text-[#D8CBB8]/50 block mt-0.5">
-                          Door-to-door insured dispatch
+                          Door-to-door insured dispatch (3-5 business days)
                         </span>
                       </div>
                     </label>
@@ -395,11 +404,11 @@ export const CheckoutPage: React.FC = () => {
                         <span className="font-semibold text-xs text-[#F5F1E8] block">
                           Atelier Fitting & Pickup
                         </span>
-                        <span className="text-[11px] text-[#B89B5E] block">
-                          Lagos Atelier
+                        <span className="text-[11px] text-[#B89B5E] block font-mono">
+                          Complimentary (₦0)
                         </span>
                         <span className="text-[10px] text-[#D8CBB8]/50 block mt-0.5">
-                          Try on piece with the master shoemaker
+                          Try on piece with the master shoemaker in Lagos
                         </span>
                       </div>
                     </label>
@@ -527,7 +536,7 @@ export const CheckoutPage: React.FC = () => {
                   ) : shippingDetails.paymentMethod === 'paystack-card' ? (
                     <>
                       <Lock className="w-4 h-4 text-[#0A0A0A]" />
-                      <span>PAY ₦{subtotalNGN.toLocaleString('en-NG')} WITH PAYSTACK</span>
+                      <span>PAY ₦{estimatedTotalNGN.toLocaleString('en-NG')} WITH PAYSTACK</span>
                     </>
                   ) : (
                     <span>TRANSMIT COMMISSION DOSSIER</span>
@@ -571,17 +580,19 @@ export const CheckoutPage: React.FC = () => {
                   <span className="text-[#F5F1E8] font-medium">{formatCurrencyNGN(subtotalNGN)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Worldwide Courier</span>
-                  <span className="text-[#B89B5E] font-medium">Complimentary</span>
+                  <span>{isDHL ? 'DHL Express Courier' : 'Atelier Fitting Pickup'}</span>
+                  <span className={isDHL ? "text-[#F5F1E8] font-medium" : "text-[#B89B5E] font-medium"}>
+                    {isDHL ? formatCurrencyNGN(estimatedShippingFeeNGN) : 'Complimentary'}
+                  </span>
                 </div>
                 <div className="border-t border-[#D8CBB8]/10 pt-3 flex items-baseline justify-between">
                   <span className="font-semibold text-sm text-[#F5F1E8]">ESTIMATED TOTAL</span>
                   <div className="text-right">
                     <span className="font-serif text-2xl text-[#F5F1E8] block">
-                      {formatCurrencyNGN(subtotalNGN)}
+                      {formatCurrencyNGN(estimatedTotalNGN)}
                     </span>
                     <span className="text-[10px] text-[#D8CBB8]/50 block">
-                      ≈ {formatCurrencyUSD(subtotalUSD)} USD
+                      ≈ {formatCurrencyUSD(estimatedTotalUSD)} USD
                     </span>
                   </div>
                 </div>

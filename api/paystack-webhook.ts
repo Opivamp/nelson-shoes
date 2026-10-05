@@ -17,39 +17,49 @@ export default async function handler(req: IncomingMessage & { body?: any }, res
     return;
   }
 
-  // 1. Capture Raw Request Body
-  let rawBodyBuffer: Buffer;
-  try {
-    const buffers: Buffer[] = [];
-    let receivedBytes = 0;
-
-    for await (const chunk of req) {
-      const buf = typeof chunk === 'string' ? Buffer.from(chunk) : chunk;
-      receivedBytes += buf.length;
-      if (receivedBytes > MAX_WEBHOOK_BYTES) {
-        res.statusCode = 413;
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify({ error: 'Payload Too Large' }));
-        return;
-      }
-      buffers.push(buf);
-    }
-    rawBodyBuffer = Buffer.concat(buffers);
-  } catch (readErr: any) {
-    console.error('[Paystack Webhook] Error reading request stream:', readErr);
-    res.statusCode = 400;
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify({ error: 'Failed to read request body stream.' }));
-    return;
-  }
-
-  // 2. Validate HMAC-SHA512 Webhook Signature
+  // 1. Validate HMAC-SHA512 Webhook Signature Header Presence Early
   const signatureHeader = req.headers['x-paystack-signature'];
   if (!signatureHeader || typeof signatureHeader !== 'string') {
     console.warn('[Paystack Webhook] Missing x-paystack-signature header.');
     res.statusCode = 401;
     res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify({ error: 'Missing x-paystack-signature header.' }));
+    return;
+  }
+
+  // 2. Capture Raw Request Body
+  let rawBodyBuffer: Buffer;
+  try {
+    if (Buffer.isBuffer(req.body)) {
+      rawBodyBuffer = req.body;
+    } else if (typeof req.body === 'string') {
+      rawBodyBuffer = Buffer.from(req.body, 'utf-8');
+    } else if (req.body && typeof req.body === 'object') {
+      rawBodyBuffer = Buffer.from(JSON.stringify(req.body), 'utf-8');
+    } else if (typeof (req as any)[Symbol.asyncIterator] === 'function') {
+      const buffers: Buffer[] = [];
+      let receivedBytes = 0;
+
+      for await (const chunk of req) {
+        const buf = typeof chunk === 'string' ? Buffer.from(chunk) : chunk;
+        receivedBytes += buf.length;
+        if (receivedBytes > MAX_WEBHOOK_BYTES) {
+          res.statusCode = 413;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ error: 'Payload Too Large' }));
+          return;
+        }
+        buffers.push(buf);
+      }
+      rawBodyBuffer = Buffer.concat(buffers);
+    } else {
+      rawBodyBuffer = Buffer.alloc(0);
+    }
+  } catch (readErr: any) {
+    console.error('[Paystack Webhook] Error reading request stream:', readErr);
+    res.statusCode = 400;
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify({ error: 'Failed to read request body stream.' }));
     return;
   }
 

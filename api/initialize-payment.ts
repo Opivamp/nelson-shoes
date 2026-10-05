@@ -38,7 +38,7 @@ export default async function handler(req: IncomingMessage & { body?: any }, res
   // Rate Limiting by IP
   const ip = (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() || 
              (req.headers['x-real-ip'] as string) || 
-             req.socket.remoteAddress || 
+             req.socket?.remoteAddress || 
              'unknown';
 
   if (isRateLimited(`init_payment:${ip}`, 20, 15 * 60 * 1000)) {

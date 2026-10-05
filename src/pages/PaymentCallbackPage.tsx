@@ -152,7 +152,7 @@ export const PaymentCallbackPage: React.FC = () => {
                 to="/account/orders"
                 className="inline-flex items-center justify-center gap-2 px-6 py-3.5 border border-[#B89B5E]/40 text-[#F5F1E8] text-xs uppercase tracking-[0.2em] hover:bg-[#B89B5E]/10 transition-colors"
               >
-                Patron Orders
+                Customer Orders
               </Link>
             </div>
           </div>

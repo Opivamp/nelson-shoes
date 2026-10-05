@@ -138,7 +138,7 @@ export interface CustomerOrder {
   subtotalNGN: number;
   subtotalUSD: number;
   paymentMethod: 'whatsapp-concierge' | 'bank-transfer' | 'paystack-card';
-  paymentStatus: 'pending' | 'deposit_paid' | 'paid';
+  paymentStatus: 'pending' | 'deposit_paid' | 'paid' | 'failed' | 'abandoned' | 'reversed';
   paymentReference?: string;
   status: OrderStatus;
   customerUid?: string;

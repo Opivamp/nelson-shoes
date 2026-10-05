@@ -151,6 +151,8 @@ export const CheckoutPage: React.FC = () => {
             email: shippingDetails.email,
             amountNGN: authoritativeAmountNGN,
             orderNumber: authoritativeOrderNumber,
+            orderId: result.orderId,
+            authToken,
             customerName: `${shippingDetails.firstName} ${shippingDetails.lastName}`,
             phone: shippingDetails.phoneWhatsApp,
             onSuccess: (ref: string) => {

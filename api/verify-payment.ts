@@ -77,8 +77,13 @@ function getAdminServices() {
           })
         });
 
+    const db = getFirestore(app);
+    try {
+      db.settings({ ignoreUndefinedProperties: true });
+    } catch {}
+
     return {
-      db: getFirestore(app)
+      db
     };
   } catch (err: any) {
     console.error('[Paystack Admin] Failed to initialize Firebase Admin SDK:', err?.message || err);

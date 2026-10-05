@@ -78,8 +78,13 @@ function getAdminServices() {
           })
         });
 
+    const db = getFirestore(app);
+    try {
+      db.settings({ ignoreUndefinedProperties: true });
+    } catch {}
+
     return {
-      db: getFirestore(app),
+      db,
       auth: getAuth(app)
     };
   } catch (err: any) {

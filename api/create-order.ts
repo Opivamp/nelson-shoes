@@ -73,8 +73,13 @@ function getAdminServices() {
           })
         });
 
+    const db = getFirestore(app);
+    try {
+      db.settings({ ignoreUndefinedProperties: true });
+    } catch {}
+
     return {
-      db: getFirestore(app),
+      db,
       auth: getAuth(app)
     };
   } catch (err: any) {
@@ -540,7 +545,7 @@ export default async function handler(req: IncomingMessage & { body?: any }, res
       },
       size: rawSize,
       isBespokeFitting: Boolean(item.isBespokeFitting),
-      customNotes: typeof item.customNotes === 'string' ? item.customNotes.slice(0, 500) : undefined,
+      customNotes: typeof item.customNotes === 'string' ? item.customNotes.slice(0, 500) : null,
       quantity: qty
     });
   }
@@ -569,7 +574,7 @@ export default async function handler(req: IncomingMessage & { body?: any }, res
       state,
       country,
       deliveryMethod,
-      fittingNotes
+      fittingNotes: fittingNotes || null
     },
     items: validatedItems,
     subtotalNGN: calculatedSubtotalNGN,

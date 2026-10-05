@@ -1,10 +1,98 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import {
-  getAdminServices,
-  getPaystackSecretKey,
-  verifyWebhookSignature,
-  toPaystackSubunit
-} from './_paystack';
+import { cert, getApps, initializeApp } from 'firebase-admin/app';
+import { getFirestore } from 'firebase-admin/firestore';
+import crypto from 'node:crypto';
+
+function cleanPrivateKey(key: string): string {
+  let cleaned = key.trim();
+  if ((cleaned.startsWith('"') && cleaned.endsWith('"')) || (cleaned.startsWith("'") && cleaned.endsWith("'"))) {
+    cleaned = cleaned.slice(1, -1).trim();
+  }
+  cleaned = cleaned.replace(/\\n/g, '\n');
+  cleaned = cleaned.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+
+  const beginMarker = '-----BEGIN PRIVATE KEY-----';
+  const endMarker = '-----END PRIVATE KEY-----';
+  if (cleaned.includes(beginMarker) && cleaned.includes(endMarker)) {
+    const startIdx = cleaned.indexOf(beginMarker) + beginMarker.length;
+    const endIdx = cleaned.indexOf(endMarker);
+    const base64Body = cleaned.substring(startIdx, endIdx).replace(/\s+/g, '');
+    const chunked = base64Body.match(/.{1,64}/g)?.join('\n') || base64Body;
+    return `${beginMarker}\n${chunked}\n${endMarker}\n`;
+  }
+
+  return cleaned;
+}
+
+function getAdminServices() {
+  const projectId = (process.env.FIREBASE_PROJECT_ID || process.env.VITE_FIREBASE_PROJECT_ID || 'nelson-shoes-62767').trim();
+  const clientEmail = (process.env.FIREBASE_CLIENT_EMAIL || '').trim();
+  const rawKey = process.env.FIREBASE_PRIVATE_KEY;
+
+  if (!projectId || !clientEmail || !rawKey) {
+    return null;
+  }
+
+  try {
+    const privateKey = cleanPrivateKey(rawKey);
+    const existingApps = getApps();
+    const app = existingApps.length > 0 
+      ? existingApps[0] 
+      : initializeApp({
+          credential: cert({
+            projectId,
+            clientEmail,
+            privateKey
+          })
+        });
+
+    return {
+      db: getFirestore(app)
+    };
+  } catch (err: any) {
+    console.error('[Paystack Webhook] Failed to initialize Firebase Admin SDK:', err?.message || err);
+    return null;
+  }
+}
+
+function getPaystackSecretKey(): string {
+  return (process.env.PAYSTACK_SECRET_KEY || '').trim();
+}
+
+function toPaystackSubunit(amount: number, currency: string): number {
+  if (typeof amount !== 'number' || isNaN(amount) || amount <= 0 || !isFinite(amount)) {
+    throw new Error(`Invalid monetary amount: ${amount}`);
+  }
+  const normCur = (currency || '').trim().toUpperCase();
+  if (normCur !== 'NGN' && normCur !== 'USD') {
+    throw new Error(`Unsupported currency for Paystack conversion: '${currency}'. Only NGN and USD supported.`);
+  }
+  return Math.round(amount * 100);
+}
+
+function verifyWebhookSignature(rawBody: string | Buffer, headerSignature: string, secretKey: string): boolean {
+  if (!rawBody || !headerSignature || !secretKey) {
+    return false;
+  }
+  try {
+    const computedSignature = crypto
+      .createHmac('sha512', secretKey)
+      .update(rawBody)
+      .digest('hex');
+
+    const sigBuffer = Buffer.from(headerSignature.trim(), 'utf8');
+    const computedBuffer = Buffer.from(computedSignature.trim(), 'utf8');
+
+    if (sigBuffer.length !== computedBuffer.length) {
+      return false;
+    }
+
+    return crypto.timingSafeEqual(sigBuffer, computedBuffer);
+  } catch (err) {
+    console.error('[Paystack Webhook] Signature verification exception:', err);
+    return false;
+  }
+}
 
 const MAX_WEBHOOK_BYTES = 64 * 1024; // 64KB max payload
 

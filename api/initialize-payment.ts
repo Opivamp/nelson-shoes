@@ -1,20 +1,128 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import {
-  getAdminServices,
-  getPaystackSecretKey,
-  getPaystackCallbackUrl,
-  toPaystackSubunit,
-  generatePaystackReference,
-  isRateLimited,
-  ALLOWED_ORIGINS
-} from './_paystack';
+import { cert, getApps, initializeApp } from 'firebase-admin/app';
+import { getFirestore } from 'firebase-admin/firestore';
+import { getAuth } from 'firebase-admin/auth';
+import crypto from 'node:crypto';
+
+// In-memory rate limiter per IP
+const attemptsMap = new Map<string, { count: number; resetAt: number }>();
+
+function isRateLimited(key: string, maxAttempts = 20, windowMs = 15 * 60 * 1000): boolean {
+  const now = Date.now();
+  const record = attemptsMap.get(key);
+  if (!record || now > record.resetAt) {
+    attemptsMap.set(key, { count: 1, resetAt: now + windowMs });
+    return false;
+  }
+  if (record.count >= maxAttempts) {
+    return true;
+  }
+  record.count += 1;
+  return false;
+}
+
+const ALLOWED_ORIGINS = [
+  'https://nelson-shoes.vercel.app',
+  'http://localhost:5173',
+  'http://localhost:4173'
+];
+
+function isAllowedOrigin(origin: string): boolean {
+  if (!origin) return false;
+  if (ALLOWED_ORIGINS.includes(origin)) return true;
+  if (/^https:\/\/nelson-shoes[a-z0-9-]*\.vercel\.app$/.test(origin)) return true;
+  if (/^http:\/\/localhost:[0-9]+$/.test(origin)) return true;
+  return false;
+}
+
+function cleanPrivateKey(key: string): string {
+  let cleaned = key.trim();
+  if ((cleaned.startsWith('"') && cleaned.endsWith('"')) || (cleaned.startsWith("'") && cleaned.endsWith("'"))) {
+    cleaned = cleaned.slice(1, -1).trim();
+  }
+  cleaned = cleaned.replace(/\\n/g, '\n');
+  cleaned = cleaned.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+
+  const beginMarker = '-----BEGIN PRIVATE KEY-----';
+  const endMarker = '-----END PRIVATE KEY-----';
+  if (cleaned.includes(beginMarker) && cleaned.includes(endMarker)) {
+    const startIdx = cleaned.indexOf(beginMarker) + beginMarker.length;
+    const endIdx = cleaned.indexOf(endMarker);
+    const base64Body = cleaned.substring(startIdx, endIdx).replace(/\s+/g, '');
+    const chunked = base64Body.match(/.{1,64}/g)?.join('\n') || base64Body;
+    return `${beginMarker}\n${chunked}\n${endMarker}\n`;
+  }
+
+  return cleaned;
+}
+
+function getAdminServices() {
+  const projectId = (process.env.FIREBASE_PROJECT_ID || process.env.VITE_FIREBASE_PROJECT_ID || 'nelson-shoes-62767').trim();
+  const clientEmail = (process.env.FIREBASE_CLIENT_EMAIL || '').trim();
+  const rawKey = process.env.FIREBASE_PRIVATE_KEY;
+
+  if (!projectId || !clientEmail || !rawKey) {
+    return null;
+  }
+
+  try {
+    const privateKey = cleanPrivateKey(rawKey);
+    const existingApps = getApps();
+    const app = existingApps.length > 0 
+      ? existingApps[0] 
+      : initializeApp({
+          credential: cert({
+            projectId,
+            clientEmail,
+            privateKey
+          })
+        });
+
+    return {
+      db: getFirestore(app),
+      auth: getAuth(app)
+    };
+  } catch (err: any) {
+    console.error('[Paystack Admin] Failed to initialize Firebase Admin SDK:', err?.message || err);
+    return null;
+  }
+}
+
+function getPaystackSecretKey(): string {
+  return (process.env.PAYSTACK_SECRET_KEY || '').trim();
+}
+
+function getPaystackCallbackUrl(req?: IncomingMessage): string {
+  if (process.env.PAYSTACK_CALLBACK_URL && process.env.PAYSTACK_CALLBACK_URL.trim()) {
+    return process.env.PAYSTACK_CALLBACK_URL.trim();
+  }
+  const origin = (req?.headers.origin as string) || 'https://nelson-shoes.vercel.app';
+  return `${origin}/payment/callback`;
+}
+
+function toPaystackSubunit(amount: number, currency: string): number {
+  if (typeof amount !== 'number' || isNaN(amount) || amount <= 0 || !isFinite(amount)) {
+    throw new Error(`Invalid monetary amount: ${amount}`);
+  }
+  const normCur = (currency || '').trim().toUpperCase();
+  if (normCur !== 'NGN' && normCur !== 'USD') {
+    throw new Error(`Unsupported currency for Paystack conversion: '${currency}'. Only NGN and USD supported.`);
+  }
+  return Math.round(amount * 100);
+}
+
+function generatePaystackReference(orderNumber: string): string {
+  const safeOrderNumber = (orderNumber || 'ORD').replace(/[^a-zA-Z0-9-]/g, '');
+  const uniqueHex = crypto.randomBytes(4).toString('hex');
+  return `NSPAY-${safeOrderNumber}-${uniqueHex}`;
+}
 
 const MAX_BODY_BYTES = 32 * 1024; // 32KB
 
 export default async function handler(req: IncomingMessage & { body?: any }, res: ServerResponse) {
   // CORS origin handling
   const origin = (req.headers.origin as string) || '';
-  if (ALLOWED_ORIGINS.includes(origin)) {
+  if (isAllowedOrigin(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');

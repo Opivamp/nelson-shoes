@@ -66,7 +66,7 @@ export const formatCustomerAuthError = (code: string): string => {
 };
 
 /**
- * Creates a new customer account using Firebase Auth and stores a patron profile document in Firestore.
+ * Creates a new customer account using Firebase Auth and stores a customer profile document in Firestore.
  * Passwords are NEVER written to Firestore.
  */
 export const signUpCustomer = async (data: CustomerSignUpData): Promise<{ user: User; profile: CustomerProfile }> => {
@@ -132,7 +132,7 @@ export const signInCustomer = async (email: string, pass: string): Promise<{ use
     const now = new Date().toISOString();
     profile = {
       uid: user.uid,
-      fullName: user.displayName || 'Patron',
+      fullName: user.displayName || 'Customer',
       email: user.email || cleanEmail,
       emailVerified: user.emailVerified,
       createdAt: now,
@@ -141,7 +141,7 @@ export const signInCustomer = async (email: string, pass: string): Promise<{ use
     try {
       await setDoc(doc(db, 'customers', user.uid), profile);
     } catch (err) {
-      console.warn('Could not lazily persist patron profile:', err);
+      console.warn('Could not lazily persist customer profile:', err);
     }
   }
 

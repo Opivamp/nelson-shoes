@@ -233,6 +233,45 @@ export const uploadProductImageToStorage = async (file: File, slug: string): Pro
   return await getDownloadURL(snapshot.ref);
 };
 
+export const uploadBespokeReferenceToStorage = async (
+  file: File, 
+  customerUid?: string
+): Promise<{ url: string; storagePath: string; name: string; sizeBytes: number; contentType: string }> => {
+  if (!storage || !isFirebaseConfigured) {
+    throw new Error('Firebase Storage is not initialized or configured.');
+  }
+
+  if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+    throw new Error(`Invalid file type (${file.type || 'unknown'}). Only JPEG, PNG, WebP, and AVIF image formats are permitted.`);
+  }
+
+  if (file.size > MAX_IMAGE_SIZE_BYTES) {
+    throw new Error(`File size (${(file.size / (1024 * 1024)).toFixed(1)}MB) exceeds the 10MB limit.`);
+  }
+
+  const cleanFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+  const userFolder = customerUid ? customerUid.replace(/[^a-zA-Z0-9_-]/g, '') : 'guest';
+  const storagePath = `bespoke_references/${userFolder}/${Date.now()}_${cleanFileName}`;
+  const fileRef = ref(storage, storagePath);
+
+  const snapshot = await uploadBytes(fileRef, file, {
+    contentType: file.type,
+    customMetadata: {
+      uploadedBy: customerUid || 'guest_client',
+      purpose: 'bespoke_inspiration_reference'
+    }
+  });
+
+  const url = await getDownloadURL(snapshot.ref);
+  return {
+    url,
+    storagePath,
+    name: file.name,
+    sizeBytes: file.size,
+    contentType: file.type
+  };
+};
+
 // ---------------------------------------------------------------------------
 // FIREBASE AUTHENTICATION: Admin Cordwainer Auth
 // ---------------------------------------------------------------------------

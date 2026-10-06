@@ -41,9 +41,21 @@ export interface CustomerProfileUpdateData {
   photoURL?: string;
 }
 
+import type { 
+  BespokeLifecycleStatus, 
+  BespokeFittingSpecification, 
+  BespokeQuotation, 
+  BespokeReferenceAsset, 
+  BespokeCustomerVisibleNote 
+} from './bespoke';
+
 export interface CustomerBespokeInquiry {
   id: string;
+  inquiryReference?: string;
   customerUid?: string;
+  customerName?: string;
+  customerEmail?: string;
+  customerPhone?: string;
   fullName: string;
   email: string;
   phoneOrWhatsApp?: string;
@@ -60,8 +72,19 @@ export interface CustomerBespokeInquiry {
   specialRequests?: string;
   additionalDetails?: string;
   fittingPreference?: string;
-  status: 'new' | 'consultation_scheduled' | 'in_craft' | 'completed' | 'cancelled' | string;
+  status: BespokeLifecycleStatus | string;
+  specifications?: BespokeFittingSpecification;
+  referenceImages?: BespokeReferenceAsset[];
+  quotation?: BespokeQuotation | null;
+  customerVisibleNotes?: BespokeCustomerVisibleNote[];
+  convertedOrderId?: string | null;
+  convertedOrderNumber?: string | null;
+  reviewedAt?: string;
+  approvedAt?: string;
+  productionStartedAt?: string;
+  completedAt?: string;
   createdAt: string;
+  updatedAt?: string;
 }
 
 export interface ClaimOrderRequest {

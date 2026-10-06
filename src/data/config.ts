@@ -58,6 +58,7 @@ export const BRAND_CONFIG = {
 
   // Atelier Treasury & Corporate Bank Wire Coordinates
   bankTransfer: {
+    isLive: false, // Set to true when verified production treasury account is linked
     bankName: "Guaranty Trust Bank (GTBank)",
     accountName: "Nelson Bespoke Atelier Ltd",
     accountNumber: "0123456789",

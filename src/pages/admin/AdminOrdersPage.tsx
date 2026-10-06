@@ -193,7 +193,7 @@ export const AdminOrdersPage: React.FC = () => {
           Customer Orders & Workbench Workflow
         </h1>
         <p className="text-xs text-[#D8CBB8]/60 font-sans mt-0.5">
-          View incoming bespoke orders from website visitors, advance lasting stages, and notify patrons.
+          View incoming bespoke orders from website visitors, advance lasting stages, and notify customers.
         </p>
       </div>
 
@@ -289,7 +289,7 @@ export const AdminOrdersPage: React.FC = () => {
                         <span>{order.customer.city}, {order.customer.country} • {order.items.length} item(s)</span>
                         {order.customerUid ? (
                           <span className="px-1.5 py-0.5 bg-blue-950/60 border border-blue-500/30 text-blue-300 text-[10px] rounded font-mono">
-                            Patron Account
+                            Customer Account
                           </span>
                         ) : (
                           <span className="px-1.5 py-0.5 bg-[#181818] border border-[#D8CBB8]/20 text-[#D8CBB8]/70 text-[10px] rounded font-mono">
@@ -486,7 +486,7 @@ export const AdminOrdersPage: React.FC = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
                       <div>
                         <label className="block text-[10px] uppercase tracking-wider text-[#D8CBB8]/70 mb-1 font-mono">
-                          Cordwainer Bench Log (Visible to Patron)
+                          Cordwainer Bench Log (Visible to Customer)
                         </label>
                         <input
                           type="text"

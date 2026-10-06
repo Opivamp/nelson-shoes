@@ -293,8 +293,13 @@ export const CheckoutPage: React.FC = () => {
   const estimatedTotalUSD = subtotalUSD + estimatedShippingFeeUSD;
 
   const copyBankCoordinates = () => {
-    const text = `Bank: ${BRAND_CONFIG.bankTransfer.bankName}\nAccount Name: ${BRAND_CONFIG.bankTransfer.accountName}\nAccount Number: ${BRAND_CONFIG.bankTransfer.accountNumber}\nSort Code: ${BRAND_CONFIG.bankTransfer.sortCode}\nReference: ${placedOrder?.orderNumber || orderReference}`;
-    navigator.clipboard.writeText(text);
+    if (BRAND_CONFIG.bankTransfer.isLive) {
+      const text = `Bank: ${BRAND_CONFIG.bankTransfer.bankName}\nAccount Name: ${BRAND_CONFIG.bankTransfer.accountName}\nAccount Number: ${BRAND_CONFIG.bankTransfer.accountNumber}\nSort Code: ${BRAND_CONFIG.bankTransfer.sortCode}\nReference: ${placedOrder?.orderNumber || orderReference}`;
+      navigator.clipboard.writeText(text);
+    } else {
+      const text = `Nelson Shoes Concierge Reference: ${placedOrder?.orderNumber || orderReference}\nPlease contact our WhatsApp Concierge (+234 814 737 4337) to receive verified bank transfer coordinates.`;
+      navigator.clipboard.writeText(text);
+    }
     setCopiedBank(true);
     setTimeout(() => setCopiedBank(false), 3000);
   };
@@ -782,48 +787,79 @@ export const CheckoutPage: React.FC = () => {
                   </span>
                 </div>
 
-                <p className="text-xs text-[#D8CBB8]/80 leading-relaxed">
-                  Please transfer the exact commission total of <strong className="text-[#F5F1E8] font-mono">{formatCurrencyNGN(placedOrder?.totalNGN || estimatedTotalNGN)}</strong> to the official Nelson Shoes corporate treasury account:
-                </p>
+                {BRAND_CONFIG.bankTransfer.isLive ? (
+                  <>
+                    <p className="text-xs text-[#D8CBB8]/80 leading-relaxed">
+                      Please transfer the exact commission total of <strong className="text-[#F5F1E8] font-mono">{formatCurrencyNGN(placedOrder?.totalNGN || estimatedTotalNGN)}</strong> to the official Nelson Shoes corporate treasury account:
+                    </p>
 
-                {/* Bank Coordinates Box */}
-                <div className="p-4 bg-[#101010] border border-[#D8CBB8]/15 rounded space-y-2 font-mono text-xs">
-                  <div className="flex justify-between items-center py-1 border-b border-[#D8CBB8]/10">
-                    <span className="text-[#D8CBB8]/50">Bank Institution:</span>
-                    <span className="text-[#F5F1E8] font-bold">{BRAND_CONFIG.bankTransfer.bankName}</span>
-                  </div>
-                  <div className="flex justify-between items-center py-1 border-b border-[#D8CBB8]/10">
-                    <span className="text-[#D8CBB8]/50">Account Name:</span>
-                    <span className="text-[#F5F1E8] font-semibold">{BRAND_CONFIG.bankTransfer.accountName}</span>
-                  </div>
-                  <div className="flex justify-between items-center py-1 border-b border-[#D8CBB8]/10">
-                    <span className="text-[#D8CBB8]/50">Account Number:</span>
-                    <span className="text-[#B89B5E] text-sm font-bold tracking-wider">{BRAND_CONFIG.bankTransfer.accountNumber}</span>
-                  </div>
-                  <div className="flex justify-between items-center py-1 border-b border-[#D8CBB8]/10">
-                    <span className="text-[#D8CBB8]/50">Sort Code:</span>
-                    <span className="text-[#D8CBB8]">{BRAND_CONFIG.bankTransfer.sortCode}</span>
-                  </div>
-                  <div className="flex justify-between items-center pt-1">
-                    <span className="text-[#D8CBB8]/50">Payment Narration / Reference:</span>
-                    <span className="text-[#B89B5E] font-bold select-all">{placedOrder?.orderNumber || orderReference}</span>
-                  </div>
-                </div>
+                    {/* Bank Coordinates Box */}
+                    <div className="p-4 bg-[#101010] border border-[#D8CBB8]/15 rounded space-y-2 font-mono text-xs">
+                      <div className="flex justify-between items-center py-1 border-b border-[#D8CBB8]/10">
+                        <span className="text-[#D8CBB8]/50">Bank Institution:</span>
+                        <span className="text-[#F5F1E8] font-bold">{BRAND_CONFIG.bankTransfer.bankName}</span>
+                      </div>
+                      <div className="flex justify-between items-center py-1 border-b border-[#D8CBB8]/10">
+                        <span className="text-[#D8CBB8]/50">Account Name:</span>
+                        <span className="text-[#F5F1E8] font-semibold">{BRAND_CONFIG.bankTransfer.accountName}</span>
+                      </div>
+                      <div className="flex justify-between items-center py-1 border-b border-[#D8CBB8]/10">
+                        <span className="text-[#D8CBB8]/50">Account Number:</span>
+                        <span className="text-[#B89B5E] text-sm font-bold tracking-wider">{BRAND_CONFIG.bankTransfer.accountNumber}</span>
+                      </div>
+                      <div className="flex justify-between items-center py-1 border-b border-[#D8CBB8]/10">
+                        <span className="text-[#D8CBB8]/50">Sort Code:</span>
+                        <span className="text-[#D8CBB8]">{BRAND_CONFIG.bankTransfer.sortCode}</span>
+                      </div>
+                      <div className="flex justify-between items-center pt-1">
+                        <span className="text-[#D8CBB8]/50">Payment Narration / Reference:</span>
+                        <span className="text-[#B89B5E] font-bold select-all">{placedOrder?.orderNumber || orderReference}</span>
+                      </div>
+                    </div>
 
-                <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
-                  <button
-                    type="button"
-                    onClick={copyBankCoordinates}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#1E1E1E] hover:bg-[#252525] border border-[#D8CBB8]/20 text-xs font-mono text-[#D8CBB8] hover:text-[#F5F1E8] rounded transition-colors"
-                  >
-                    <Copy size={13} />
-                    <span>{copiedBank ? 'Bank Details Copied!' : 'Copy Bank Details'}</span>
-                  </button>
+                    <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+                      <button
+                        type="button"
+                        onClick={copyBankCoordinates}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#1E1E1E] hover:bg-[#252525] border border-[#D8CBB8]/20 text-xs font-mono text-[#D8CBB8] hover:text-[#F5F1E8] rounded transition-colors"
+                      >
+                        <Copy size={13} />
+                        <span>{copiedBank ? 'Bank Details Copied!' : 'Copy Bank Details'}</span>
+                      </button>
 
-                  <span className="text-[11px] text-[#D8CBB8]/60 italic">
-                    Include #{placedOrder?.orderNumber || orderReference} in your bank transaction description.
-                  </span>
-                </div>
+                      <span className="text-[11px] text-[#D8CBB8]/60 italic">
+                        Include #{placedOrder?.orderNumber || orderReference} in your bank transaction description.
+                      </span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="p-4 bg-amber-950/20 border border-amber-600/30 rounded space-y-3">
+                      <p className="text-xs text-amber-200/90 leading-relaxed">
+                        Bank transfer instructions are currently pending treasury verification. Please contact the Nelson Shoes WhatsApp Concierge with your Order Reference <strong className="text-[#F5F1E8] font-mono">#{placedOrder?.orderNumber || orderReference}</strong> to receive direct corporate settlement coordinates.
+                      </p>
+                      <div className="pt-1 flex flex-wrap items-center gap-3">
+                        <a
+                          href={`https://wa.me/2348147374337?text=${encodeURIComponent(`Hello Nelson Shoes Atelier, I have placed order #${placedOrder?.orderNumber || orderReference} and require corporate bank transfer settlement coordinates.`)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#25D366]/20 hover:bg-[#25D366]/30 border border-[#25D366]/40 text-xs font-mono text-[#25D366] rounded transition-colors"
+                        >
+                          <MessageCircle size={13} />
+                          <span>Contact WhatsApp Concierge</span>
+                        </a>
+                        <button
+                          type="button"
+                          onClick={copyBankCoordinates}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#1E1E1E] hover:bg-[#252525] border border-[#D8CBB8]/20 text-xs font-mono text-[#D8CBB8] hover:text-[#F5F1E8] rounded transition-colors"
+                        >
+                          <Copy size={13} />
+                          <span>{copiedBank ? 'Reference Copied!' : 'Copy Order Reference'}</span>
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             ) : placedOrder?.paymentMethod === 'whatsapp-concierge' ? (
               /* 3. WhatsApp Concierge State */

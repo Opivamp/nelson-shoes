@@ -1,4 +1,4 @@
-import type { CustomerOrder } from '../types';
+import type { CustomerOrder, BespokeInquiryDocument } from '../types';
 import { BRAND_CONFIG, formatCurrencyNGN, formatCurrencyUSD } from '../data/config';
 
 export type NotificationEvent =
@@ -9,7 +9,16 @@ export type NotificationEvent =
   | 'QUALITY_INSPECTION_COMPLETE'
   | 'ORDER_DISPATCHED'
   | 'ORDER_DELIVERED'
-  | 'ORDER_CANCELLED';
+  | 'ORDER_CANCELLED'
+  | 'BESPOKE_INQUIRY_SUBMITTED'
+  | 'BESPOKE_INQUIRY_REVIEWED'
+  | 'BESPOKE_DETAILS_REQUESTED'
+  | 'BESPOKE_QUOTE_READY'
+  | 'BESPOKE_QUOTE_APPROVED'
+  | 'BESPOKE_DEPOSIT_CONFIRMED'
+  | 'BESPOKE_PRODUCTION_STARTED'
+  | 'BESPOKE_COMPLETED'
+  | 'BESPOKE_CANCELLED';
 
 export interface NotificationPayload {
   event: NotificationEvent;
@@ -55,9 +64,13 @@ export function formatCustomerNotificationMessage(
       msg += `*Payment Status:* ${order.paymentStatus.toUpperCase()}\n\n`;
       if (order.paymentMethod === 'bank-transfer' && order.paymentStatus === 'pending') {
         msg += `*Bank Transfer Instructions:*\n`;
-        msg += `Bank: ${BRAND_CONFIG.bankTransfer.bankName}\n`;
-        msg += `Account Name: ${BRAND_CONFIG.bankTransfer.accountName}\n`;
-        msg += `Account Number: ${BRAND_CONFIG.bankTransfer.accountNumber}\n`;
+        if (BRAND_CONFIG.bankTransfer.isLive) {
+          msg += `Bank: ${BRAND_CONFIG.bankTransfer.bankName}\n`;
+          msg += `Account Name: ${BRAND_CONFIG.bankTransfer.accountName}\n`;
+          msg += `Account Number: ${BRAND_CONFIG.bankTransfer.accountNumber}\n`;
+        } else {
+          msg += `Treasury coordinates currently pending verification.\nPlease contact Concierge via WhatsApp to receive direct settlement coordinates.\n`;
+        }
         msg += `Reference: ${orderRef}\n\n`;
       }
       msg += `Track progress anytime at: https://nelson-shoes.vercel.app/track?order=${orderRef}\n`;
@@ -140,6 +153,10 @@ export function formatCustomerNotificationMessage(
       msg += `Please contact our atelier concierge with any questions.\n`;
       return msg;
     }
+
+    default: {
+      return `*NELSON BESPOKE ATELIER UPDATE*\n\nDear ${clientName},\nYour commission dossier ${orderRef} has an atelier status update.\nTrack anytime at: https://nelson-shoes.vercel.app/track?order=${orderRef}\n`;
+    }
   }
 }
 
@@ -187,4 +204,55 @@ export async function dispatchCustomerNotification(
     actionUrl,
     message
   };
+}
+
+/**
+ * Formats bespoke commission notifications for direct WhatsApp dialogues.
+ */
+export function formatBespokeNotificationMessage(
+  event: NotificationEvent,
+  inquiry: Partial<BespokeInquiryDocument> & { id: string; customerName: string; specifications?: any; quotation?: any }
+): string {
+  const patronName = inquiry.customerName || 'Valued Patron';
+  const refCode = inquiry.inquiryReference || inquiry.id.slice(0, 8).toUpperCase();
+  const silhouette = inquiry.specifications?.silhouette || 'Bespoke Footwear';
+
+  switch (event) {
+    case 'BESPOKE_INQUIRY_SUBMITTED':
+      return `*NELSON ATELIER — BESPOKE INQUIRY RECEIVED*\n\nDear ${patronName},\nYour bespoke dossier *#${refCode}* (${silhouette}) has been received by our master cordwainers. We will review your anatomical notes and reach out for fitting calibrations.\n\nNelson Atelier Concierge`;
+
+    case 'BESPOKE_QUOTE_READY': {
+      const amount = inquiry.quotation?.amountNGN ? formatCurrencyNGN(inquiry.quotation.amountNGN) : 'Quotation Ready';
+      return `*NELSON ATELIER — BESPOKE QUOTATION ISSUED*\n\nDear ${patronName},\nYour official commission quotation for *#${refCode}* (${silhouette}) is ready: ${amount}.\nPlease review and approve terms in your Customer Portal: https://nelson-shoes.vercel.app/account/bespoke/${inquiry.id}\n\nNelson Atelier Concierge`;
+    }
+
+    case 'BESPOKE_QUOTE_APPROVED':
+      return `*NELSON ATELIER — COMMISSION QUOTATION APPROVED*\n\nDear ${patronName},\nThank you for approving the terms for *#${refCode}*. Bench deposit allocation is now active.\n\nNelson Atelier Concierge`;
+
+    case 'BESPOKE_DEPOSIT_CONFIRMED':
+      return `*NELSON ATELIER — BENCH DEPOSIT CONFIRMED*\n\nDear ${patronName},\nDeposit for *#${refCode}* has been verified. Beechwood block carving and leather clicking are now commencing.\n\nNelson Atelier Concierge`;
+
+    case 'BESPOKE_PRODUCTION_STARTED':
+      return `*NELSON ATELIER — AT WORKBENCH*\n\nDear ${patronName},\nYour commission *#${refCode}* is actively being lasted and hand-welted by our master artisan.\n\nNelson Atelier Concierge`;
+
+    case 'BESPOKE_COMPLETED':
+      return `*NELSON ATELIER — COMMISSION COMPLETED*\n\nDear ${patronName},\nYour bespoke pair *#${refCode}* is glazed, inspected, and ready for delivery/fitting lounge collection.\n\nNelson Atelier Concierge`;
+
+    case 'BESPOKE_CANCELLED':
+      return `*NELSON ATELIER — COMMISSION NOTICE*\n\nDear ${patronName},\nYour bespoke inquiry *#${refCode}* has been cancelled. Please contact concierge if this was in error.\n\nNelson Atelier Concierge`;
+
+    default:
+      return `*NELSON ATELIER — COMMISSION UPDATE*\n\nDear ${patronName},\nUpdate regarding your bespoke inquiry *#${refCode}*.\n\nNelson Atelier Concierge`;
+  }
+}
+
+export function generateBespokeWhatsAppUrl(
+  event: NotificationEvent,
+  inquiry: Partial<BespokeInquiryDocument> & { id: string; customerName: string; customerPhone?: string }
+): string {
+  const message = formatBespokeNotificationMessage(event, inquiry as any);
+  const targetPhone = inquiry.customerPhone 
+    ? inquiry.customerPhone.replace(/[^0-9]/g, '') 
+    : BRAND_CONFIG.contact.whatsappNumber.replace(/[^0-9]/g, '');
+  return `https://wa.me/${targetPhone}?text=${encodeURIComponent(message)}`;
 }

@@ -34,6 +34,23 @@ service firebase.storage {
       allow write: if isAdmin() && isValidImage();
       allow delete: if isAdmin();
     }
+
+    // Bespoke reference assets path
+    // Authenticated customers can upload & view only their own references
+    // Admins have full oversight
+    match /bespoke_references/{customerId}/{fileName} {
+      allow read: if isAdmin() || (isAuthenticated() && request.auth.uid == customerId);
+      allow write: if (isAdmin() || (isAuthenticated() && request.auth.uid == customerId)) && isValidImage();
+      allow delete: if isAdmin() || (isAuthenticated() && request.auth.uid == customerId);
+    }
+
+    // Guest bespoke references path
+    // Write permitted for image types under 10MB; read restricted to atelier staff
+    match /bespoke_references/guest/{fileName} {
+      allow read: if isAdmin();
+      allow write: if isValidImage();
+      allow delete: if isAdmin();
+    }
   }
 }
 

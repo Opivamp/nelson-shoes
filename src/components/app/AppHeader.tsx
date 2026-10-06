@@ -220,11 +220,11 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ onToggleMobileMenu }) => {
             </span>
           </button>
 
-          {/* Patron Account Link / Avatar */}
+          {/* Customer Account Link / Avatar */}
           <Link
             to={customerUser ? "/account" : "/account/login"}
             className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full bg-[#181818] hover:bg-[#222222] border border-[#D8CBB8]/20 hover:border-[#B89B5E]/50 text-xs font-mono text-[#D8CBB8] hover:text-[#B89B5E] transition-all shrink-0 cursor-pointer"
-            title={customerUser ? `Patron Account: ${profile?.fullName || customerUser.email}` : "Patron Sign In / Register"}
+            title={customerUser ? `Customer Account: ${profile?.fullName || customerUser.email}` : "Customer Sign In / Register"}
           >
             <User size={13} className={customerUser ? "text-[#B89B5E]" : "text-[#D8CBB8]/70"} />
             <span className="hidden sm:inline text-[11px] font-sans">

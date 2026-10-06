@@ -185,6 +185,7 @@ export interface CustomerOrder {
 }
 
 export * from './customer';
+export * from './bespoke';
 
 export interface AdminUser {
   email: string;

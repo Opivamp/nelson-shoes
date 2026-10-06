@@ -54,6 +54,17 @@ export const BRAND_CONFIG = {
     symbol: "₦",
     code: "NGN",
     usdRate: 0.00067, // Reference conversion
+  },
+
+  // Atelier Treasury & Corporate Bank Wire Coordinates
+  bankTransfer: {
+    bankName: "Guaranty Trust Bank (GTBank)",
+    accountName: "Nelson Bespoke Atelier Ltd",
+    accountNumber: "0123456789",
+    sortCode: "058-152062",
+    currency: "NGN",
+    branch: "Victoria Island, Lagos",
+    instructions: "Please input your Order Reference (e.g. NS-ORD-XXXXXX) as the payment description/narration. Your commission will be queued for workbench allocation upon treasury verification."
   }
 };
 

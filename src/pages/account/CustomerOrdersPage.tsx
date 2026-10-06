@@ -362,7 +362,7 @@ export const CustomerOrdersPage: React.FC = () => {
                         Total Amount
                       </div>
                       <div className="font-mono text-sm sm:text-base text-[#F5F1E8] font-medium">
-                        ₦{order.subtotalNGN?.toLocaleString() || '0'} / ${order.subtotalUSD?.toLocaleString() || '0'}
+                        ₦{(order.totalNGN || order.subtotalNGN)?.toLocaleString() || '0'} / ${(order.totalUSD || order.subtotalUSD)?.toLocaleString() || '0'}
                       </div>
                     </div>
 

@@ -136,17 +136,32 @@ export const saveOrderToFirestore = async (order: CustomerOrder): Promise<void> 
   }, { merge: true });
 };
 
+export const updateOrderDetailsInFirestore = async (
+  orderId: string,
+  updates: Partial<CustomerOrder>
+): Promise<void> => {
+  if (!db || !isFirebaseConfigured) return;
+  const docRef = doc(db, 'orders', orderId);
+  const payload: Record<string, unknown> = {
+    ...updates,
+    updatedAt: new Date().toISOString()
+  };
+  await setDoc(docRef, payload, { merge: true });
+};
+
 export const updateOrderStatusInFirestore = async (
   orderId: string, 
   status: OrderStatus, 
   trackingNumber?: string, 
-  artisanNotes?: string
+  artisanNotes?: string,
+  additionalUpdates?: Partial<CustomerOrder>
 ): Promise<void> => {
   if (!db || !isFirebaseConfigured) return;
   const docRef = doc(db, 'orders', orderId);
   const payload: Record<string, unknown> = {
     status,
-    updatedAt: new Date().toISOString()
+    updatedAt: new Date().toISOString(),
+    ...(additionalUpdates || {})
   };
   if (trackingNumber !== undefined) payload.trackingNumber = trackingNumber;
   if (artisanNotes !== undefined) payload.artisanNotes = artisanNotes;

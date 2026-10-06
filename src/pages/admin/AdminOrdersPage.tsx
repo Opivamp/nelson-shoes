@@ -15,21 +15,32 @@ import {
   MapPin,
   Mail,
   Phone,
-  FileText
+  FileText,
+  AlertCircle,
+  Ban,
+  ShieldAlert
 } from 'lucide-react';
 import { useOrders } from '../../context/OrderContext';
-import type { CustomerOrder, OrderStatus } from '../../types';
+import { useAdminAuth } from '../../context/AdminAuthContext';
+import type { CustomerOrder, OrderStatus, PaymentStatus } from '../../types';
 import { formatCurrencyNGN, formatCurrencyUSD, getWhatsAppUrl } from '../../data/config';
+import { 
+  canTransitionOrderStatus, 
+  canTransitionPaymentStatus, 
+  validateDispatchRequirements,
+  CRAFT_STAGE_ORDER 
+} from '../../services/orderLifecycle';
 
 export const AdminOrdersPage: React.FC = () => {
-  const { orders, updateOrderStatus, deleteOrder } = useOrders();
+  const { orders, updateOrderStatus, updateOrder, deleteOrder } = useOrders();
+  const { adminUser } = useAdminAuth();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
   const [editingNotes, setEditingNotes] = useState<{ [orderId: string]: string }>({});
   const [editingTracking, setEditingTracking] = useState<{ [orderId: string]: string }>({});
-  const [toastMsg, setToastMsg] = useState<string | null>(null);
+  const [toastMsg, setToastMsg] = useState<{ text: string; isError?: boolean } | null>(null);
 
   const allStatuses: OrderStatus[] = [
     'Pending Confirmation',
@@ -38,12 +49,80 @@ export const AdminOrdersPage: React.FC = () => {
     'Patina & Glacage',
     'Quality Inspection',
     'Dispatched',
-    'Delivered'
+    'Delivered',
+    'Cancelled'
   ];
 
-  const handleStatusChange = (orderId: string, newStatus: OrderStatus) => {
-    updateOrderStatus(orderId, newStatus);
-    showToast(`Order status updated to "${newStatus}"`);
+  const showToast = (text: string, isError = false) => {
+    setToastMsg({ text, isError });
+    setTimeout(() => setToastMsg(null), 4000);
+  };
+
+  const handleStatusChange = (order: CustomerOrder, newStatus: OrderStatus) => {
+    const currentNotes = editingNotes[order.id] !== undefined ? editingNotes[order.id] : (order.artisanNotes || '');
+    const currentTracking = editingTracking[order.id] !== undefined ? editingTracking[order.id] : (order.trackingNumber || '');
+
+    // 1. Authoritative Transition Validation
+    const check = canTransitionOrderStatus(order.status, newStatus, {
+      userRole: adminUser?.role,
+      correctionNote: currentNotes
+    });
+
+    if (!check.allowed) {
+      showToast(check.reason || 'This status transition is not permitted.', true);
+      return;
+    }
+
+    // 2. Dispatch validation if advancing to Dispatched
+    const additionalUpdates: Partial<CustomerOrder> = {};
+    const now = new Date().toISOString();
+
+    if (newStatus === 'Dispatched') {
+      const dispatchCheck = validateDispatchRequirements(order.customer.deliveryMethod, currentTracking);
+      if (!dispatchCheck.valid) {
+        showToast(dispatchCheck.reason || 'A DHL Express tracking number is required to dispatch.', true);
+        return;
+      }
+      additionalUpdates.carrier = dispatchCheck.carrier;
+      additionalUpdates.dispatchedAt = now;
+      if (dispatchCheck.carrier === 'DHL Express') {
+        additionalUpdates.trackingNumber = currentTracking.trim();
+      }
+    } else if (newStatus === 'Delivered') {
+      additionalUpdates.deliveredAt = now;
+    } else if (newStatus === 'Cancelled') {
+      additionalUpdates.cancelledAt = now;
+      additionalUpdates.cancellationReason = currentNotes || 'Cancelled by atelier administration.';
+    }
+
+    updateOrderStatus(order.id, newStatus, currentTracking, currentNotes, additionalUpdates);
+    showToast(`Order #${order.orderNumber} advanced to "${newStatus}"`);
+  };
+
+  const handlePaymentStatusChange = (order: CustomerOrder, newPaymentStatus: PaymentStatus) => {
+    const check = canTransitionPaymentStatus(order.paymentStatus, newPaymentStatus, {
+      userRole: adminUser?.role
+    });
+
+    if (!check.allowed) {
+      showToast(check.reason || 'Cannot downgrade a confirmed, paid order.', true);
+      return;
+    }
+
+    const updates: Partial<CustomerOrder> = {
+      paymentStatus: newPaymentStatus
+    };
+
+    if (newPaymentStatus === 'paid' && !order.paidAt) {
+      updates.paidAt = new Date().toISOString();
+    }
+
+    updateOrder(
+      order.id, 
+      updates, 
+      `Payment status updated from ${order.paymentStatus} to ${newPaymentStatus} by ${adminUser?.name || 'staff'}`
+    );
+    showToast(`Payment status updated to "${newPaymentStatus.toUpperCase()}"`);
   };
 
   const handleSaveDetails = (order: CustomerOrder) => {
@@ -53,13 +132,12 @@ export const AdminOrdersPage: React.FC = () => {
     showToast(`Saved tracking and workbench notes for order #${order.orderNumber}`);
   };
 
-  const showToast = (msg: string) => {
-    setToastMsg(msg);
-    setTimeout(() => setToastMsg(null), 3500);
-  };
-
   const handleDelete = (orderId: string, orderNumber: string) => {
-    if (window.confirm(`Are you sure you want to delete order #${orderNumber}?`)) {
+    if (adminUser?.role !== 'master_artisan') {
+      showToast('Only a Master Artisan may delete order records from workbench.', true);
+      return;
+    }
+    if (window.confirm(`Are you sure you want to delete order #${orderNumber}? This action is permanent.`)) {
       deleteOrder(orderId);
       showToast(`Order #${orderNumber} deleted.`);
     }
@@ -98,9 +176,11 @@ export const AdminOrdersPage: React.FC = () => {
     <div className="space-y-8 animate-fadeIn">
       {/* Toast */}
       {toastMsg && (
-        <div className="fixed top-5 right-5 z-50 p-4 bg-[#B89B5E] text-[#0A0A0A] font-semibold text-xs rounded shadow-2xl flex items-center gap-2 font-mono">
-          <Check size={16} strokeWidth={3} />
-          <span>{toastMsg}</span>
+        <div className={`fixed top-5 right-5 z-50 p-4 font-semibold text-xs rounded shadow-2xl flex items-center gap-2 font-mono ${
+          toastMsg.isError ? 'bg-red-950 border border-red-500 text-red-200' : 'bg-[#B89B5E] text-[#0A0A0A]'
+        }`}>
+          {toastMsg.isError ? <AlertCircle size={16} /> : <Check size={16} strokeWidth={3} />}
+          <span>{toastMsg.text}</span>
         </div>
       )}
 
@@ -207,9 +287,30 @@ export const AdminOrdersPage: React.FC = () => {
 
                       <div className="text-xs text-[#D8CBB8]/60 font-mono flex items-center gap-2 flex-wrap">
                         <span>{order.customer.city}, {order.customer.country} • {order.items.length} item(s)</span>
-                        {order.paymentMethod === 'paystack-card' && (
-                          <span className="px-1.5 py-0.5 bg-emerald-950/60 border border-emerald-500/30 text-emerald-400 text-[10px] rounded">
-                            💳 Paystack Paid
+                        {order.customerUid ? (
+                          <span className="px-1.5 py-0.5 bg-blue-950/60 border border-blue-500/30 text-blue-300 text-[10px] rounded font-mono">
+                            Patron Account
+                          </span>
+                        ) : (
+                          <span className="px-1.5 py-0.5 bg-[#181818] border border-[#D8CBB8]/20 text-[#D8CBB8]/70 text-[10px] rounded font-mono">
+                            Guest
+                          </span>
+                        )}
+                        {order.paymentStatus === 'paid' ? (
+                          <span className="px-1.5 py-0.5 bg-emerald-950/60 border border-emerald-500/30 text-emerald-400 text-[10px] rounded font-mono">
+                            ✓ Paid
+                          </span>
+                        ) : order.paymentMethod === 'bank-transfer' ? (
+                          <span className="px-1.5 py-0.5 bg-amber-950/60 border border-amber-500/30 text-amber-300 text-[10px] rounded font-mono">
+                            Wire Pending
+                          </span>
+                        ) : order.paymentMethod === 'whatsapp-concierge' ? (
+                          <span className="px-1.5 py-0.5 bg-purple-950/60 border border-purple-500/30 text-purple-300 text-[10px] rounded font-mono">
+                            Concierge Pending
+                          </span>
+                        ) : (
+                          <span className="px-1.5 py-0.5 bg-red-950/60 border border-red-500/30 text-red-300 text-[10px] rounded font-mono">
+                            Payment Incomplete
                           </span>
                         )}
                       </div>
@@ -220,10 +321,10 @@ export const AdminOrdersPage: React.FC = () => {
                   <div className="flex flex-wrap items-center gap-4">
                     <div className="text-right">
                       <div className="font-mono font-semibold text-[#F5F1E8] text-sm">
-                        {formatCurrencyNGN(order.subtotalNGN)}
+                        {formatCurrencyNGN(order.totalNGN || (order.subtotalNGN + (order.customer.deliveryMethod === 'dhl-express' ? 25000 : 0)))}
                       </div>
                       <div className="text-[10px] text-[#B89B5E] font-mono">
-                        ≈ {formatCurrencyUSD(order.subtotalUSD)} USD
+                        ≈ {formatCurrencyUSD(order.totalUSD || order.subtotalUSD)} USD
                       </div>
                     </div>
 
@@ -231,7 +332,7 @@ export const AdminOrdersPage: React.FC = () => {
                     <div>
                       <select
                         value={order.status}
-                        onChange={(e) => handleStatusChange(order.id, e.target.value as OrderStatus)}
+                        onChange={(e) => handleStatusChange(order, e.target.value as OrderStatus)}
                         className="bg-[#181818] border border-[#B89B5E]/40 text-xs font-mono text-[#F5F1E8] p-2 rounded focus:outline-none focus:border-[#B89B5E]"
                       >
                         {allStatuses.map((st) => (
@@ -325,24 +426,51 @@ export const AdminOrdersPage: React.FC = () => {
                         <span className="text-[10px] uppercase tracking-wider text-[#B89B5E] font-mono font-semibold block">
                           Fulfillment & Payment
                         </span>
-                        <div className="space-y-1 text-xs text-[#D8CBB8]/80 font-mono">
+                        <div className="space-y-1.5 text-xs text-[#D8CBB8]/80 font-mono">
                           <div>
                             <span className="text-[#D8CBB8]/50">Method: </span>
                             <span className="uppercase text-[#F5F1E8]">{order.paymentMethod}</span>
                           </div>
-                          <div>
+                          <div className="flex items-center gap-2">
                             <span className="text-[#D8CBB8]/50">Payment Status: </span>
-                            <span className="uppercase text-emerald-400 font-bold">{order.paymentStatus}</span>
+                            <select
+                              value={order.paymentStatus}
+                              onChange={(e) => handlePaymentStatusChange(order, e.target.value as PaymentStatus)}
+                              className="bg-[#181818] border border-[#B89B5E]/30 text-xs font-mono text-[#F5F1E8] px-2 py-0.5 rounded focus:outline-none"
+                            >
+                              <option value="pending">PENDING</option>
+                              <option value="deposit_paid">DEPOSIT PAID</option>
+                              <option value="paid">PAID (SETTLED)</option>
+                              <option value="failed">FAILED</option>
+                              <option value="reversed">REVERSED</option>
+                            </select>
                           </div>
+                          {order.paidAt && (
+                            <div className="text-[10px] text-emerald-400">
+                              Settled at: {new Date(order.paidAt).toLocaleString()}
+                            </div>
+                          )}
                           {order.paymentReference && (
                             <div className="pt-0.5">
-                              <span className="text-[#D8CBB8]/50">Paystack Ref: </span>
+                              <span className="text-[#D8CBB8]/50">Payment Ref: </span>
                               <span className="text-[#B89B5E] select-all font-bold">{order.paymentReference}</span>
                             </div>
                           )}
                           <div>
                             <span className="text-[#D8CBB8]/50">Freight Method: </span>
                             <span className="text-[#F5F1E8]">{order.customer.deliveryMethod === 'dhl-express' ? 'DHL Express Worldwide' : 'Lagos Atelier Pickup'}</span>
+                          </div>
+                          <div>
+                            <span className="text-[#D8CBB8]/50">Courier Fee: </span>
+                            <span className="text-[#F5F1E8]">
+                              {order.customer.deliveryMethod === 'dhl-express' ? formatCurrencyNGN(order.shippingFeeNGN || 25000) : 'Complimentary'}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-[#D8CBB8]/50">Total Value: </span>
+                            <span className="text-[#B89B5E] font-bold">
+                              {formatCurrencyNGN(order.totalNGN || (order.subtotalNGN + (order.customer.deliveryMethod === 'dhl-express' ? 25000 : 0)))}
+                            </span>
                           </div>
                           {order.customer.fittingNotes && (
                             <div className="pt-1 text-[11px] text-[#D8CBB8]/60">
@@ -417,14 +545,27 @@ export const AdminOrdersPage: React.FC = () => {
                         </a>
                       </div>
 
-                      <button
-                        type="button"
-                        onClick={() => handleDelete(order.id, order.orderNumber)}
-                        className="text-red-400 hover:text-red-300 text-xs flex items-center gap-1 font-mono"
-                      >
-                        <Trash2 size={13} />
-                        <span>Delete Order</span>
-                      </button>
+                      <div className="flex items-center gap-3">
+                        {['Pending Confirmation', 'At Workbench (Lasting)'].includes(order.status) && (
+                          <button
+                            type="button"
+                            onClick={() => handleStatusChange(order, 'Cancelled')}
+                            className="text-amber-400 hover:text-amber-300 text-xs flex items-center gap-1 font-mono px-2.5 py-1.5 bg-amber-950/40 border border-amber-600/30 rounded"
+                          >
+                            <Ban size={12} />
+                            <span>Cancel Commission</span>
+                          </button>
+                        )}
+
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(order.id, order.orderNumber)}
+                          className="text-red-400 hover:text-red-300 text-xs flex items-center gap-1 font-mono"
+                        >
+                          <Trash2 size={13} />
+                          <span>Delete Order</span>
+                        </button>
+                      </div>
                     </div>
 
                   </div>

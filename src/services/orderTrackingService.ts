@@ -134,7 +134,7 @@ export function sanitizeOrderForTracking(order: CustomerOrder): PublicOrderTrack
     timeline,
     progressPercent: currentStage.percent,
     trackingNumber: order.trackingNumber || null,
-    carrier: order.trackingNumber ? 'DHL Express' : null,
+    carrier: order.carrier || (order.trackingNumber ? 'DHL Express' : (order.customer.deliveryMethod === 'atelier-pickup' ? 'Atelier Pickup' : null)),
     destinationCity: order.customer.city && order.customer.country 
       ? `${order.customer.city}, ${order.customer.country}` 
       : (order.customer.city || null),

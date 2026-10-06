@@ -157,7 +157,7 @@ export const CustomerOrderDetailPage: React.FC = () => {
                 <div>
                   <span className="text-[10px] uppercase font-mono tracking-widest text-[#D8CBB8]/40 block">Total Value</span>
                   <span className="font-mono text-sm text-[#F5F1E8] font-medium">
-                    ₦{order.subtotalNGN?.toLocaleString() || '0'} / ${order.subtotalUSD?.toLocaleString() || '0'}
+                    ₦{(order.totalNGN || order.subtotalNGN)?.toLocaleString() || '0'} / ${(order.totalUSD || order.subtotalUSD)?.toLocaleString() || '0'}
                   </span>
                 </div>
                 <div>
@@ -332,11 +332,17 @@ export const CustomerOrderDetailPage: React.FC = () => {
                   <Truck size={16} className="text-[#B89B5E]" />
                   <span>Shipment & Courier</span>
                 </h4>
-                {order.trackingNumber ? (
+                {order.customer?.deliveryMethod === 'atelier-pickup' ? (
+                  <div className="space-y-2 text-xs font-mono">
+                    <p className="text-[#D8CBB8]/70">Fulfillment Method:</p>
+                    <p className="text-base text-[#B89B5E] font-bold">Lagos Atelier Fitting Pickup</p>
+                    <p className="text-[11px] text-[#D8CBB8]/60 font-sans">Complimentary fitting and collection at our private Lagos atelier upon completion.</p>
+                  </div>
+                ) : order.trackingNumber ? (
                   <div className="space-y-2 text-xs font-mono">
                     <p className="text-[#D8CBB8]/70">Tracking Number:</p>
                     <p className="text-base text-[#B89B5E] font-bold">{order.trackingNumber}</p>
-                    <p className="text-[11px] text-[#D8CBB8]/50">Carrier: DHL Express Insured</p>
+                    <p className="text-[11px] text-[#D8CBB8]/50">Carrier: {order.carrier || 'DHL Express'}</p>
                   </div>
                 ) : (
                   <div className="space-y-2 text-xs text-[#D8CBB8]/60 font-sans">

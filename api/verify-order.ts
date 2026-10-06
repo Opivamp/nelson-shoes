@@ -282,7 +282,8 @@ export default async function handler(req: IncomingMessage & { body?: any; query
       timeline,
       progressPercent: currentStage.percent,
       trackingNumber: orderData.trackingNumber || null,
-      carrier: orderData.trackingNumber ? 'DHL Express' : null,
+      carrier: orderData.carrier || (orderData.trackingNumber ? 'DHL Express' : (orderData.customer?.deliveryMethod === 'atelier-pickup' ? 'Atelier Pickup' : null)),
+      deliveryMethod: orderData.customer?.deliveryMethod || 'dhl-express',
       destinationCity: orderData.customer?.city && orderData.customer?.country
         ? `${orderData.customer.city}, ${orderData.customer.country}`
         : (orderData.customer?.city || null),

@@ -16,6 +16,11 @@ interface OrderContextType {
     items: CartItem[];
     subtotalNGN: number;
     subtotalUSD: number;
+    shippingFeeNGN?: number;
+    shippingFeeUSD?: number;
+    totalNGN?: number;
+    totalUSD?: number;
+    currency?: 'NGN' | 'USD';
     paymentMethod: CustomerOrder['paymentMethod'];
     paymentStatus?: CustomerOrder['paymentStatus'];
     paymentReference?: string;
@@ -24,7 +29,13 @@ interface OrderContextType {
     orderId: string, 
     newStatus: OrderStatus, 
     trackingNumber?: string, 
-    artisanNotes?: string
+    artisanNotes?: string,
+    additionalUpdates?: Partial<CustomerOrder>
+  ) => void;
+  updateOrder: (
+    orderId: string,
+    updates: Partial<CustomerOrder>,
+    auditNote?: string
   ) => void;
   getOrderByIdOrNumber: (idOrNumber: string) => CustomerOrder | undefined;
   deleteOrder: (orderId: string) => void;
@@ -84,9 +95,16 @@ export const SEED_ORDERS: CustomerOrder[] = [
     ],
     subtotalNGN: 245000,
     subtotalUSD: 320,
+    shippingFeeNGN: 25000,
+    shippingFeeUSD: 50,
+    totalNGN: 270000,
+    totalUSD: 370,
+    currency: "NGN",
     paymentMethod: "paystack-card",
     paymentStatus: "paid",
+    paidAt: "2026-03-24T14:35:00Z",
     status: "At Workbench (Lasting)",
+    carrier: "DHL Express",
     trackingNumber: "DHL-99418290",
     artisanNotes: "French box calfskin rested over beechwood last #NS-LAG-A42W. Preparing for hand welt stitching.",
     createdAt: "2026-03-24T14:30:00Z",
@@ -136,10 +154,19 @@ export const SEED_ORDERS: CustomerOrder[] = [
     ],
     subtotalNGN: 215000,
     subtotalUSD: 280,
+    shippingFeeNGN: 25000,
+    shippingFeeUSD: 50,
+    totalNGN: 240000,
+    totalUSD: 330,
+    currency: "NGN",
     paymentMethod: "bank-transfer",
     paymentStatus: "paid",
+    paidAt: "2026-03-10T11:00:00Z",
     status: "Delivered",
+    carrier: "DHL Express",
     trackingNumber: "DHL-88129031",
+    dispatchedAt: "2026-03-18T10:00:00Z",
+    deliveredAt: "2026-03-20T16:00:00Z",
     artisanNotes: "Delivered to client residence in Asokoro. Fitting confirmed exceptional.",
     createdAt: "2026-03-10T09:12:00Z",
     updatedAt: "2026-03-20T16:00:00Z"
@@ -260,17 +287,32 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     orderId: string, 
     newStatus: OrderStatus, 
     trackingNumber?: string, 
-    artisanNotes?: string
+    artisanNotes?: string,
+    additionalUpdates?: Partial<CustomerOrder>
   ) => {
     const now = new Date().toISOString();
     const updateFn = (prev: CustomerOrder[]) =>
       prev.map(ord => {
         if (ord.id === orderId || ord.orderNumber === orderId) {
+          const auditTrail = ord.auditTrail ? [...ord.auditTrail] : [];
+          if (ord.status !== newStatus) {
+            auditTrail.push({
+              event: 'STATUS_TRANSITION',
+              previousStatus: ord.status,
+              newStatus,
+              actorRole: isAdmin ? 'atelier_admin' : 'system',
+              timestamp: now,
+              note: artisanNotes || undefined
+            });
+          }
+
           return {
             ...ord,
+            ...(additionalUpdates || {}),
             status: newStatus,
             trackingNumber: trackingNumber !== undefined ? trackingNumber : ord.trackingNumber,
             artisanNotes: artisanNotes !== undefined ? artisanNotes : ord.artisanNotes,
+            auditTrail,
             updatedAt: now
           };
         }
@@ -281,8 +323,57 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setClientOrders(updateFn);
 
     if (isFirebaseConfigured) {
-      updateOrderStatusInFirestore(orderId, newStatus, trackingNumber, artisanNotes).catch(err => {
+      updateOrderStatusInFirestore(orderId, newStatus, trackingNumber, artisanNotes, additionalUpdates).catch(err => {
         console.warn('Could not update order status in Firestore:', err);
+      });
+    }
+  };
+
+  const updateOrder = (
+    orderId: string,
+    updates: Partial<CustomerOrder>,
+    auditNote?: string
+  ) => {
+    const now = new Date().toISOString();
+    const updateFn = (prev: CustomerOrder[]) =>
+      prev.map(ord => {
+        if (ord.id === orderId || ord.orderNumber === orderId) {
+          const auditTrail = ord.auditTrail ? [...ord.auditTrail] : [];
+          if (auditNote || updates.paymentStatus || updates.status) {
+            auditTrail.push({
+              event: updates.paymentStatus ? 'PAYMENT_UPDATE' : 'ORDER_UPDATE',
+              previousStatus: ord.status,
+              newStatus: updates.status || ord.status,
+              previousPaymentStatus: ord.paymentStatus,
+              newPaymentStatus: updates.paymentStatus || ord.paymentStatus,
+              actorRole: isAdmin ? 'atelier_admin' : 'system',
+              timestamp: now,
+              note: auditNote
+            });
+          }
+
+          return {
+            ...ord,
+            ...updates,
+            auditTrail,
+            updatedAt: now
+          };
+        }
+        return ord;
+      });
+
+    setAdminOrders(updateFn);
+    setClientOrders(updateFn);
+
+    if (isFirebaseConfigured) {
+      updateOrderStatusInFirestore(
+        orderId, 
+        updates.status || 'Pending Confirmation', 
+        updates.trackingNumber, 
+        updates.artisanNotes, 
+        updates
+      ).catch(err => {
+        console.warn('Could not update order in Firestore:', err);
       });
     }
   };
@@ -321,6 +412,7 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         isCloudSyncActive,
         createOrder,
         updateOrderStatus,
+        updateOrder,
         getOrderByIdOrNumber,
         deleteOrder,
         resetOrders

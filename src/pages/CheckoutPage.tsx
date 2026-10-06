@@ -11,12 +11,40 @@ import {
   Sparkles,
   Loader2,
   Lock,
-  Shield
+  Shield,
+  AlertCircle,
+  RefreshCw,
+  Copy,
+  CheckCircle2,
+  Package
 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useCustomerAuth } from '../context/CustomerAuthContext';
 import { formatCurrencyNGN, formatCurrencyUSD, BRAND_CONFIG, getWhatsAppUrl } from '../data/config';
 import { launchPaystackPopup, isPaystackConfigured } from '../services/paystack';
+
+export interface PlacedOrderSummary {
+  orderId: string;
+  orderNumber: string;
+  totalNGN: number;
+  totalUSD: number;
+  subtotalNGN: number;
+  shippingFeeNGN: number;
+  paymentMethod: 'whatsapp-concierge' | 'bank-transfer' | 'paystack-card';
+  paymentStatus: 'pending' | 'deposit_paid' | 'paid' | 'failed';
+  paymentReference?: string;
+  deliveryMethod: 'dhl-express' | 'atelier-pickup';
+  clientName: string;
+  items: Array<{
+    name: string;
+    primaryImage: string;
+    size: number | string;
+    quantity: number;
+    priceNGN: number;
+    isBespokeFitting?: boolean;
+    customNotes?: string;
+  }>;
+}
 
 export const CheckoutPage: React.FC = () => {
   const { items, totalItems, subtotalNGN, subtotalUSD, clearCart } = useCart();
@@ -39,10 +67,12 @@ export const CheckoutPage: React.FC = () => {
   });
 
   const [orderPlaced, setOrderPlaced] = useState(false);
+  const [placedOrder, setPlacedOrder] = useState<PlacedOrderSummary | null>(null);
   const [orderReference, setOrderReference] = useState('');
   const [paymentReference, setPaymentReference] = useState('');
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [copiedBank, setCopiedBank] = useState(false);
 
   // Prefill contact details from authenticated customer profile
   React.useEffect(() => {
@@ -144,6 +174,31 @@ export const CheckoutPage: React.FC = () => {
       const authoritativeOrderNumber = result.orderNumber;
       const authoritativeAmountNGN = result.total;
 
+      const orderSummarySnapshot: PlacedOrderSummary = {
+        orderId: result.orderId,
+        orderNumber: authoritativeOrderNumber,
+        totalNGN: authoritativeAmountNGN,
+        totalUSD: result.totalUSD || Math.round(authoritativeAmountNGN * 0.0013),
+        subtotalNGN: result.subtotal || subtotalNGN,
+        shippingFeeNGN: result.shippingFee || (shippingDetails.deliveryMethod === 'dhl-express' ? 25000 : 0),
+        paymentMethod: shippingDetails.paymentMethod as any,
+        paymentStatus: 'pending',
+        deliveryMethod: shippingDetails.deliveryMethod as any,
+        clientName: `${shippingDetails.firstName} ${shippingDetails.lastName}`.trim(),
+        items: items.map(i => ({
+          name: i.product.name,
+          primaryImage: i.product.primaryImage,
+          size: i.size,
+          quantity: i.quantity,
+          priceNGN: i.product.priceNGN,
+          isBespokeFitting: i.isBespokeFitting,
+          customNotes: i.customNotes
+        }))
+      };
+
+      setPlacedOrder(orderSummarySnapshot);
+      setOrderReference(authoritativeOrderNumber);
+
       // 4. Handle Paystack flow (if selected)
       if (shippingDetails.paymentMethod === 'paystack-card') {
         try {
@@ -157,15 +212,14 @@ export const CheckoutPage: React.FC = () => {
             phone: shippingDetails.phoneWhatsApp,
             onSuccess: (ref: string) => {
               setPaymentReference(ref);
-              setOrderReference(authoritativeOrderNumber);
+              setPlacedOrder(prev => prev ? ({ ...prev, paymentStatus: 'paid', paymentReference: ref }) : null);
               clearCart();
               setOrderPlaced(true);
               setIsProcessingPayment(false);
             },
             onClose: () => {
-              // Order was created as pending on server
-              setPaymentReference('Pending Payment');
-              setOrderReference(authoritativeOrderNumber);
+              // Order was created safely in Firestore as pending
+              setPlacedOrder(prev => prev ? ({ ...prev, paymentStatus: 'pending' }) : null);
               clearCart();
               setOrderPlaced(true);
               setIsProcessingPayment(false);
@@ -173,7 +227,7 @@ export const CheckoutPage: React.FC = () => {
           });
         } catch (payErr) {
           console.error('Paystack popup error:', payErr);
-          setOrderReference(authoritativeOrderNumber);
+          setPlacedOrder(prev => prev ? ({ ...prev, paymentStatus: 'failed' }) : null);
           clearCart();
           setOrderPlaced(true);
           setIsProcessingPayment(false);
@@ -181,8 +235,7 @@ export const CheckoutPage: React.FC = () => {
         return;
       }
 
-      // Bank Transfer / WhatsApp Concierge wire
-      setOrderReference(authoritativeOrderNumber);
+      // Bank Transfer / WhatsApp Concierge flow: orders remain pending awaiting verification
       clearCart();
       setOrderPlaced(true);
       setIsProcessingPayment(false);
@@ -193,36 +246,102 @@ export const CheckoutPage: React.FC = () => {
     }
   };
 
+  // Safe payment retry logic for Paystack: reuses existing orderId & orderNumber without creating duplicates
+  const handleRetryPaystackPayment = async () => {
+    if (!placedOrder) return;
+    setIsProcessingPayment(true);
+    setPaymentError(null);
+
+    let authToken: string | undefined = undefined;
+    if (customerUser) {
+      try {
+        authToken = await customerUser.getIdToken();
+      } catch (tokErr) {
+        console.warn('Could not retrieve customer ID token for retry:', tokErr);
+      }
+    }
+
+    try {
+      await launchPaystackPopup({
+        email: shippingDetails.email,
+        amountNGN: placedOrder.totalNGN,
+        orderNumber: placedOrder.orderNumber,
+        orderId: placedOrder.orderId,
+        authToken,
+        customerName: placedOrder.clientName,
+        phone: shippingDetails.phoneWhatsApp,
+        onSuccess: (ref: string) => {
+          setPaymentReference(ref);
+          setPlacedOrder(prev => prev ? ({ ...prev, paymentStatus: 'paid', paymentReference: ref }) : null);
+          setIsProcessingPayment(false);
+        },
+        onClose: () => {
+          setIsProcessingPayment(false);
+        }
+      });
+    } catch (err: any) {
+      console.error('Payment retry error:', err);
+      setPaymentError(err.message || 'Payment initialization issue. You may also transfer via corporate bank wire.');
+      setIsProcessingPayment(false);
+    }
+  };
+
   const isDHL = shippingDetails.deliveryMethod === 'dhl-express';
   const estimatedShippingFeeNGN = isDHL ? 25000 : 0;
   const estimatedShippingFeeUSD = isDHL ? 50 : 0;
   const estimatedTotalNGN = subtotalNGN + estimatedShippingFeeNGN;
   const estimatedTotalUSD = subtotalUSD + estimatedShippingFeeUSD;
 
+  const copyBankCoordinates = () => {
+    const text = `Bank: ${BRAND_CONFIG.bankTransfer.bankName}\nAccount Name: ${BRAND_CONFIG.bankTransfer.accountName}\nAccount Number: ${BRAND_CONFIG.bankTransfer.accountNumber}\nSort Code: ${BRAND_CONFIG.bankTransfer.sortCode}\nReference: ${placedOrder?.orderNumber || orderReference}`;
+    navigator.clipboard.writeText(text);
+    setCopiedBank(true);
+    setTimeout(() => setCopiedBank(false), 3000);
+  };
+
   const generateWhatsAppOrderSummary = () => {
-    let msg = `*NEW BESPOKE ORDER CONFIRMATION: ${orderReference}*\n`;
+    const activeRef = placedOrder?.orderNumber || orderReference;
+    const client = placedOrder?.clientName || `${shippingDetails.firstName} ${shippingDetails.lastName}`.trim();
+    const activeMethod = placedOrder?.paymentMethod || shippingDetails.paymentMethod;
+    const activePaymentStatus = placedOrder?.paymentStatus || 'pending';
+    const activeTotal = placedOrder ? formatCurrencyNGN(placedOrder.totalNGN) : formatCurrencyNGN(estimatedTotalNGN);
+
+    let msg = `*NEW BESPOKE ORDER CONFIRMATION: ${activeRef}*\n`;
     msg += `------------------------------------\n`;
-    msg += `*Client:* ${shippingDetails.firstName} ${shippingDetails.lastName}\n`;
+    msg += `*Client:* ${client}\n`;
     msg += `*WhatsApp:* ${shippingDetails.phoneWhatsApp}\n`;
     msg += `*Email:* ${shippingDetails.email}\n`;
     msg += `*Delivery Destination:* ${shippingDetails.city}, ${shippingDetails.country}\n`;
     msg += `*Delivery Method:* ${isDHL ? 'DHL Express Courier (₦25,000 / $50)' : 'Lagos Atelier Fitting Pickup (Complimentary)'}\n`;
-    msg += `*Payment Preference:* ${shippingDetails.paymentMethod === 'paystack-card' ? 'PAYSTACK CARD (PAID)' : shippingDetails.paymentMethod.toUpperCase()}\n`;
-    if (paymentReference) {
-      msg += `*Paystack Reference:* ${paymentReference}\n`;
+    msg += `*Payment Preference:* ${activeMethod.toUpperCase()}\n`;
+    msg += `*Payment Status:* ${activePaymentStatus.toUpperCase()}\n`;
+    if (placedOrder?.paymentReference || paymentReference) {
+      msg += `*Payment Reference:* ${placedOrder?.paymentReference || paymentReference}\n`;
     }
     if (shippingDetails.fittingNotes) {
       msg += `*Fit Notes:* ${shippingDetails.fittingNotes}\n`;
     }
     msg += `\n*COMMISSIONED ITEMS:*\n`;
-    items.forEach((item, i) => {
-      msg += `${i + 1}. ${item.product.name} (EU ${item.size}) x${item.quantity} - ₦${(item.product.priceNGN * item.quantity).toLocaleString('en-NG')}\n`;
+    const itemList = placedOrder?.items || items.map(i => ({
+      name: i.product.name,
+      size: i.size,
+      quantity: i.quantity,
+      priceNGN: i.product.priceNGN
+    }));
+
+    itemList.forEach((item, i) => {
+      msg += `${i + 1}. ${item.name} (EU ${item.size}) x${item.quantity} - ₦${(item.priceNGN * item.quantity).toLocaleString('en-NG')}\n`;
     });
-    msg += `\n*TOTAL:* ₦${estimatedTotalNGN.toLocaleString('en-NG')} (~$${estimatedTotalUSD.toLocaleString('en-US')})\n`;
+    msg += `\n*TOTAL:* ${activeTotal}\n`;
     msg += `------------------------------------\n`;
-    msg += paymentReference 
-      ? `Hello Nelson Atelier, I have completed my order and settled payment via Paystack. Please schedule bench allocation.`
-      : `Hello Nelson Atelier, I have initiated this order request on the website. Please confirm bench schedule and deposit details.`;
+
+    if (activePaymentStatus === 'paid') {
+      msg += `Hello Nelson Atelier, I have completed my order and settled payment. Please schedule bench allocation.`;
+    } else if (activeMethod === 'bank-transfer') {
+      msg += `Hello Nelson Atelier, I have initiated this commission and am transferring via GTBank wire. Please verify my order ${activeRef}.`;
+    } else {
+      msg += `Hello Nelson Atelier, I have initiated this order request on the website. Please confirm bench schedule and deposit details.`;
+    }
     return getWhatsAppUrl(msg);
   };
 
@@ -611,72 +730,239 @@ export const CheckoutPage: React.FC = () => {
           </form>
         ) : (
           /* Confirmation Screen */
-          <div className="max-w-2xl mx-auto bg-[#121212] border border-[#B89B5E]/40 p-8 md:p-14 text-center space-y-6 shadow-2xl animate-fade-in">
-            <div className="w-16 h-16 border-2 border-[#B89B5E] mx-auto flex items-center justify-center bg-[#181818]">
-              <Check className="w-8 h-8 text-[#B89B5E]" />
+          <div className="max-w-3xl mx-auto bg-[#121212] border border-[#B89B5E]/40 p-6 sm:p-10 md:p-12 space-y-8 shadow-2xl animate-fade-in font-sans">
+            <div className="text-center space-y-4">
+              <div className="w-16 h-16 border-2 border-[#B89B5E] mx-auto flex items-center justify-center bg-[#181818] shadow-lg">
+                <Check className="w-8 h-8 text-[#B89B5E]" />
+              </div>
+
+              <div className="space-y-1.5">
+                <span className="text-[10px] uppercase tracking-[0.3em] text-[#B89B5E] font-mono font-semibold block">
+                  COMMISSION DOSSIER TRANSMITTED
+                </span>
+                <h2 className="font-serif text-2xl sm:text-4xl text-[#F5F1E8]">
+                  THANK YOU, {(placedOrder?.clientName || shippingDetails.firstName).toUpperCase()}
+                </h2>
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#181818] border border-[#B89B5E]/30 rounded text-xs font-mono text-[#B89B5E]">
+                  <span>ORDER NUMBER:</span>
+                  <span className="font-bold select-all">{placedOrder?.orderNumber || orderReference}</span>
+                </div>
+              </div>
             </div>
 
-            <div className="space-y-2">
-              <span className="text-[10px] uppercase tracking-[0.3em] text-[#B89B5E] font-medium">
-                COMMISSION DOSSIER TRANSMITTED
-              </span>
-              <h2 className="font-serif text-3xl sm:text-4xl text-[#F5F1E8]">
-                THANK YOU, {shippingDetails.firstName.toUpperCase()}
-              </h2>
-              <p className="text-xs text-[#B89B5E] font-mono">
-                REFERENCE: {orderReference}
-              </p>
-            </div>
-
-            {/* Paystack Settlement Badge */}
-            {paymentReference && (
-              <div className="p-4 bg-emerald-950/40 border border-emerald-500/40 rounded text-left space-y-1.5">
+            {/* PAYMENT STATE CARDS */}
+            {placedOrder?.paymentStatus === 'paid' ? (
+              /* 1. Paid Paystack State */
+              <div className="p-5 bg-emerald-950/40 border border-emerald-500/40 rounded space-y-2 text-left">
                 <div className="flex items-center gap-2 text-emerald-400 font-mono text-xs font-semibold">
                   <ShieldCheck className="w-4 h-4" />
                   <span>PAYMENT SETTLED VIA PAYSTACK GATEWAY</span>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] font-mono text-[#D8CBB8] pt-1">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-mono text-[#D8CBB8] pt-1 border-t border-emerald-500/20">
                   <div>
-                    <span className="text-[#D8CBB8]/50 block">Transaction Reference:</span>
-                    <span className="text-[#F5F1E8] font-bold truncate block">{paymentReference}</span>
+                    <span className="text-[#D8CBB8]/50 block text-[11px]">Transaction Reference:</span>
+                    <span className="text-[#F5F1E8] font-bold truncate block">{placedOrder.paymentReference || paymentReference}</span>
                   </div>
                   <div>
-                    <span className="text-[#D8CBB8]/50 block">Settlement Status:</span>
+                    <span className="text-[#D8CBB8]/50 block text-[11px]">Settlement Status:</span>
                     <span className="text-emerald-300 font-bold block">PAID • BENCH SLOT RESERVED</span>
                   </div>
                 </div>
               </div>
+            ) : placedOrder?.paymentMethod === 'bank-transfer' ? (
+              /* 2. Bank Wire Transfer State */
+              <div className="p-6 bg-[#161616] border border-[#B89B5E]/30 rounded space-y-4 text-left">
+                <div className="flex items-center justify-between pb-3 border-b border-[#D8CBB8]/10">
+                  <div className="flex items-center gap-2 text-[#B89B5E] font-mono text-xs font-semibold">
+                    <Building2 className="w-4 h-4" />
+                    <span>AWAITING CORPORATE BANK WIRE TRANSFER</span>
+                  </div>
+                  <span className="px-2.5 py-0.5 bg-amber-950/60 border border-amber-600/40 text-amber-300 font-mono text-[10px] uppercase font-bold rounded">
+                    PENDING RECEIPT
+                  </span>
+                </div>
+
+                <p className="text-xs text-[#D8CBB8]/80 leading-relaxed">
+                  Please transfer the exact commission total of <strong className="text-[#F5F1E8] font-mono">{formatCurrencyNGN(placedOrder?.totalNGN || estimatedTotalNGN)}</strong> to the official Nelson Shoes corporate treasury account:
+                </p>
+
+                {/* Bank Coordinates Box */}
+                <div className="p-4 bg-[#101010] border border-[#D8CBB8]/15 rounded space-y-2 font-mono text-xs">
+                  <div className="flex justify-between items-center py-1 border-b border-[#D8CBB8]/10">
+                    <span className="text-[#D8CBB8]/50">Bank Institution:</span>
+                    <span className="text-[#F5F1E8] font-bold">{BRAND_CONFIG.bankTransfer.bankName}</span>
+                  </div>
+                  <div className="flex justify-between items-center py-1 border-b border-[#D8CBB8]/10">
+                    <span className="text-[#D8CBB8]/50">Account Name:</span>
+                    <span className="text-[#F5F1E8] font-semibold">{BRAND_CONFIG.bankTransfer.accountName}</span>
+                  </div>
+                  <div className="flex justify-between items-center py-1 border-b border-[#D8CBB8]/10">
+                    <span className="text-[#D8CBB8]/50">Account Number:</span>
+                    <span className="text-[#B89B5E] text-sm font-bold tracking-wider">{BRAND_CONFIG.bankTransfer.accountNumber}</span>
+                  </div>
+                  <div className="flex justify-between items-center py-1 border-b border-[#D8CBB8]/10">
+                    <span className="text-[#D8CBB8]/50">Sort Code:</span>
+                    <span className="text-[#D8CBB8]">{BRAND_CONFIG.bankTransfer.sortCode}</span>
+                  </div>
+                  <div className="flex justify-between items-center pt-1">
+                    <span className="text-[#D8CBB8]/50">Payment Narration / Reference:</span>
+                    <span className="text-[#B89B5E] font-bold select-all">{placedOrder?.orderNumber || orderReference}</span>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={copyBankCoordinates}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#1E1E1E] hover:bg-[#252525] border border-[#D8CBB8]/20 text-xs font-mono text-[#D8CBB8] hover:text-[#F5F1E8] rounded transition-colors"
+                  >
+                    <Copy size={13} />
+                    <span>{copiedBank ? 'Bank Details Copied!' : 'Copy Bank Details'}</span>
+                  </button>
+
+                  <span className="text-[11px] text-[#D8CBB8]/60 italic">
+                    Include #{placedOrder?.orderNumber || orderReference} in your bank transaction description.
+                  </span>
+                </div>
+              </div>
+            ) : placedOrder?.paymentMethod === 'whatsapp-concierge' ? (
+              /* 3. WhatsApp Concierge State */
+              <div className="p-5 bg-[#161616] border border-[#B89B5E]/30 rounded space-y-3 text-left">
+                <div className="flex items-center justify-between pb-2 border-b border-[#D8CBB8]/10">
+                  <div className="flex items-center gap-2 text-[#B89B5E] font-mono text-xs font-semibold">
+                    <MessageCircle className="w-4 h-4" />
+                    <span>AWAITING CONCIERGE CONFIRMATION</span>
+                  </div>
+                  <span className="px-2.5 py-0.5 bg-[#1E1E1E] border border-[#B89B5E]/40 text-[#B89B5E] font-mono text-[10px] uppercase font-bold rounded">
+                    CONCIERGE DIRECT
+                  </span>
+                </div>
+                <p className="text-xs text-[#D8CBB8]/80 leading-relaxed">
+                  Your bespoke footwear dossier is securely reserved on our workbench server. Connect directly with Master Cordwainer Nelson on WhatsApp to review sizing, leather calibration, and complete deposit arrangements.
+                </p>
+              </div>
+            ) : (
+              /* 4. Paystack Incomplete / Failed with Retry Button */
+              <div className="p-5 bg-amber-950/30 border border-amber-500/40 rounded space-y-4 text-left">
+                <div className="flex items-center justify-between pb-2 border-b border-amber-500/20">
+                  <div className="flex items-center gap-2 text-amber-300 font-mono text-xs font-semibold">
+                    <AlertCircle className="w-4 h-4 text-amber-400" />
+                    <span>CARD PAYMENT PENDING / INCOMPLETE</span>
+                  </div>
+                  <span className="px-2.5 py-0.5 bg-amber-900/40 border border-amber-600/40 text-amber-300 font-mono text-[10px] uppercase font-bold rounded">
+                    ORDER SAVED
+                  </span>
+                </div>
+                <p className="text-xs text-[#D8CBB8]/80 leading-relaxed">
+                  Your commission dossier is safely saved in our system under <strong className="text-[#F5F1E8] font-mono">{placedOrder?.orderNumber || orderReference}</strong>. The card settlement window was closed before completion. You can retry payment below for this exact order without placing a duplicate request:
+                </p>
+
+                {paymentError && (
+                  <div className="p-2.5 bg-red-950/40 border border-red-500/30 rounded text-xs text-red-300 font-mono">
+                    {paymentError}
+                  </div>
+                )}
+
+                <div className="pt-1 flex flex-wrap items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={handleRetryPaystackPayment}
+                    disabled={isProcessingPayment}
+                    className="px-5 py-2.5 bg-[#B89B5E] hover:bg-[#D4BD86] text-[#0A0A0A] font-semibold text-xs font-mono uppercase tracking-wider transition-colors flex items-center gap-2 disabled:opacity-50"
+                  >
+                    {isProcessingPayment ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        <span>Connecting to Gateway...</span>
+                      </>
+                    ) : (
+                      <>
+                        <RefreshCw className="w-3.5 h-3.5" />
+                        <span>Retry Paystack Card Payment</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
             )}
 
-            <p className="text-xs text-[#D8CBB8]/75 font-sans leading-relaxed">
-              Your bespoke commission request has been received by Nelson Atelier. Click below to transmit the order dossier directly to Nelson on WhatsApp for immediate confirmation and bench slot reservation.
-            </p>
+            {/* COMMISSIONED PIECES SUMMARY */}
+            <div className="p-5 bg-[#141414] border border-[#D8CBB8]/10 rounded space-y-3 text-left">
+              <span className="text-[10px] uppercase tracking-widest text-[#B89B5E] font-mono font-semibold block">
+                COMMISSIONED FOOTWEAR SUMMARY
+              </span>
+              <div className="divide-y divide-[#D8CBB8]/10 max-h-56 overflow-y-auto pr-2 no-scrollbar">
+                {(placedOrder?.items || []).map((item, idx) => (
+                  <div key={idx} className="py-2.5 first:pt-0 last:pb-0 flex items-center justify-between gap-3 text-xs">
+                    <div className="flex items-center gap-3 min-w-0">
+                      {item.primaryImage ? (
+                        <img src={item.primaryImage} alt={item.name} className="w-10 h-12 object-cover rounded bg-black shrink-0" />
+                      ) : (
+                        <div className="w-10 h-12 bg-black rounded flex items-center justify-center shrink-0">
+                          <Package size={14} className="text-[#D8CBB8]/40" />
+                        </div>
+                      )}
+                      <div className="min-w-0">
+                        <span className="font-serif text-[#F5F1E8] font-medium block truncate">{item.name}</span>
+                        <span className="text-[11px] text-[#B89B5E] font-mono block">
+                          Size EU {item.size} • Qty {item.quantity}
+                          {item.isBespokeFitting && ' • Bespoke Last'}
+                        </span>
+                      </div>
+                    </div>
+                    <span className="font-mono text-[#F5F1E8] font-medium shrink-0">
+                      {formatCurrencyNGN(item.priceNGN * item.quantity)}
+                    </span>
+                  </div>
+                ))}
+              </div>
 
-            <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
+              {/* Price Breakdown */}
+              <div className="pt-3 border-t border-[#D8CBB8]/10 space-y-1.5 text-xs font-mono">
+                <div className="flex justify-between text-[#D8CBB8]/70">
+                  <span>Subtotal:</span>
+                  <span className="text-[#F5F1E8]">{formatCurrencyNGN(placedOrder?.subtotalNGN || subtotalNGN)}</span>
+                </div>
+                <div className="flex justify-between text-[#D8CBB8]/70">
+                  <span>Freight ({placedOrder?.deliveryMethod === 'dhl-express' ? 'DHL Express Courier' : 'Atelier Pickup'}):</span>
+                  <span className={placedOrder?.shippingFeeNGN ? "text-[#F5F1E8]" : "text-[#B89B5E]"}>
+                    {placedOrder?.shippingFeeNGN ? formatCurrencyNGN(placedOrder.shippingFeeNGN) : 'Complimentary'}
+                  </span>
+                </div>
+                <div className="flex justify-between pt-1 border-t border-[#D8CBB8]/10 font-bold text-sm">
+                  <span className="text-[#F5F1E8]">Total:</span>
+                  <span className="text-[#B89B5E]">{formatCurrencyNGN(placedOrder?.totalNGN || estimatedTotalNGN)}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* ACTION BUTTONS */}
+            <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
               <a
                 href={generateWhatsAppOrderSummary()}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full sm:w-auto px-8 py-4 bg-[#B89B5E] text-[#0A0A0A] font-semibold text-xs tracking-[0.2em] uppercase hover:bg-[#D4BD86] transition-colors flex items-center justify-center gap-2"
+                className="w-full sm:w-auto px-6 py-3.5 bg-emerald-700/80 hover:bg-emerald-600 text-[#F5F1E8] font-semibold text-xs tracking-[0.15em] uppercase transition-colors flex items-center justify-center gap-2 rounded-sm"
               >
                 <MessageCircle className="w-4 h-4 fill-current" />
-                <span>CONFIRM ORDER ON WHATSAPP</span>
+                <span>
+                  {placedOrder?.paymentMethod === 'bank-transfer' ? 'Notify Concierge of Wire' : 'Confirm on WhatsApp'}
+                </span>
               </a>
 
               <Link
-                to={`/track?order=${orderReference}`}
-                className="w-full sm:w-auto px-6 py-4 bg-[#181818] border border-[#B89B5E]/60 text-[#B89B5E] font-semibold text-xs tracking-[0.2em] uppercase hover:bg-[#B89B5E] hover:text-[#0A0A0A] transition-colors flex items-center justify-center gap-2"
+                to={`/track?order=${placedOrder?.orderNumber || orderReference}`}
+                className="w-full sm:w-auto px-6 py-3.5 bg-[#B89B5E] text-[#0A0A0A] font-semibold text-xs tracking-[0.15em] uppercase hover:bg-[#D4BD86] transition-colors flex items-center justify-center gap-2 rounded-sm"
               >
-                <span>TRACK ORDER LIVE</span>
+                <Truck className="w-4 h-4" />
+                <span>Track Order Live</span>
               </Link>
 
               <button
-                onClick={() => {
-                  navigate('/collection');
-                }}
-                className="w-full sm:w-auto px-6 py-4 bg-transparent border border-[#D8CBB8]/20 text-xs tracking-[0.2em] uppercase text-[#D8CBB8] hover:text-[#F5F1E8]"
+                onClick={() => navigate('/collection')}
+                className="w-full sm:w-auto px-5 py-3.5 bg-transparent border border-[#D8CBB8]/20 text-xs tracking-[0.15em] uppercase text-[#D8CBB8] hover:text-[#F5F1E8] transition-colors"
               >
-                RETURN TO COLLECTION
+                Explore Collection
               </button>
             </div>
           </div>

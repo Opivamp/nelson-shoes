@@ -117,7 +117,28 @@ export type OrderStatus =
   | 'Patina & Glacage' 
   | 'Quality Inspection' 
   | 'Dispatched' 
-  | 'Delivered';
+  | 'Delivered'
+  | 'Cancelled';
+
+export type PaymentMethod = 'whatsapp-concierge' | 'bank-transfer' | 'paystack-card';
+
+export type PaymentStatus = 'pending' | 'deposit_paid' | 'paid' | 'failed' | 'abandoned' | 'reversed';
+
+export type DeliveryMethod = 'dhl-express' | 'atelier-pickup';
+
+export type RefundStatus = 'none' | 'pending' | 'refunded' | 'rejected';
+
+export interface OrderAuditEntry {
+  event: string;
+  previousStatus?: string;
+  newStatus?: string;
+  previousPaymentStatus?: string;
+  newPaymentStatus?: string;
+  actorUid?: string;
+  actorRole?: string;
+  timestamp: string;
+  note?: string;
+}
 
 export interface CustomerOrder {
   id: string;
@@ -131,19 +152,34 @@ export interface CustomerOrder {
     city: string;
     state: string;
     country: string;
-    deliveryMethod: 'dhl-express' | 'atelier-pickup';
+    deliveryMethod: DeliveryMethod;
     fittingNotes?: string;
   };
   items: CartItem[];
   subtotalNGN: number;
   subtotalUSD: number;
-  paymentMethod: 'whatsapp-concierge' | 'bank-transfer' | 'paystack-card';
-  paymentStatus: 'pending' | 'deposit_paid' | 'paid' | 'failed' | 'abandoned' | 'reversed';
+  shippingFeeNGN?: number;
+  shippingFeeUSD?: number;
+  totalNGN?: number;
+  totalUSD?: number;
+  currency?: 'NGN' | 'USD';
+  paymentMethod: PaymentMethod;
+  paymentStatus: PaymentStatus;
   paymentReference?: string;
+  paidAt?: string;
   status: OrderStatus;
   customerUid?: string;
   trackingNumber?: string;
+  carrier?: string;
+  dispatchedAt?: string;
+  deliveredAt?: string;
+  cancelledAt?: string;
+  cancellationReason?: string;
+  refundStatus?: RefundStatus;
+  refundReference?: string;
+  refundedAt?: string;
   artisanNotes?: string;
+  auditTrail?: OrderAuditEntry[];
   createdAt: string;
   updatedAt: string;
 }

@@ -3,7 +3,7 @@ import { cert, getApps, initializeApp } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { getAuth } from 'firebase-admin/auth';
 import crypto from 'node:crypto';
-import { canTransitionBespokeStatus, validateBespokeQuotation } from '../src/services/bespokeLifecycle';
+import { canTransitionBespokeStatus, validateBespokeQuotation } from './_bespoke';
 
 const MAX_BODY_BYTES = 64 * 1024;
 

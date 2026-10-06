@@ -310,13 +310,38 @@ export const CustomerOrdersPage: React.FC = () => {
               >
                 {/* Top Row: Reference, Date, Status */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#D8CBB8]/10">
-                  <div className="flex items-center gap-3 flex-wrap">
+                  <div className="flex items-center gap-2.5 flex-wrap">
                     <span className="font-mono text-base font-semibold text-[#F5F1E8]">
                       {order.orderNumber}
                     </span>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#B89B5E]/15 text-[#B89B5E] border border-[#B89B5E]/30 uppercase">
+                    {/* Craft Status Badge */}
+                    <span className={`text-[10px] font-mono px-2.5 py-0.5 rounded font-semibold uppercase tracking-wider border ${
+                      order.status === 'Delivered'
+                        ? 'bg-emerald-950/40 text-emerald-400 border-emerald-500/30'
+                        : order.status === 'Dispatched'
+                        ? 'bg-blue-950/40 text-blue-300 border-blue-500/30'
+                        : order.status === 'Quality Inspection'
+                        ? 'bg-amber-950/40 text-amber-300 border-amber-500/30'
+                        : order.status === 'Cancelled'
+                        ? 'bg-red-950/40 text-red-300 border-red-500/30'
+                        : 'bg-[#B89B5E]/15 text-[#B89B5E] border-[#B89B5E]/30'
+                    }`}>
                       {order.status}
                     </span>
+                    {/* Payment Status Badge */}
+                    {order.paymentStatus && (
+                      <span className={`text-[9px] font-mono px-2 py-0.5 rounded uppercase tracking-wider border ${
+                        order.paymentStatus === 'paid'
+                          ? 'bg-emerald-950/30 text-emerald-300 border-emerald-600/30'
+                          : order.paymentStatus === 'deposit_paid'
+                          ? 'bg-blue-950/30 text-blue-300 border-blue-600/30'
+                          : order.paymentStatus === 'failed'
+                          ? 'bg-red-950/30 text-red-300 border-red-600/30'
+                          : 'bg-[#181818] text-[#D8CBB8]/60 border-[#D8CBB8]/15'
+                      }`}>
+                        {order.paymentStatus === 'deposit_paid' ? 'Deposit Paid' : order.paymentStatus === 'paid' ? 'Paid' : 'Payment Pending'}
+                      </span>
+                    )}
                     {order.customer?.deliveryMethod === 'dhl-express' && (
                       <span className="text-[10px] font-mono text-[#D8CBB8]/60 flex items-center gap-1">
                         <Truck size={12} className="text-[#B89B5E]" />

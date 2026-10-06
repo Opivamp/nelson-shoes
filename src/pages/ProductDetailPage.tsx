@@ -214,10 +214,10 @@ export const ProductDetailPage: React.FC = () => {
                   <button
                     key={size}
                     onClick={() => setSelectedSize(size)}
-                    className={`py-2 text-xs font-sans transition-all border ${
+                    className={`py-2.5 min-h-[40px] text-xs font-mono transition-all border cursor-pointer ${
                       selectedSize === size
-                        ? 'border-[#B89B5E] bg-[#B89B5E] text-[#0A0A0A] font-bold shadow-lg'
-                        : 'border-[#D8CBB8]/15 bg-[#121212] text-[#D8CBB8] hover:border-[#B89B5E]/50'
+                        ? 'border-[#B89B5E] bg-[#B89B5E] text-[#0A0A0A] font-bold shadow-md'
+                        : 'border-[#D8CBB8]/15 bg-[#121212] text-[#D8CBB8] hover:border-[#B89B5E]/50 hover:text-[#F5F1E8]'
                     }`}
                   >
                     EU {size}
@@ -252,7 +252,7 @@ export const ProductDetailPage: React.FC = () => {
                     value={customNotes}
                     onChange={(e) => setCustomNotes(e.target.value)}
                     placeholder="Note special requirements (e.g. high instep, monogram initials)..."
-                    className="w-full bg-[#181818] border border-[#D8CBB8]/20 px-3 py-2 text-xs text-[#F5F1E8] placeholder-[#D8CBB8]/40 focus:outline-none focus:border-[#B89B5E]"
+                    className="w-full bg-[#181818] border border-[#D8CBB8]/20 px-3 py-2.5 text-xs text-[#F5F1E8] placeholder-[#D8CBB8]/40 focus:outline-none focus:border-[#B89B5E]"
                   />
                 </div>
               )}
@@ -262,22 +262,22 @@ export const ProductDetailPage: React.FC = () => {
             <div className="space-y-3 pt-2">
               <button
                 onClick={handleAddToCart}
-                className="w-full py-4 bg-[#B89B5E] text-[#0A0A0A] font-semibold text-xs tracking-[0.22em] uppercase hover:bg-[#D4BD86] transition-all flex items-center justify-center gap-2 shadow-xl"
+                className="w-full min-h-[48px] py-4 bg-[#B89B5E] text-[#0A0A0A] font-semibold text-xs tracking-[0.24em] uppercase hover:bg-[#D4BD86] active:scale-[0.99] transition-all flex items-center justify-center gap-2 shadow-xl shadow-[#B89B5E]/10 cursor-pointer"
               >
                 {added ? (
                   <>
-                    <Check className="w-4 h-4" />
-                    <span>ADDED TO ATELIER BAG</span>
+                    <Check className="w-4 h-4 text-[#0A0A0A]" />
+                    <span>ADDED TO COMMISSION DOSSIER</span>
                   </>
                 ) : (
-                  <span>COMMISSION THIS PIECE (ADD TO BAG)</span>
+                  <span>COMMISSION THIS PIECE (ADD TO DOSSIER)</span>
                 )}
               </button>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Link
                   to="/bespoke"
-                  className="py-3 bg-transparent border border-[#D8CBB8]/20 hover:border-[#B89B5E] text-[#F5F1E8] hover:text-[#B89B5E] text-[10px] tracking-[0.2em] uppercase font-medium text-center transition-colors"
+                  className="py-3 px-4 min-h-[44px] bg-[#141414] border border-[#D8CBB8]/20 hover:border-[#B89B5E] text-[#F5F1E8] hover:text-[#B89B5E] text-[10px] sm:text-[11px] tracking-[0.2em] uppercase font-medium text-center transition-all flex items-center justify-center"
                 >
                   REQUEST BESPOKE VERSION
                 </Link>
@@ -286,7 +286,7 @@ export const ProductDetailPage: React.FC = () => {
                   href={whatsappInquiryUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="py-3 bg-[#141414] border border-[#B89B5E]/40 hover:border-[#B89B5E] text-[#F5F1E8] text-[10px] tracking-[0.2em] uppercase font-medium text-center transition-colors flex items-center justify-center gap-1.5"
+                  className="py-3 px-4 min-h-[44px] bg-[#141414] border border-[#B89B5E]/40 hover:border-[#B89B5E] text-[#F5F1E8] text-[10px] sm:text-[11px] tracking-[0.2em] uppercase font-medium text-center transition-all flex items-center justify-center gap-2"
                 >
                   <MessageCircle className="w-3.5 h-3.5 text-[#B89B5E]" />
                   <span>ASK ON WHATSAPP</span>

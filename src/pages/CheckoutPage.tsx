@@ -360,7 +360,7 @@ export const CheckoutPage: React.FC = () => {
           className="inline-flex items-center gap-2 text-xs uppercase tracking-widest text-[#B89B5E] hover:text-[#F5F1E8] transition-colors"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
-          <span>RETURN TO COMMISSION BAG</span>
+          <span>RETURN TO COMMISSION DOSSIER</span>
         </Link>
 
         {!orderPlaced ? (
@@ -652,7 +652,7 @@ export const CheckoutPage: React.FC = () => {
                 <button
                   type="submit"
                   disabled={isProcessingPayment}
-                  className="w-full py-4 bg-[#B89B5E] text-[#0A0A0A] font-semibold text-xs tracking-[0.25em] uppercase hover:bg-[#D4BD86] transition-all shadow-xl flex items-center justify-center gap-2 disabled:opacity-50"
+                  className="w-full min-h-[48px] py-4 bg-[#B89B5E] text-[#0A0A0A] font-semibold text-xs tracking-[0.25em] uppercase hover:bg-[#D4BD86] active:scale-[0.99] transition-all shadow-xl shadow-[#B89B5E]/15 flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
                 >
                   {isProcessingPayment ? (
                     <>

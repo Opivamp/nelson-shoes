@@ -29,24 +29,24 @@ export const ProductCard: React.FC<ProductCardProps> = ({
       onMouseLeave={() => setHovered(false)}
     >
       {/* Product Image Frame */}
-      <div className="relative aspect-[4/5] overflow-hidden bg-[#121212] border border-[#D8CBB8]/10 group-hover:border-[#B89B5E]/40 transition-colors duration-500">
+      <div className="relative aspect-[4/5] overflow-hidden bg-[#121212] border border-[#D8CBB8]/12 group-hover:border-[#B89B5E]/40 group-hover:shadow-2xl group-hover:shadow-black/80 transition-all duration-500">
         
         <Link to={`/product/${product.slug}`} className="block w-full h-full">
           <img
             src={product.primaryImage}
             alt={product.name}
             loading={priority ? "eager" : "lazy"}
-            className="w-full h-full object-cover object-center transform scale-100 group-hover:scale-105 transition-transform duration-1000 ease-out"
+            className="w-full h-full object-cover object-center transform scale-100 group-hover:scale-105 transition-transform duration-700 ease-out"
           />
         </Link>
 
         {/* Status / Category Pill */}
-        <div className="absolute top-4 left-4 z-10 flex flex-col gap-1 items-start">
-          <span className="px-2.5 py-1 bg-[#0A0A0A]/85 backdrop-blur-md text-[9px] uppercase tracking-[0.2em] font-medium text-[#B89B5E] border border-[#D8CBB8]/10">
+        <div className="absolute top-3.5 left-3.5 z-10 flex flex-col gap-1 items-start">
+          <span className="px-2.5 py-1 bg-[#0A0A0A]/85 backdrop-blur-md text-[9px] uppercase tracking-[0.2em] font-medium text-[#B89B5E] border border-[#D8CBB8]/15 shadow-sm">
             {product.categoryLabel}
           </span>
           {product.isBespokeOnly && (
-            <span className="px-2 py-0.5 bg-[#B89B5E] text-[#0A0A0A] text-[8px] uppercase tracking-widest font-bold">
+            <span className="px-2 py-0.5 bg-[#B89B5E] text-[#0A0A0A] text-[8px] uppercase tracking-widest font-bold shadow-sm">
               BESPOKE ONLY
             </span>
           )}
@@ -59,10 +59,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             e.stopPropagation();
             toggleWishlist(product.id);
           }}
-          className={`absolute top-4 right-4 z-10 p-2 rounded-none backdrop-blur-md transition-all duration-300 ${
+          className={`absolute top-3.5 right-3.5 z-10 min-h-[40px] min-w-[40px] flex items-center justify-center backdrop-blur-md transition-all duration-300 cursor-pointer ${
             isSaved 
-              ? 'bg-[#B89B5E] text-[#0A0A0A]' 
-              : 'bg-[#0A0A0A]/70 text-[#D8CBB8] hover:text-[#B89B5E]'
+              ? 'bg-[#B89B5E] text-[#0A0A0A] shadow-md' 
+              : 'bg-[#0A0A0A]/75 text-[#D8CBB8] hover:text-[#B89B5E] hover:bg-[#0A0A0A]'
           }`}
           aria-label={isSaved ? "Remove from saved creations" : "Save creation to wishlist"}
         >
@@ -71,7 +71,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
         {/* Hover Quick Actions Overlay */}
         <div 
-          className={`absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-[#0A0A0A]/95 via-[#0A0A0A]/60 to-transparent transition-all duration-300 flex items-center justify-between gap-2 ${
+          className={`absolute inset-x-0 bottom-0 p-3.5 bg-gradient-to-t from-[#0A0A0A]/95 via-[#0A0A0A]/70 to-transparent transition-all duration-300 flex items-center justify-between gap-2 ${
             hovered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 pointer-events-none'
           }`}
         >
@@ -82,17 +82,18 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                 e.stopPropagation();
                 onQuickView(product);
               }}
-              className="flex-1 py-2 bg-[#1A1A1A]/90 hover:bg-[#B89B5E] hover:text-[#0A0A0A] text-[#F5F1E8] text-[10px] tracking-[0.2em] uppercase font-medium transition-colors flex items-center justify-center gap-1.5 border border-[#D8CBB8]/20"
+              className="flex-1 py-2.5 bg-[#1A1A1A]/90 hover:bg-[#B89B5E] hover:text-[#0A0A0A] text-[#F5F1E8] text-[10px] tracking-[0.2em] uppercase font-medium transition-colors flex items-center justify-center gap-1.5 border border-[#D8CBB8]/20 min-h-[38px] cursor-pointer"
             >
-              <Eye className="w-3 h-3" />
+              <Eye className="w-3.5 h-3.5" />
               <span>QUICK VIEW</span>
             </button>
           )}
 
           <Link
             to={`/product/${product.slug}`}
-            className="p-2 bg-[#B89B5E] text-[#0A0A0A] hover:bg-[#D4BD86] transition-colors"
+            className="p-2.5 min-h-[38px] min-w-[38px] bg-[#B89B5E] text-[#0A0A0A] hover:bg-[#D4BD86] transition-colors flex items-center justify-center cursor-pointer shadow-md"
             title="View Details"
+            aria-label={`View details for ${product.name}`}
           >
             <ArrowUpRight className="w-3.5 h-3.5" />
           </Link>

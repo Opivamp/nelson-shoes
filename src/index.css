@@ -67,9 +67,238 @@
 
   /* Smooth focus states for accessibility */
   a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
-    outline: 1.5px solid #B89B5E;
-    outline-offset: 3px;
+    outline: 2px solid #B89B5E !important;
+    outline-offset: 3px !important;
   }
+}
+
+@layer components {
+  /* ========================================================
+     DESIGN SYSTEM BUTTON PRIMITIVES
+     ======================================================== */
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 44px;
+    padding: 0.75rem 1.75rem;
+    background-color: #B89B5E;
+    color: #0A0A0A;
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    border: 1px solid transparent;
+    border-radius: 0px;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 4px 20px rgba(184, 155, 94, 0.15);
+    cursor: pointer;
+  }
+  .btn-primary:hover:not(:disabled) {
+    background-color: #D4BD86;
+    box-shadow: 0 6px 24px rgba(184, 155, 94, 0.25);
+  }
+  .btn-primary:active:not(:disabled) {
+    transform: scale(0.985);
+  }
+  .btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 44px;
+    padding: 0.75rem 1.75rem;
+    background-color: #141414;
+    color: #F5F1E8;
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    border: 1px solid rgba(216, 203, 184, 0.25);
+    border-radius: 0px;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    cursor: pointer;
+  }
+  .btn-secondary:hover:not(:disabled) {
+    border-color: #B89B5E;
+    color: #B89B5E;
+    background-color: #1A1A1A;
+  }
+  .btn-secondary:active:not(:disabled) {
+    transform: scale(0.985);
+  }
+  .btn-secondary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 40px;
+    padding: 0.5rem 1.25rem;
+    background-color: transparent;
+    color: #D8CBB8;
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    border: 1px solid rgba(216, 203, 184, 0.15);
+    border-radius: 0px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+  .btn-ghost:hover:not(:disabled) {
+    border-color: rgba(184, 155, 94, 0.5);
+    color: #F5F1E8;
+    background-color: #161616;
+  }
+  .btn-ghost:active:not(:disabled) {
+    transform: scale(0.985);
+  }
+
+  .btn-destructive {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 40px;
+    padding: 0.5rem 1.25rem;
+    background-color: rgba(69, 10, 10, 0.35);
+    color: #F87171;
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    border-radius: 0px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+  .btn-destructive:hover:not(:disabled) {
+    background-color: rgba(127, 29, 29, 0.45);
+    color: #FCA5A5;
+    border-color: rgba(239, 68, 68, 0.4);
+  }
+
+  /* ========================================================
+     DESIGN SYSTEM CARD PRIMITIVES
+     ======================================================== */
+  .card-luxury {
+    background-color: #121212;
+    border: 1px solid rgba(216, 203, 184, 0.12);
+    border-radius: 0.5rem;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  .card-luxury:hover {
+    border-color: rgba(184, 155, 94, 0.3);
+  }
+
+  .card-luxury-interactive {
+    background-color: #121212;
+    border: 1px solid rgba(216, 203, 184, 0.12);
+    border-radius: 0.5rem;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  .card-luxury-interactive:hover {
+    transform: translateY(-2px);
+    border-color: rgba(184, 155, 94, 0.35);
+    box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.8);
+  }
+
+  /* ========================================================
+     STATUS & LIFECYCLE BADGE PRIMITIVES
+     ======================================================== */
+  .badge-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 0.25rem;
+    font-family: ui-monospace, monospace;
+    font-size: 0.625rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .badge-status-gold {
+    background-color: rgba(184, 155, 94, 0.15);
+    color: #B89B5E;
+    border: 1px solid rgba(184, 155, 94, 0.35);
+  }
+  .badge-status-emerald {
+    background-color: rgba(6, 78, 59, 0.35);
+    color: #34D399;
+    border: 1px solid rgba(52, 211, 153, 0.35);
+  }
+  .badge-status-amber {
+    background-color: rgba(120, 53, 15, 0.35);
+    color: #FCD34D;
+    border: 1px solid rgba(251, 191, 36, 0.35);
+  }
+  .badge-status-red {
+    background-color: rgba(69, 10, 10, 0.4);
+    color: #F87171;
+    border: 1px solid rgba(239, 68, 68, 0.35);
+  }
+  .badge-status-blue {
+    background-color: rgba(30, 58, 138, 0.35);
+    color: #93C5FD;
+    border: 1px solid rgba(96, 165, 250, 0.35);
+  }
+  .badge-status-muted {
+    background-color: #181818;
+    color: rgba(216, 203, 184, 0.7);
+    border: 1px solid rgba(216, 203, 184, 0.15);
+  }
+
+  /* ========================================================
+     FORM & INPUT PRIMITIVES
+     ======================================================== */
+  .input-luxury {
+    width: 100%;
+    background-color: #141414;
+    border: 1px solid rgba(216, 203, 184, 0.2);
+    color: #F5F1E8;
+    padding: 0.625rem 0.875rem;
+    font-size: 0.75rem;
+    border-radius: 0.25rem;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  .input-luxury:focus {
+    border-color: #B89B5E;
+    box-shadow: 0 0 0 1px rgba(184, 155, 94, 0.3);
+  }
+  .input-luxury::placeholder {
+    color: rgba(216, 203, 184, 0.35);
+  }
+
+  /* ========================================================
+     SKELETON LOADING PRIMITIVE
+     ======================================================== */
+  .skeleton-luxury {
+    background: linear-gradient(90deg, #141414 25%, #222222 50%, #141414 75%);
+    background-size: 200% 100%;
+    animation: skeletonShimmer 1.8s infinite;
+  }
+}
+
+@keyframes skeletonShimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 
 /* ========================================================

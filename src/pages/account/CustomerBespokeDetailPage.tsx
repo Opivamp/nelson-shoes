@@ -341,7 +341,7 @@ export const CustomerBespokeDetailPage: React.FC = () => {
                       type="button"
                       disabled={actionLoading}
                       onClick={handleDeclineQuotation}
-                      className="w-full sm:w-auto px-5 py-2.5 border border-red-700/40 text-red-400 hover:bg-red-950/30 rounded-lg text-xs font-mono transition-colors"
+                      className="w-full sm:w-auto min-h-[44px] px-5 py-2.5 border border-red-700/40 text-red-400 hover:bg-red-950/30 rounded-lg text-xs font-mono transition-all cursor-pointer active:scale-[0.985] disabled:opacity-50"
                     >
                       Decline Quotation
                     </button>
@@ -349,7 +349,7 @@ export const CustomerBespokeDetailPage: React.FC = () => {
                       type="button"
                       disabled={actionLoading}
                       onClick={handleApproveQuotation}
-                      className="w-full sm:w-auto px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-lg text-xs font-mono transition-colors flex items-center justify-center gap-2 shadow-lg"
+                      className="w-full sm:w-auto min-h-[44px] px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-lg text-xs font-mono transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-950/50 cursor-pointer active:scale-[0.985] disabled:opacity-50"
                     >
                       <Check size={14} />
                       <span>Authorize & Approve Commission Quote</span>

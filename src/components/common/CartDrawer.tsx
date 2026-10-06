@@ -50,7 +50,7 @@ export const CartDrawer: React.FC = () => {
           <div className="p-6 border-b border-[#D8CBB8]/10 flex items-center justify-between">
             <div>
               <span className="text-[10px] tracking-[0.25em] uppercase text-[#B89B5E] font-medium block">
-                ATELIER COMMISSION BAG
+                ATELIER COMMISSION DOSSIER
               </span>
               <h2 className="font-serif text-xl text-[#F5F1E8]">
                 YOUR SELECTIONS ({totalItems})
@@ -58,8 +58,8 @@ export const CartDrawer: React.FC = () => {
             </div>
             <button
               onClick={closeCart}
-              className="p-2 text-[#D8CBB8]/60 hover:text-[#F5F1E8] transition-colors"
-              aria-label="Close cart"
+              className="p-2 text-[#D8CBB8]/60 hover:text-[#F5F1E8] transition-colors cursor-pointer"
+              aria-label="Close dossier"
             >
               <X className="w-5 h-5 stroke-[1.5]" />
             </button>
@@ -73,7 +73,7 @@ export const CartDrawer: React.FC = () => {
                   N
                 </div>
                 <h3 className="font-serif text-lg text-[#F5F1E8]">
-                  YOUR BAG IS CURRENTLY EMPTY
+                  YOUR DOSSIER IS CURRENTLY EMPTY
                 </h3>
                 <p className="text-xs text-[#D8CBB8]/60 font-sans max-w-xs mx-auto">
                   Every pair of Nelson shoes is an investment in timeless cordwaining. Begin exploring our handcrafted catalog.
@@ -191,24 +191,24 @@ export const CartDrawer: React.FC = () => {
 
               {/* Action Buttons */}
               <div className="space-y-2.5 pt-2">
+                <Link
+                  to="/checkout"
+                  onClick={closeCart}
+                  className="w-full min-h-[44px] flex items-center justify-center gap-2 py-3.5 bg-[#B89B5E] text-[#0A0A0A] font-semibold text-xs tracking-[0.22em] uppercase hover:bg-[#D4BD86] active:scale-[0.99] transition-all shadow-lg shadow-[#B89B5E]/15 cursor-pointer"
+                >
+                  <span>PROCEED TO CHECKOUT</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+
                 <a
                   href={generateWhatsAppOrderUrl()}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full flex items-center justify-center gap-2 py-3 bg-[#B89B5E] text-[#0A0A0A] font-semibold text-xs tracking-[0.2em] uppercase hover:bg-[#D4BD86] transition-colors"
+                  className="w-full min-h-[44px] flex items-center justify-center gap-2 py-3 bg-[#141414] border border-[#D8CBB8]/25 text-[#F5F1E8] hover:border-[#B89B5E] hover:text-[#B89B5E] text-xs tracking-[0.18em] uppercase transition-all cursor-pointer"
                 >
-                  <MessageCircle className="w-4 h-4 fill-current" />
+                  <MessageCircle className="w-4 h-4 text-[#B89B5E]" />
                   <span>ORDER VIA WHATSAPP</span>
                 </a>
-
-                <Link
-                  to="/checkout"
-                  onClick={closeCart}
-                  className="w-full flex items-center justify-center gap-2 py-3 bg-transparent border border-[#D8CBB8]/30 text-[#F5F1E8] text-xs tracking-[0.2em] uppercase hover:border-[#B89B5E] hover:text-[#B89B5E] transition-colors"
-                >
-                  <span>BESPOKE CHECKOUT REQUEST</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </Link>
               </div>
 
             </div>

@@ -18,12 +18,12 @@ export const SectionHeading: React.FC<SectionHeadingProps> = ({
   return (
     <div className={`space-y-3 ${align === 'center' ? 'text-center mx-auto' : 'text-left'} max-w-3xl`}>
       {category && (
-        <div className="flex items-center gap-2 justify-center">
-          {align === 'center' && <div className="w-6 h-[1px] bg-[#B89B5E]/50"></div>}
+        <div className={`flex items-center gap-2.5 ${align === 'center' ? 'justify-center' : 'justify-start'}`}>
+          <div className="w-5 h-[1px] bg-[#B89B5E]/60"></div>
           <span className="text-[10px] md:text-[11px] uppercase tracking-[0.3em] font-medium text-[#B89B5E]">
             {category}
           </span>
-          {align === 'center' && <div className="w-6 h-[1px] bg-[#B89B5E]/50"></div>}
+          {align === 'center' && <div className="w-5 h-[1px] bg-[#B89B5E]/60"></div>}
         </div>
       )}
       

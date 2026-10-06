@@ -1,4 +1,13 @@
-import type { OrderStatus, PaymentStatus, DeliveryMethod } from '../types';
+import type { 
+  OrderStatus, 
+  PaymentStatus, 
+  DeliveryMethod, 
+  CustomerOrder,
+  OrderPriority, 
+  QualityInspectionRecord, 
+  QualityInspectionChecks, 
+  QualityInspectionOutcome 
+} from '../types';
 
 // ---------------------------------------------------------------------------
 // 7-Stage Luxury Order Lifecycle Mapping
@@ -70,7 +79,7 @@ export interface TransitionValidationResult {
 
 /**
  * Validates whether an order status transition is allowed based on the 7-stage craft model,
- * terminal statuses, cancellation rules, and administrator roles.
+ * terminal statuses, cancellation rules, administrator roles, and quality inspection gates.
  */
 export function canTransitionOrderStatus(
   currentStatus: OrderStatus,
@@ -78,6 +87,7 @@ export function canTransitionOrderStatus(
   options?: {
     userRole?: 'master_artisan' | 'atelier_staff';
     correctionNote?: string;
+    qualityInspection?: QualityInspectionRecord;
   }
 ): TransitionValidationResult {
   // 1. Same status is a no-op
@@ -91,6 +101,18 @@ export function canTransitionOrderStatus(
       allowed: false,
       reason: 'Delivered commissions have completed the atelier lifecycle and cannot be modified.'
     };
+  }
+
+  // 3. Quality Inspection Gate: Cannot dispatch an order that failed inspection or requires rework
+  if (nextStatus === 'Dispatched') {
+    if (options?.qualityInspection) {
+      if (options.qualityInspection.outcome === 'failed' || options.qualityInspection.outcome === 'requires_rework') {
+        return {
+          allowed: false,
+          reason: `Cannot dispatch order: quality inspection recorded as '${options.qualityInspection.outcome}'. Remediation or master re-inspection required.`
+        };
+      }
+    }
   }
 
   // 3. Handling transitions to 'Cancelled'
@@ -243,3 +265,150 @@ export function validateDispatchRequirements(
     carrier: 'Atelier Pickup'
   };
 }
+
+/**
+ * Validates a Quality Inspection record and its consistency with checklist results.
+ */
+export function validateQualityInspection(
+  checks: QualityInspectionChecks,
+  outcome: QualityInspectionOutcome,
+  options?: {
+    inspectorRole?: 'master_artisan' | 'atelier_staff';
+    internalInspectionNotes?: string;
+  }
+): { valid: boolean; reason?: string } {
+  const allChecksPass = (
+    checks.constructionIntegrity &&
+    checks.stitchingAndWelting &&
+    checks.patinaAndFinishing &&
+    checks.soleCondition &&
+    checks.sizingAndFit &&
+    checks.packagingReadiness
+  );
+
+  // If all checks pass, outcome cannot be 'failed' or 'requires_rework' without explanatory notes
+  if (allChecksPass && (outcome === 'failed' || outcome === 'requires_rework')) {
+    if (!options?.internalInspectionNotes || options.internalInspectionNotes.trim().length === 0) {
+      return {
+        valid: false,
+        reason: 'When all technical checks pass, marking an order as failed or rework requires explanatory inspection notes.'
+      };
+    }
+  }
+
+  // If any check fails, outcome CANNOT be 'passed' or 'passed_with_notes'
+  if (!allChecksPass && (outcome === 'passed' || outcome === 'passed_with_notes')) {
+    return {
+      valid: false,
+      reason: 'Cannot pass quality inspection when one or more structural or finishing checkpoints have not been certified.'
+    };
+  }
+
+  // Rework or failure requires explanatory notes
+  if ((outcome === 'requires_rework' || outcome === 'failed') && (!options?.internalInspectionNotes || options.internalInspectionNotes.trim().length === 0)) {
+    return {
+      valid: false,
+      reason: 'Artisan inspection notes detailing the defect or rework instruction are required.'
+    };
+  }
+
+  return { valid: true };
+}
+
+/**
+ * Validates whether an artisan assignment or reassignment is permitted based on role.
+ */
+export function canAssignArtisan(
+  currentAssignedUid: string | undefined,
+  newAssignedUid: string,
+  actorRole: 'master_artisan' | 'atelier_staff',
+  actorUid: string
+): { allowed: boolean; reason?: string } {
+  if (!newAssignedUid || newAssignedUid.trim().length === 0) {
+    return { allowed: false, reason: 'Valid artisan identifier is required.' };
+  }
+
+  // Master Artisan has full assignment and reassignment authority
+  if (actorRole === 'master_artisan') {
+    return { allowed: true };
+  }
+
+  // Atelier Staff can claim unassigned work or assign to themselves
+  if (!currentAssignedUid) {
+    if (newAssignedUid === actorUid) {
+      return { allowed: true };
+    }
+    return {
+      allowed: false,
+      reason: 'Atelier staff may only self-assign unassigned production orders.'
+    };
+  }
+
+  // Atelier Staff cannot reassign an order already assigned to another artisan
+  if (currentAssignedUid !== actorUid) {
+    return {
+      allowed: false,
+      reason: 'Only a Master Artisan may reassign an order allocated to another cordwainer.'
+    };
+  }
+
+  return { allowed: true };
+}
+
+/**
+ * Validates whether order priority modification is allowed.
+ */
+export function canUpdatePriority(
+  priority: OrderPriority,
+  actorRole?: 'master_artisan' | 'atelier_staff'
+): { allowed: boolean; reason?: string } {
+  const validPriorities: OrderPriority[] = ['standard', 'priority', 'urgent'];
+  if (!validPriorities.includes(priority)) {
+    return { allowed: false, reason: `Unknown priority tier: ${priority}` };
+  }
+
+  // Urgent priority requires Master Artisan clearance
+  if (priority === 'urgent' && actorRole !== 'master_artisan') {
+    return {
+      allowed: false,
+      reason: 'Only a Master Artisan can designate a commission as urgent priority.'
+    };
+  }
+
+  return { allowed: true };
+}
+
+/**
+ * Sanitizes order data for customer portal and tracking projections.
+ * Strictly eliminates internal artisan notes, internal inspection notes, internal audit details, and margin data.
+ */
+export function sanitizeOrderForCustomer(order: CustomerOrder): Partial<CustomerOrder> {
+  const {
+    artisanNotes,
+    reconciliationNote,
+    reconciledBy,
+    auditTrail,
+    ...safeOrder
+  } = order;
+
+  // Sanitize quality inspection record if present
+  let safeInspection: QualityInspectionRecord | undefined = undefined;
+  if (order.qualityInspection) {
+    safeInspection = {
+      inspectorUid: 'atelier-cordwainer',
+      inspectorName: 'Master Cordwainer',
+      inspectorRole: order.qualityInspection.inspectorRole,
+      inspectedAt: order.qualityInspection.inspectedAt,
+      outcome: order.qualityInspection.outcome,
+      checks: order.qualityInspection.checks,
+      customerVisibleSummary: order.qualityInspection.customerVisibleSummary || 'Commission inspected and certified by atelier cordwainer.'
+    };
+  }
+
+  return {
+    ...safeOrder,
+    qualityInspection: safeInspection,
+    customerVisibleNotes: order.customerVisibleNotes || []
+  };
+}
+

@@ -96,7 +96,7 @@ export const AccountDashboardPage: React.FC = () => {
     setIsUpdatingProfile(false);
 
     if (res.success) {
-      setProfileSuccessMsg('Patron profile successfully updated.');
+      setProfileSuccessMsg('Customer profile successfully updated.');
     } else {
       setProfileErrorMsg(res.error || 'Could not update profile.');
     }
@@ -106,7 +106,7 @@ export const AccountDashboardPage: React.FC = () => {
     ? new Date(profile.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
     : '2026';
 
-  const patronMonogram = (profile?.fullName || customerUser?.displayName || 'N')
+  const customerMonogram = (profile?.fullName || customerUser?.displayName || 'N')
     .split(' ')
     .map(p => p[0])
     .join('')
@@ -128,16 +128,16 @@ export const AccountDashboardPage: React.FC = () => {
             {/* Identity Profile Details */}
             <div className="flex items-center gap-4 sm:gap-6">
               <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-2 border-[#B89B5E] bg-[#1A1A1A] flex items-center justify-center text-[#B89B5E] font-serif text-2xl sm:text-3xl font-light shadow-xl shrink-0">
-                {patronMonogram}
+                {customerMonogram}
               </div>
 
               <div className="space-y-1 min-w-0">
                 <div className="flex items-center gap-2.5 flex-wrap">
                   <h1 className="font-serif text-xl sm:text-2xl text-[#F5F1E8] font-medium truncate">
-                    {profile?.fullName || customerUser?.displayName || 'Atelier Patron'}
+                    {profile?.fullName || customerUser?.displayName || 'Valued Customer'}
                   </h1>
                   <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#B89B5E]/20 text-[#B89B5E] border border-[#B89B5E]/40 font-semibold tracking-wider uppercase">
-                    Patron ID: #{customerUser?.uid.slice(0, 8).toUpperCase()}
+                    Client ID: #{customerUser?.uid.slice(0, 8).toUpperCase()}
                   </span>
                 </div>
 
@@ -149,7 +149,7 @@ export const AccountDashboardPage: React.FC = () => {
                   <span className="text-[#D8CBB8]/20">•</span>
                   <span className="flex items-center gap-1.5 font-mono">
                     <Calendar size={13} className="text-[#B89B5E]" />
-                    <span>Patron Since {memberSince}</span>
+                    <span>Client Since {memberSince}</span>
                   </span>
                 </div>
 
@@ -212,7 +212,7 @@ export const AccountDashboardPage: React.FC = () => {
         ======================================================== */}
         <div className="flex border-b border-[#D8CBB8]/15 gap-2 overflow-x-auto no-scrollbar">
           {[
-            { id: 'overview', label: 'Patron Overview', icon: User },
+            { id: 'overview', label: 'Account Overview', icon: User },
             { id: 'orders', label: `My Orders (${customerOrders.length})`, icon: Package },
             { id: 'bespoke', label: 'Bespoke Atelier', icon: Scissors },
             { id: 'profile', label: 'Profile & Details', icon: ShieldCheck }
@@ -373,7 +373,7 @@ export const AccountDashboardPage: React.FC = () => {
             <div>
               <h3 className="font-serif text-xl text-[#F5F1E8]">Order History</h3>
               <p className="text-xs text-[#D8CBB8]/60 font-sans">
-                Review all footwear pieces commissioned under your atelier patron account.
+                Review all footwear pieces commissioned under your customer account.
               </p>
             </div>
 
@@ -502,7 +502,7 @@ export const AccountDashboardPage: React.FC = () => {
         {activeTab === 'profile' && (
           <div className="bg-[#121212] border border-[#D8CBB8]/15 rounded-xl p-6 space-y-6 animate-fadeIn max-w-2xl">
             <div>
-              <h3 className="font-serif text-xl text-[#F5F1E8]">Patron Profile Details</h3>
+              <h3 className="font-serif text-xl text-[#F5F1E8]">Customer Profile Details</h3>
               <p className="text-xs text-[#D8CBB8]/60 font-sans">
                 Update your contact details for fitting consultations and order updates.
               </p>

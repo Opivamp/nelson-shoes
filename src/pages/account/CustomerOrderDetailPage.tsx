@@ -247,6 +247,41 @@ export const CustomerOrderDetailPage: React.FC = () => {
                 <span className="text-[#B89B5E] font-medium font-mono mr-2">CURRENT MILESTONE:</span>
                 {currentStage.description}
               </div>
+
+              {/* Quality Inspection Certification (Customer-Visible) */}
+              {order.qualityInspection && order.qualityInspection.customerVisibleSummary && (
+                <div className="p-4 bg-emerald-950/30 border border-emerald-500/30 rounded-lg text-xs font-sans text-emerald-200 flex items-start gap-3">
+                  <ShieldCheck size={18} className="text-emerald-400 shrink-0 mt-0.5" />
+                  <div className="space-y-0.5">
+                    <span className="font-mono text-[10px] uppercase tracking-wider text-emerald-400 font-semibold block">
+                      Quality Inspection Certification
+                    </span>
+                    <p className="leading-relaxed">
+                      {order.qualityInspection.customerVisibleSummary}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Atelier Milestone Updates Stream */}
+              {order.customerVisibleNotes && order.customerVisibleNotes.length > 0 && (
+                <div className="p-4 bg-[#181818] border border-[#D8CBB8]/15 rounded-lg space-y-2">
+                  <span className="font-mono text-[10px] uppercase tracking-wider text-[#B89B5E] font-semibold block">
+                    Atelier Milestone Communications
+                  </span>
+                  <div className="space-y-2 divide-y divide-[#D8CBB8]/10 text-xs font-sans">
+                    {order.customerVisibleNotes.map((note) => (
+                      <div key={note.id} className="pt-2 first:pt-0 space-y-0.5">
+                        <div className="flex items-center justify-between text-[10px] font-mono text-[#D8CBB8]/50">
+                          <span>{note.authorRole || 'Atelier Concierge'}</span>
+                          <span>{new Date(note.timestamp).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                        </div>
+                        <p className="text-[#F5F1E8]">{note.message}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* ========================================================
@@ -336,7 +371,13 @@ export const CustomerOrderDetailPage: React.FC = () => {
                   <div className="space-y-2 text-xs font-mono">
                     <p className="text-[#D8CBB8]/70">Fulfillment Method:</p>
                     <p className="text-base text-[#B89B5E] font-bold">Lagos Atelier Fitting Pickup</p>
-                    <p className="text-[11px] text-[#D8CBB8]/60 font-sans">Complimentary fitting and collection at our private Lagos atelier upon completion.</p>
+                    {order.readyForPickup ? (
+                      <div className="p-3 bg-emerald-950/40 border border-emerald-500/40 rounded text-emerald-300 font-sans text-xs">
+                        ✓ <strong>Ready for Collection</strong> — Your commission is finished and resting in our private Victoria Island lounge. Concierge is expecting you.
+                      </div>
+                    ) : (
+                      <p className="text-[11px] text-[#D8CBB8]/60 font-sans">Complimentary fitting and collection at our private Lagos atelier upon completion.</p>
+                    )}
                   </div>
                 ) : order.trackingNumber ? (
                   <div className="space-y-2 text-xs font-mono">

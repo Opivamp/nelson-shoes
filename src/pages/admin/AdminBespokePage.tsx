@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { 
   Scissors, 
   Ruler, 
@@ -88,7 +89,7 @@ export const AdminBespokePage: React.FC = () => {
             id: doc.id,
             inquiryReference: data.inquiryReference || doc.id,
             customerUid: data.customerUid || null,
-            customerName: data.customerName || data.fullName || 'Anonymous Patron',
+            customerName: data.customerName || data.fullName || 'Anonymous Client',
             customerEmail: data.customerEmail || data.email || '',
             customerPhone: data.customerPhone || data.phoneWhatsApp || data.phoneOrWhatsApp || '',
             country: data.country || 'Nigeria',
@@ -370,7 +371,7 @@ export const AdminBespokePage: React.FC = () => {
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#D8CBB8]/40" />
           <input
             type="text"
-            placeholder="Search patron, email, ref..."
+            placeholder="Search client, email, ref..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full bg-[#141414] border border-[#D8CBB8]/20 pl-9 pr-3 py-1.5 text-xs text-[#F5F1E8] focus:outline-none focus:border-[#B89B5E] rounded-lg"
@@ -518,7 +519,7 @@ export const AdminBespokePage: React.FC = () => {
                   {selectedInquiry.specifications.silhouette}
                 </h2>
                 <p className="text-xs text-[#D8CBB8]/60 font-sans">
-                  Patron: <strong className="text-[#F5F1E8]">{selectedInquiry.customerName}</strong> ({selectedInquiry.customerEmail} • {selectedInquiry.customerPhone})
+                  Client: <strong className="text-[#F5F1E8]">{selectedInquiry.customerName}</strong> ({selectedInquiry.customerEmail} • {selectedInquiry.customerPhone})
                 </p>
               </div>
 
@@ -586,7 +587,7 @@ export const AdminBespokePage: React.FC = () => {
 
               {selectedInquiry.specifications.specialRequests && (
                 <div className="pt-2 border-t border-[#D8CBB8]/10 text-xs">
-                  <span className="text-[10px] text-[#D8CBB8]/50 font-mono block mb-1">Patron Special Requests</span>
+                  <span className="text-[10px] text-[#D8CBB8]/50 font-mono block mb-1">Client Special Requests</span>
                   <p className="text-[#D8CBB8]/80 leading-relaxed italic">
                     "{selectedInquiry.specifications.specialRequests}"
                   </p>
@@ -711,8 +712,9 @@ export const AdminBespokePage: React.FC = () => {
                         onChange={(e) => setQuoteForm({ ...quoteForm, depositPercentage: Number(e.target.value) })}
                         className="w-full bg-[#181818] border border-[#D8CBB8]/20 p-2 text-[#F5F1E8] rounded font-mono"
                       >
-                        <option value={30}>30% Initial Reservation</option>
-                        <option value={50}>50% Standard Bench Deposit</option>
+                        <option value={50}>50% Standard Bench Deposit (Minimum)</option>
+                        <option value={60}>60% Custom Reservation</option>
+                        <option value={75}>75% Dedicated Allocation</option>
                         <option value={100}>100% Full Pre-Payment</option>
                       </select>
                     </div>
@@ -833,9 +835,13 @@ export const AdminBespokePage: React.FC = () => {
                   Convert to Commission Order
                 </button>
               ) : (
-                <span className="px-3 py-1 bg-emerald-950 text-emerald-400 border border-emerald-700/50 rounded font-mono text-xs">
-                  ✓ Order Converted
-                </span>
+                <Link
+                  to={`/admin/orders?search=${selectedInquiry.convertedOrderId}`}
+                  className="px-3 py-1.5 bg-emerald-950 hover:bg-emerald-900 text-emerald-400 border border-emerald-700/50 rounded font-mono text-xs flex items-center gap-1.5 transition-colors"
+                >
+                  <Check size={12} />
+                  <span>View Order #{selectedInquiry.convertedOrderId} →</span>
+                </Link>
               )}
             </div>
 
@@ -910,7 +916,7 @@ export const AdminBespokePage: React.FC = () => {
                 <form onSubmit={handleAddCustomerNote} className="flex gap-2">
                   <input
                     type="text"
-                    placeholder="Message to patron's portal..."
+                    placeholder="Message to customer's portal..."
                     value={customerNote}
                     onChange={(e) => setCustomerNote(e.target.value)}
                     className="flex-1 bg-[#121212] border border-[#D8CBB8]/20 px-3 py-1.5 text-xs text-[#F5F1E8] rounded"
@@ -929,7 +935,7 @@ export const AdminBespokePage: React.FC = () => {
             {/* Direct WhatsApp Concierge CTA */}
             <div className="pt-2 flex items-center justify-between border-t border-[#D8CBB8]/15">
               <span className="text-xs text-[#D8CBB8]/60 font-sans">
-                Contact patron directly via verified WhatsApp:
+                Contact client directly via verified WhatsApp:
               </span>
               <a
                 href={`https://wa.me/${selectedInquiry.customerPhone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Hello ${selectedInquiry.customerName}, this is Nelson from Nelson Shoes Atelier regarding your bespoke consultation request #${selectedInquiry.inquiryReference}.`)}`}

@@ -77,7 +77,7 @@ export const AdminProductsPage: React.FC = () => {
     setFormPriceUSD(320);
     setFormImage('/images/hero-bespoke-oxford.jpg');
     setFormDescription('Sculpted from prime full-grain leather, hand-lasted over custom wooden formers in Lagos.');
-    setFormStory('Designed for discerning patrons who demand uncompromised craft and comfort.');
+    setFormStory('Designed for discerning clients who demand uncompromised craft and comfort.');
     setFormUpper('Grade-A French Box Calfskin');
     setFormSole('Oak bark vegetable-tanned leather sole');
     setFormConstruction('Goodyear Hand-Welted with hidden channel');
@@ -257,7 +257,7 @@ export const AdminProductsPage: React.FC = () => {
             Footwear Catalog & Self-Upload
           </h1>
           <p className="text-xs text-[#D8CBB8]/60 font-sans mt-0.5">
-            Add new creations, upload photographs, set pricing, and modify specifications visible to patrons.
+            Add new creations, upload photographs, set pricing, and modify specifications visible to customers.
           </p>
         </div>
 

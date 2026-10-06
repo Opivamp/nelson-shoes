@@ -128,6 +128,37 @@ export type DeliveryMethod = 'dhl-express' | 'atelier-pickup';
 
 export type RefundStatus = 'none' | 'pending' | 'refunded' | 'rejected';
 
+export type OrderPriority = 'standard' | 'priority' | 'urgent';
+
+export type QualityInspectionOutcome = 'passed' | 'passed_with_notes' | 'requires_rework' | 'failed';
+
+export interface QualityInspectionChecks {
+  constructionIntegrity: boolean;
+  stitchingAndWelting: boolean;
+  patinaAndFinishing: boolean;
+  soleCondition: boolean;
+  sizingAndFit: boolean;
+  packagingReadiness: boolean;
+}
+
+export interface QualityInspectionRecord {
+  inspectorUid: string;
+  inspectorName?: string;
+  inspectorRole: 'master_artisan' | 'atelier_staff';
+  inspectedAt: string;
+  outcome: QualityInspectionOutcome;
+  checks: QualityInspectionChecks;
+  customerVisibleSummary?: string;
+  internalInspectionNotes?: string;
+}
+
+export interface CustomerVisibleOrderNote {
+  id: string;
+  message: string;
+  timestamp: string;
+  authorRole?: string;
+}
+
 export interface OrderAuditEntry {
   event: string;
   previousStatus?: string;
@@ -138,6 +169,7 @@ export interface OrderAuditEntry {
   actorRole?: string;
   timestamp: string;
   note?: string;
+  reason?: string;
 }
 
 export interface CustomerOrder {
@@ -168,6 +200,7 @@ export interface CustomerOrder {
   paymentReference?: string;
   paidAt?: string;
   status: OrderStatus;
+  priority?: OrderPriority;
   customerUid?: string;
   trackingNumber?: string;
   carrier?: string;
@@ -179,6 +212,20 @@ export interface CustomerOrder {
   refundReference?: string;
   refundedAt?: string;
   artisanNotes?: string;
+  customerVisibleNotes?: CustomerVisibleOrderNote[];
+  assignedArtisanUid?: string;
+  assignedArtisanName?: string;
+  assignedAt?: string;
+  assignedBy?: string;
+  qualityInspection?: QualityInspectionRecord;
+  readyForPickup?: boolean;
+  pickupReadyAt?: string;
+  bespokeInquiryId?: string;
+  bespokeInquiryRef?: string;
+  reconciledAt?: string;
+  reconciledBy?: string;
+  reconciliationNote?: string;
+  targetCompletionDate?: string;
   auditTrail?: OrderAuditEntry[];
   createdAt: string;
   updatedAt: string;

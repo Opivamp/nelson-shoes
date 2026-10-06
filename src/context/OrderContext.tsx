@@ -1,5 +1,14 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import type { CustomerOrder, OrderStatus, CartItem } from '../types';
+import type { 
+  CustomerOrder, 
+  OrderStatus, 
+  CartItem, 
+  OrderPriority, 
+  QualityInspectionRecord, 
+  QualityInspectionChecks, 
+  QualityInspectionOutcome,
+  CustomerVisibleOrderNote 
+} from '../types';
 import { 
   isFirebaseConfigured, 
   subscribeToOrders, 
@@ -37,6 +46,36 @@ interface OrderContextType {
     updates: Partial<CustomerOrder>,
     auditNote?: string
   ) => void;
+  assignArtisan: (
+    orderId: string, 
+    artisanUid: string, 
+    artisanName?: string
+  ) => Promise<{ success: boolean; error?: string }>;
+  updateOrderPriority: (
+    orderId: string, 
+    priority: OrderPriority
+  ) => Promise<{ success: boolean; error?: string }>;
+  recordOrderInspection: (
+    orderId: string, 
+    checks: QualityInspectionChecks, 
+    outcome: QualityInspectionOutcome, 
+    internalNotes?: string, 
+    customerSummary?: string
+  ) => Promise<{ success: boolean; error?: string }>;
+  addCustomerVisibleOrderNote: (
+    orderId: string, 
+    message: string
+  ) => Promise<{ success: boolean; error?: string }>;
+  reconcileOrderPayment: (
+    orderId: string, 
+    paymentReference: string, 
+    note?: string
+  ) => Promise<{ success: boolean; error?: string }>;
+  setAtelierPickupReadiness: (
+    orderId: string, 
+    ready: boolean, 
+    note?: string
+  ) => Promise<{ success: boolean; error?: string }>;
   getOrderByIdOrNumber: (idOrNumber: string) => CustomerOrder | undefined;
   deleteOrder: (orderId: string) => void;
   resetOrders: () => void;
@@ -176,7 +215,7 @@ export const SEED_ORDERS: CustomerOrder[] = [
 const OrderContext = createContext<OrderContextType | undefined>(undefined);
 
 export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isAdmin } = useAdminAuth();
+  const { isAdmin, adminUser, firebaseUser } = useAdminAuth();
   const { customerUser } = useCustomerAuth();
 
   // Purge legacy leaked order cache from localStorage if present
@@ -378,6 +417,158 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
+  const callManageOrderApi = async (action: string, payload: Record<string, any>): Promise<{ success: boolean; error?: string; data?: any }> => {
+    if (firebaseUser) {
+      try {
+        const token = await firebaseUser.getIdToken();
+        const res = await fetch('/api/manage-order', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({ action, ...payload })
+        });
+        const json = await res.json();
+        if (!res.ok) {
+          return { success: false, error: json.error || 'Server rejected request' };
+        }
+        return { success: true, data: json.data };
+      } catch (err: any) {
+        console.warn('[manage-order] API invocation failed, falling back to client write:', err);
+      }
+    }
+    return { success: true };
+  };
+
+  const assignArtisan = async (
+    orderId: string, 
+    artisanUid: string, 
+    artisanName?: string
+  ): Promise<{ success: boolean; error?: string }> => {
+    const apiRes = await callManageOrderApi('assign_artisan', { orderId, artisanUid, artisanName });
+    if (!apiRes.success) return apiRes;
+
+    const now = new Date().toISOString();
+    const resolvedName = artisanName || (adminUser ? adminUser.name : 'Assigned Cordwainer');
+    const updates: Partial<CustomerOrder> = {
+      assignedArtisanUid: artisanUid,
+      assignedArtisanName: resolvedName,
+      assignedAt: now,
+      assignedBy: adminUser?.name || 'Master Artisan'
+    };
+    updateOrder(orderId, updates, `Artisan ${resolvedName} assigned to order.`);
+    return { success: true };
+  };
+
+  const updateOrderPriority = async (
+    orderId: string, 
+    priority: OrderPriority
+  ): Promise<{ success: boolean; error?: string }> => {
+    const apiRes = await callManageOrderApi('set_priority', { orderId, priority });
+    if (!apiRes.success) return apiRes;
+
+    updateOrder(orderId, { priority }, `Order priority updated to ${priority.toUpperCase()}`);
+    return { success: true };
+  };
+
+  const recordOrderInspection = async (
+    orderId: string, 
+    checks: QualityInspectionChecks, 
+    outcome: QualityInspectionOutcome, 
+    internalNotes?: string, 
+    customerSummary?: string
+  ): Promise<{ success: boolean; error?: string }> => {
+    const apiRes = await callManageOrderApi('record_inspection', {
+      orderId,
+      checks,
+      outcome,
+      internalInspectionNotes: internalNotes,
+      customerVisibleSummary: customerSummary
+    });
+    if (!apiRes.success) return apiRes;
+
+    const now = new Date().toISOString();
+    const inspection: QualityInspectionRecord = {
+      inspectorUid: firebaseUser?.uid || 'artisan',
+      inspectorName: adminUser?.name || 'Master Cordwainer',
+      inspectorRole: adminUser?.role || 'master_artisan',
+      inspectedAt: now,
+      outcome,
+      checks,
+      customerVisibleSummary: customerSummary || (
+        outcome === 'passed' || outcome === 'passed_with_notes'
+          ? 'Commission certified by Master Cordwainer inspection.'
+          : 'Commission undergoing bench calibration.'
+      ),
+      internalInspectionNotes: internalNotes || ''
+    };
+
+    updateOrder(orderId, { qualityInspection: inspection }, `Quality inspection outcome recorded: ${outcome.toUpperCase()}`);
+    return { success: true };
+  };
+
+  const addCustomerVisibleOrderNote = async (
+    orderId: string, 
+    message: string
+  ): Promise<{ success: boolean; error?: string }> => {
+    const apiRes = await callManageOrderApi('add_customer_note', { orderId, message });
+    if (!apiRes.success) return apiRes;
+
+    const ord = getOrderByIdOrNumber(orderId);
+    const existing = ord?.customerVisibleNotes ? [...ord.customerVisibleNotes] : [];
+    const newNote: CustomerVisibleOrderNote = {
+      id: `note-${Date.now()}`,
+      message,
+      timestamp: new Date().toISOString(),
+      authorRole: adminUser?.role === 'master_artisan' ? 'Master Cordwainer' : 'Atelier Concierge'
+    };
+    updateOrder(orderId, { customerVisibleNotes: [...existing, newNote] }, 'Customer milestone note broadcast.');
+    return { success: true };
+  };
+
+  const reconcileOrderPayment = async (
+    orderId: string, 
+    paymentReference: string, 
+    note?: string
+  ): Promise<{ success: boolean; error?: string }> => {
+    const apiRes = await callManageOrderApi('reconcile_payment', {
+      orderId,
+      paymentReference,
+      reconciliationNote: note
+    });
+    if (!apiRes.success) return apiRes;
+
+    const now = new Date().toISOString();
+    const updates: Partial<CustomerOrder> = {
+      paymentStatus: 'paid',
+      paymentReference,
+      paidAt: now,
+      reconciledAt: now,
+      reconciledBy: adminUser?.name || 'Master Artisan',
+      reconciliationNote: note || 'Verified manual bank transfer cleared into treasury.'
+    };
+    updateOrder(orderId, updates, `Payment reconciled as PAID: ref ${paymentReference}`);
+    return { success: true };
+  };
+
+  const setAtelierPickupReadiness = async (
+    orderId: string, 
+    ready: boolean, 
+    note?: string
+  ): Promise<{ success: boolean; error?: string }> => {
+    const apiRes = await callManageOrderApi('set_pickup_ready', { orderId, ready, note });
+    if (!apiRes.success) return apiRes;
+
+    const now = new Date().toISOString();
+    const updates: Partial<CustomerOrder> = {
+      readyForPickup: ready,
+      pickupReadyAt: ready ? now : undefined
+    };
+    updateOrder(orderId, updates, ready ? 'Commission marked ready for atelier lounge collection.' : 'Pickup readiness cleared.');
+    return { success: true };
+  };
+
   const getOrderByIdOrNumber = (idOrNumber: string): CustomerOrder | undefined => {
     const clean = idOrNumber.trim().toUpperCase();
     return activeOrders.find(
@@ -413,6 +604,12 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         createOrder,
         updateOrderStatus,
         updateOrder,
+        assignArtisan,
+        updateOrderPriority,
+        recordOrderInspection,
+        addCustomerVisibleOrderNote,
+        reconcileOrderPayment,
+        setAtelierPickupReadiness,
         getOrderByIdOrNumber,
         deleteOrder,
         resetOrders

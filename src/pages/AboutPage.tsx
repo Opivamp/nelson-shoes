@@ -150,7 +150,7 @@ export const AboutPage: React.FC = () => {
                 An Enduring Footwear Dynasty
               </h3>
               <p className="text-xs text-[#D8CBB8]/75 font-sans leading-relaxed font-light">
-                We envision a global network of discerning patrons who turn to Nelson Shoes for their most defining life occasions: boardroom milestones, international galas, and treasured wedding celebrations.
+                We envision a global network of discerning clients and collectors who turn to Nelson Shoes for their most defining life occasions: boardroom milestones, international galas, and treasured wedding celebrations.
               </p>
             </div>
 

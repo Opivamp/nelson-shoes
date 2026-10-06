@@ -16,6 +16,22 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, onClose
   const [isBespokeFitting, setIsBespokeFitting] = useState(false);
   const [added, setAdded] = useState(false);
 
+  // Escape-to-close & body scroll lock
+  React.useEffect(() => {
+    if (!product) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [product, onClose]);
+
   if (!product) return null;
 
   const handleAddToCart = () => {
@@ -28,14 +44,19 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, onClose
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 md:p-6 animate-fade-in text-[#F5F1E8]">
+    <div 
+      className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 md:p-6 animate-fade-in text-[#F5F1E8]"
+      role="dialog"
+      aria-modal="true"
+      aria-label={`${product.name} Quick View`}
+    >
       <div 
-        className="relative bg-[#0E0E0E] border border-[#D8CBB8]/20 max-w-3xl w-full grid grid-cols-1 md:grid-cols-2 overflow-hidden shadow-2xl"
+        className="relative bg-[#0E0E0E] border border-[#D8CBB8]/20 max-w-3xl w-full grid grid-cols-1 md:grid-cols-2 overflow-hidden shadow-2xl max-h-[90vh] overflow-y-auto"
       >
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 z-20 p-2 text-[#D8CBB8]/60 hover:text-[#F5F1E8] transition-colors"
+          className="absolute top-3 right-3 sm:top-4 sm:right-4 z-20 p-2.5 rounded-full bg-black/70 border border-[#D8CBB8]/20 text-[#D8CBB8]/80 hover:text-[#F5F1E8] hover:border-[#B89B5E] transition-colors"
           aria-label="Close modal"
         >
           <X className="w-5 h-5 stroke-[1.5]" />

@@ -351,4 +351,59 @@ html.light nav.fixed.bottom-0 {
   .border-luxury-active {
     border-color: rgba(184, 155, 94, 0.4);
   }
+
+  /* Safe Area Insets for notched devices & dynamic islands */
+  .pb-safe {
+    padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0px));
+  }
+  .pt-safe {
+    padding-top: max(0.75rem, env(safe-area-inset-top, 0px));
+  }
+  .pl-safe {
+    padding-left: max(0.5rem, env(safe-area-inset-left, 0px));
+  }
+  .pr-safe {
+    padding-right: max(0.5rem, env(safe-area-inset-right, 0px));
+  }
+
+  /* Accessible Touch Target Utility (Minimum 44x44px hit-box) */
+  .touch-target {
+    min-width: 44px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* ========================================================
+   MOBILE KEYBOARD & FORM HARDENING
+   Enforces 16px minimum font size on iOS Safari to prevent disruptive auto-zooming
+   ======================================================== */
+@media screen and (max-width: 639px) {
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="password"],
+  input[type="number"],
+  input[type="search"],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* ========================================================
+   ACCESSIBILITY: PREFERS-REDUCED-MOTION
+   Softens or halts non-essential motion transitions when user requests reduced motion
+   ======================================================== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

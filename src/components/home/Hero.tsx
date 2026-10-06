@@ -130,7 +130,7 @@ export const Hero: React.FC = () => {
       {/* ========================================================
           CONTENT CONTAINER
       ======================================================== */}
-      <div className="relative z-20 max-w-7xl mx-auto px-6 md:px-10 w-full flex flex-col justify-between py-12">
+      <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 md:px-10 w-full flex flex-col justify-between py-12">
         
         <div className="max-w-2xl space-y-6 md:space-y-8 text-left">
           
@@ -145,7 +145,7 @@ export const Hero: React.FC = () => {
           {/* Monumental Editorial Headline with Smooth Keyframe Transition */}
           <h1 
             key={slide.id + '-title'}
-            className="font-serif text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-light text-[#F5F1E8] leading-[0.98] tracking-tight animate-fadeIn"
+            className="font-serif text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-light text-[#F5F1E8] leading-[0.98] tracking-tight break-words animate-fadeIn"
           >
             {slide.title}<br />
             <span className="italic font-normal text-[#B89B5E]">{slide.subtitle}</span><br />
@@ -173,7 +173,7 @@ export const Hero: React.FC = () => {
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-2">
             <Link
               to="/collection"
-              className="px-8 py-4 bg-[#B89B5E] hover:bg-[#D4BD86] text-[#0A0A0A] text-xs font-semibold tracking-[0.22em] uppercase transition-all duration-300 text-center flex items-center justify-center gap-2 group shadow-2xl"
+              className="px-8 py-4 bg-[#B89B5E] hover:bg-[#D4BD86] text-[#0A0A0A] text-xs font-semibold tracking-[0.22em] uppercase transition-all duration-300 text-center flex items-center justify-center gap-2 group shadow-2xl min-h-[44px]"
             >
               <span>EXPLORE THE COLLECTION</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -181,7 +181,7 @@ export const Hero: React.FC = () => {
 
             <Link
               to="/bespoke"
-              className="px-8 py-4 bg-[#141414]/80 hover:bg-[#1C1C1C] border border-[#D8CBB8]/30 hover:border-[#B89B5E] text-[#F5F1E8] text-xs font-medium tracking-[0.22em] uppercase transition-all duration-300 text-center backdrop-blur-md shadow-lg"
+              className="px-8 py-4 bg-[#141414]/80 hover:bg-[#1C1C1C] border border-[#D8CBB8]/30 hover:border-[#B89B5E] text-[#F5F1E8] text-xs font-medium tracking-[0.22em] uppercase transition-all duration-300 text-center backdrop-blur-md shadow-lg min-h-[44px] flex items-center justify-center"
             >
               START YOUR BESPOKE JOURNEY
             </Link>
@@ -199,7 +199,7 @@ export const Hero: React.FC = () => {
                 <button
                   key={i}
                   onClick={() => setCurrentSlide(i)}
-                  className={`h-1.5 transition-all duration-300 rounded-full ${
+                  className={`h-2 transition-all duration-300 rounded-full ${
                     i === currentSlide 
                       ? 'w-8 bg-[#B89B5E]' 
                       : 'w-2 bg-[#D8CBB8]/30 hover:bg-[#D8CBB8]/60'
@@ -209,17 +209,17 @@ export const Hero: React.FC = () => {
               ))}
             </div>
 
-            <div className="flex items-center gap-1 ml-2">
+            <div className="flex items-center gap-1.5 ml-2">
               <button
                 onClick={handlePrevSlide}
-                className="w-7 h-7 rounded-full border border-[#D8CBB8]/20 hover:border-[#B89B5E] text-[#D8CBB8] hover:text-[#B89B5E] flex items-center justify-center transition-colors"
+                className="w-8 h-8 rounded-full border border-[#D8CBB8]/20 hover:border-[#B89B5E] text-[#D8CBB8] hover:text-[#B89B5E] flex items-center justify-center transition-colors"
                 aria-label="Previous slide"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
               <button
                 onClick={handleNextSlide}
-                className="w-7 h-7 rounded-full border border-[#D8CBB8]/20 hover:border-[#B89B5E] text-[#D8CBB8] hover:text-[#B89B5E] flex items-center justify-center transition-colors"
+                className="w-8 h-8 rounded-full border border-[#D8CBB8]/20 hover:border-[#B89B5E] text-[#D8CBB8] hover:text-[#B89B5E] flex items-center justify-center transition-colors"
                 aria-label="Next slide"
               >
                 <ChevronRight className="w-4 h-4" />

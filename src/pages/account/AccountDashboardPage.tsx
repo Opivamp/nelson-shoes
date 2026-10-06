@@ -118,7 +118,7 @@ export const AccountDashboardPage: React.FC = () => {
       <div className="max-w-6xl mx-auto space-y-8">
         
         {/* ========================================================
-            1. PATRON PORTAL HERO & CREDENTIALS BANNER
+            1. CUSTOMER PORTAL HERO & CREDENTIALS BANNER
         ======================================================== */}
         <div className="bg-gradient-to-br from-[#141414] via-[#101010] to-[#0D0D0D] border border-[#D8CBB8]/15 p-6 sm:p-8 rounded-xl shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 right-0 w-80 h-80 bg-[#B89B5E]/5 rounded-full blur-3xl pointer-events-none" />

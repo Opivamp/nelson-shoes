@@ -302,8 +302,61 @@ export const AdminProductsPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Products Table */}
-      <div className="bg-[#121212] border border-[#D8CBB8]/15 overflow-hidden">
+      {/* Products Mobile Card View */}
+      <div className="md:hidden space-y-3">
+        {filtered.map((prod) => (
+          <div key={prod.id} className="bg-[#121212] border border-[#D8CBB8]/15 p-4 rounded-lg space-y-3">
+            <div className="flex items-center gap-3">
+              <div className="w-14 h-16 bg-black rounded overflow-hidden border border-[#D8CBB8]/15 shrink-0">
+                <img
+                  src={prod.primaryImage}
+                  alt={prod.name}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="space-y-1 min-w-0 flex-1">
+                <div className="font-serif text-sm text-[#F5F1E8] font-medium truncate">{prod.name}</div>
+                <div className="text-[10px] font-mono text-[#B89B5E] uppercase">{prod.category}</div>
+                <div className="text-xs font-mono text-[#F5F1E8]">
+                  {formatCurrencyNGN(prod.priceNGN)} <span className="text-[#D8CBB8]/40">({formatCurrencyUSD(prod.priceUSD)})</span>
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center justify-between pt-2 border-t border-[#D8CBB8]/10 text-xs">
+              <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-[#181818] border border-[#D8CBB8]/20 text-[#D8CBB8]">
+                {prod.status} {prod.isFeatured && '★'}
+              </span>
+              <div className="flex items-center gap-2">
+                <Link
+                  to={`/product/${prod.slug}`}
+                  target="_blank"
+                  className="p-2 min-h-[36px] min-w-[36px] flex items-center justify-center text-[#D8CBB8]/70 hover:text-[#B89B5E] bg-[#181818] rounded transition-colors"
+                  aria-label="View product"
+                >
+                  <Eye size={15} />
+                </Link>
+                <button
+                  onClick={() => openEditModal(prod)}
+                  className="p-2 min-h-[36px] min-w-[36px] flex items-center justify-center text-[#D8CBB8]/70 hover:text-[#B89B5E] bg-[#181818] rounded transition-colors"
+                  aria-label="Edit product"
+                >
+                  <Edit3 size={15} />
+                </button>
+                <button
+                  onClick={() => handleDelete(prod.id, prod.name)}
+                  className="p-2 min-h-[36px] min-w-[36px] flex items-center justify-center text-red-400/80 hover:text-red-400 bg-red-950/30 rounded transition-colors"
+                  aria-label="Delete product"
+                >
+                  <Trash2 size={15} />
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Products Table (Desktop & Tablet) */}
+      <div className="hidden md:block bg-[#121212] border border-[#D8CBB8]/15 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs font-sans">
             <thead>

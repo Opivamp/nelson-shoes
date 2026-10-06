@@ -51,7 +51,7 @@ export const AtelierComposer: React.FC<AtelierComposerProps> = ({ onOpenQuickCom
         {/* Top Input Row */}
         <div className="flex items-center gap-2.5 sm:gap-3 w-full min-w-0">
           
-          {/* Avatar / Patron Monogram */}
+          {/* Avatar / Customer Monogram */}
           <div className="relative shrink-0">
             <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gradient-to-tr from-[#1A1A1A] via-[#2A2418] to-[#1A1A1A] border border-[#B89B5E]/50 flex items-center justify-center text-[#B89B5E] font-serif text-sm font-semibold shadow-inner shrink-0">
               N

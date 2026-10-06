@@ -13,21 +13,37 @@ export const CartDrawer: React.FC = () => {
     updateQuantity, 
     totalItems, 
     subtotalNGN, 
-    subtotalUSD,
+    subtotalUSD, 
     generateWhatsAppOrderUrl 
   } = useCart();
+
+  // Escape-to-close & body scroll lock
+  React.useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') closeCart();
+    };
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, closeCart]);
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-hidden">
+    <div className="fixed inset-0 z-50 overflow-hidden" role="dialog" aria-modal="true" aria-label="Commission Bag Drawer">
       {/* Dark backdrop */}
       <div 
         onClick={closeCart}
         className="absolute inset-0 bg-black/80 backdrop-blur-sm transition-opacity duration-300"
       />
 
-      <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
+      <div className="fixed inset-y-0 right-0 max-w-full flex pl-4 sm:pl-10">
         <div className="w-screen max-w-md bg-[#0E0E0E] border-l border-[#D8CBB8]/15 shadow-2xl flex flex-col justify-between text-[#F5F1E8]">
           
           {/* Header */}
@@ -115,20 +131,20 @@ export const CartDrawer: React.FC = () => {
                       <div className="flex items-center border border-[#D8CBB8]/20 text-xs">
                         <button
                           onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                          className="px-2 py-1 text-[#D8CBB8]/60 hover:text-[#F5F1E8] transition-colors"
+                          className="w-8 h-8 flex items-center justify-center text-[#D8CBB8]/70 hover:text-[#F5F1E8] transition-colors"
                           aria-label="Decrease quantity"
                         >
-                          <Minus className="w-3 h-3" />
+                          <Minus className="w-3.5 h-3.5" />
                         </button>
-                        <span className="px-2.5 font-sans text-xs text-[#F5F1E8]">
+                        <span className="px-2.5 font-sans text-xs text-[#F5F1E8] font-medium">
                           {item.quantity}
                         </span>
                         <button
                           onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                          className="px-2 py-1 text-[#D8CBB8]/60 hover:text-[#F5F1E8] transition-colors"
+                          className="w-8 h-8 flex items-center justify-center text-[#D8CBB8]/70 hover:text-[#F5F1E8] transition-colors"
                           aria-label="Increase quantity"
                         >
-                          <Plus className="w-3 h-3" />
+                          <Plus className="w-3.5 h-3.5" />
                         </button>
                       </div>
 
@@ -151,7 +167,7 @@ export const CartDrawer: React.FC = () => {
 
           {/* Footer Subtotals & Checkout Actions */}
           {items.length > 0 && (
-            <div className="p-6 border-t border-[#D8CBB8]/15 bg-[#121212]/90 space-y-4">
+            <div className="p-6 border-t border-[#D8CBB8]/15 bg-[#121212]/90 space-y-4 pb-safe">
               
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between text-xs text-[#D8CBB8]/70 font-sans">

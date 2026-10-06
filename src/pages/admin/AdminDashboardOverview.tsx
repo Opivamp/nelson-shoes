@@ -416,8 +416,52 @@ export const AdminDashboardOverview: React.FC = () => {
           </Link>
         </div>
 
-        {/* Orders Table */}
-        <div className="overflow-x-auto">
+        {/* Mobile Orders Card View */}
+        <div className="md:hidden space-y-3">
+          {orders.slice(0, 5).map((order) => (
+            <div key={order.id} className="p-3.5 bg-[#161616] border border-[#D8CBB8]/15 rounded-lg space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="font-mono text-[#B89B5E] font-semibold text-xs">
+                  {order.orderNumber}
+                </span>
+                <span className={`px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider ${
+                  order.status === 'Delivered'
+                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                    : order.status === 'Pending Confirmation'
+                      ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                      : 'bg-[#B89B5E]/20 text-[#B89B5E] border border-[#B89B5E]/30'
+                }`}>
+                  {order.status}
+                </span>
+              </div>
+              <div className="text-xs">
+                <span className="text-[#F5F1E8] font-medium block">
+                  {order.customer.firstName} {order.customer.lastName}
+                </span>
+                <span className="text-[10px] text-[#D8CBB8]/50 font-mono">
+                  {order.customer.city}, {order.customer.country}
+                </span>
+              </div>
+              <div className="text-[11px] text-[#D8CBB8]/70 line-clamp-1">
+                {order.items.map(i => `${i.product.name} (EU ${i.size})`).join(', ')}
+              </div>
+              <div className="flex items-center justify-between pt-1 border-t border-[#D8CBB8]/10 text-xs">
+                <span className="font-mono text-[#F5F1E8] font-medium">
+                  {formatCurrencyNGN(order.totalNGN || order.subtotalNGN)}
+                </span>
+                <Link
+                  to={`/admin/orders?search=${order.orderNumber}`}
+                  className="px-2.5 py-1 bg-[#181818] hover:bg-[#B89B5E] hover:text-[#0A0A0A] border border-[#D8CBB8]/20 rounded text-[11px] text-[#D8CBB8] transition-colors font-mono"
+                >
+                  Inspect →
+                </Link>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop Orders Table */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left text-xs font-sans">
             <thead>
               <tr className="border-b border-[#D8CBB8]/15 text-[#D8CBB8]/50 uppercase tracking-wider text-[10px] font-mono">

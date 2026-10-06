@@ -87,7 +87,7 @@ export const CollectionPage: React.FC = () => {
 
   return (
     <div className="bg-[#0A0A0A] text-[#F5F1E8] min-h-screen pt-32 pb-24">
-      <div className="max-w-7xl mx-auto px-6 md:px-10 space-y-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-10 space-y-12">
         
         {/* Editorial Header */}
         <div className="space-y-4 max-w-3xl">
@@ -107,14 +107,14 @@ export const CollectionPage: React.FC = () => {
         {/* Filter & Category Bar */}
         <div className="pt-6 border-t border-[#D8CBB8]/15 space-y-6">
           
-          {/* Main Category Tabs */}
-          <div className="flex items-center justify-between gap-4 overflow-x-auto pb-2 no-scrollbar">
-            <div className="flex items-center gap-2">
+          {/* Main Category Tabs & Controls */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0 no-scrollbar">
               {categories.map((cat) => (
                 <button
                   key={cat.key}
                   onClick={() => handleCategoryChange(cat.key)}
-                  className={`px-4 py-2 text-[11px] tracking-[0.2em] uppercase font-medium whitespace-nowrap transition-all duration-300 border ${
+                  className={`px-4 py-2.5 text-[11px] tracking-[0.2em] uppercase font-medium whitespace-nowrap transition-all duration-300 border min-h-[40px] flex items-center ${
                     selectedCategory === cat.key && !showSavedOnly
                       ? 'border-[#B89B5E] bg-[#B89B5E] text-[#0A0A0A]'
                       : 'border-[#D8CBB8]/15 bg-[#121212] text-[#D8CBB8]/70 hover:border-[#B89B5E]/40 hover:text-[#F5F1E8]'
@@ -126,11 +126,12 @@ export const CollectionPage: React.FC = () => {
             </div>
 
             {/* Sort & Mobile Filter Toggle */}
-            <div className="flex items-center gap-3 shrink-0">
+            <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0">
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as any)}
-                className="bg-[#121212] border border-[#D8CBB8]/15 text-xs text-[#D8CBB8] px-3 py-2 uppercase tracking-wider focus:outline-none focus:border-[#B89B5E]"
+                className="bg-[#121212] border border-[#D8CBB8]/15 text-xs text-[#D8CBB8] px-3 py-2.5 min-h-[40px] uppercase tracking-wider focus:outline-none focus:border-[#B89B5E]"
+                aria-label="Sort creations"
               >
                 <option value="featured">Sort: Featured First</option>
                 <option value="price-asc">Price: Ascending</option>
@@ -139,7 +140,7 @@ export const CollectionPage: React.FC = () => {
 
               <button
                 onClick={() => setFilterDrawerOpen(!filterDrawerOpen)}
-                className="p-2 border border-[#D8CBB8]/15 bg-[#121212] hover:border-[#B89B5E] text-[#D8CBB8] md:hidden"
+                className="p-2.5 min-h-[40px] min-w-[40px] flex items-center justify-center border border-[#D8CBB8]/15 bg-[#121212] hover:border-[#B89B5E] text-[#D8CBB8] md:hidden"
                 aria-label="Filter leathers"
               >
                 <SlidersHorizontal className="w-4 h-4" />

@@ -27,6 +27,6 @@ export const TESTIMONIALS: Testimonial[] = [
     author: "Architect & Style Connoisseur",
     titleOrLocation: "London / Lagos",
     shoeCommissioned: "The Ikoyi Double Monk & Custom Boots",
-    verifiedStatus: "Private Bespoke Patron [Client Review Placeholder]"
+    verifiedStatus: "Private Bespoke Client [Client Review Placeholder]"
   }
 ];

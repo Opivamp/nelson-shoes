@@ -392,10 +392,66 @@ export const AdminBespokePage: React.FC = () => {
           <p className="text-xs text-[#D8CBB8]/50 font-mono">Try adjusting search filters or check back for new submissions.</p>
         </div>
       ) : (
-        <div className="bg-[#121212] border border-[#D8CBB8]/15 rounded-xl overflow-hidden shadow-2xl">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs font-sans">
-              <thead className="bg-[#181818] border-b border-[#D8CBB8]/15 text-[#D8CBB8]/60 uppercase tracking-wider font-mono text-[10px]">
+        <>
+          {/* Inquiries Mobile Card View */}
+          <div className="md:hidden space-y-3">
+            {filteredInquiries.map((inq) => {
+              const stage = BESPOKE_STAGES.find(s => s.status === inq.status);
+              const isApproved = ['approved', 'deposit_pending', 'deposit_confirmed', 'in_production', 'quality_inspection', 'completed'].includes(inq.status);
+
+              return (
+                <div key={inq.id} className="bg-[#121212] border border-[#D8CBB8]/15 p-4 rounded-xl space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[#B89B5E] font-mono font-bold text-xs">{inq.inquiryReference}</span>
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider font-semibold border ${
+                      isApproved 
+                        ? 'bg-emerald-950/40 text-emerald-300 border-emerald-700/40' 
+                        : 'bg-[#B89B5E]/20 text-[#B89B5E] border-[#B89B5E]/30'
+                    }`}>
+                      {stage?.shortLabel || inq.status.replace(/_/g, ' ')}
+                    </span>
+                  </div>
+                  <div className="text-xs space-y-0.5">
+                    <div className="font-medium text-[#F5F1E8]">{inq.customerName}</div>
+                    <div className="text-[11px] text-[#D8CBB8]/60">{inq.customerEmail} • {inq.customerPhone}</div>
+                  </div>
+                  <div className="text-xs space-y-0.5 bg-[#181818] p-2.5 rounded border border-[#D8CBB8]/10">
+                    <div className="font-serif text-[#F5F1E8]">{inq.specifications.silhouette}</div>
+                    <div className="text-[11px] text-[#D8CBB8]/70">
+                      {inq.specifications.leatherType} • {inq.specifications.colorPreference} (Size: {inq.specifications.footSize})
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between pt-2 border-t border-[#D8CBB8]/10 text-xs">
+                    <div className="font-mono">
+                      {inq.quotation ? (
+                        <span className="text-[#F5F1E8] font-bold">{formatCurrencyNGN(inq.quotation.amountNGN)}</span>
+                      ) : (
+                        <span className="text-[#D8CBB8]/40 italic text-[11px]">Awaiting Quote</span>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => {
+                        setSelectedInquiry(inq);
+                        setNewStatus(inq.status);
+                        setActionError(null);
+                        setActionSuccess(null);
+                      }}
+                      className="px-3 py-1.5 min-h-[36px] bg-[#1E1E1E] hover:bg-[#B89B5E] hover:text-[#0A0A0A] border border-[#D8CBB8]/20 rounded-lg text-xs font-mono transition-colors inline-flex items-center gap-1.5"
+                    >
+                      <Eye size={13} />
+                      <span>Dossier</span>
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Desktop Table View */}
+          <div className="hidden md:block bg-[#121212] border border-[#D8CBB8]/15 rounded-xl overflow-hidden shadow-2xl">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs font-sans">
+                <thead className="bg-[#181818] border-b border-[#D8CBB8]/15 text-[#D8CBB8]/60 uppercase tracking-wider font-mono text-[10px]">
                 <tr>
                   <th className="px-5 py-3">Reference / Date</th>
                   <th className="px-5 py-3">Client</th>
@@ -495,6 +551,7 @@ export const AdminBespokePage: React.FC = () => {
             </table>
           </div>
         </div>
+      </>
       )}
 
       {/* =====================================================================

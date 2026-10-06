@@ -304,12 +304,12 @@ export const HomePage: React.FC = () => {
         </section>
 
         {/* ========================================================
-            7. VERIFIED PATRON DOSSIERS & TESTIMONIALS
+            7. VERIFIED CLIENT DOSSIERS & TESTIMONIALS
         ======================================================== */}
-        <section aria-label="Patron Testimonials" className="space-y-3 w-full min-w-0">
+        <section aria-label="Client Testimonials" className="space-y-3 w-full min-w-0">
           <div className="bg-[#121212] border border-[#D8CBB8]/15 rounded-xl p-3 sm:p-3.5 flex items-center justify-between w-full min-w-0">
             <div>
-              <span className="text-[10px] font-mono uppercase text-[#B89B5E]">Patron Testimonials</span>
+              <span className="text-[10px] font-mono uppercase text-[#B89B5E]">Client Testimonials</span>
               <h3 className="font-serif text-sm sm:text-lg text-[#F5F1E8]">Verified Client Chronicles</h3>
             </div>
             <span className="text-xs font-mono text-emerald-400 flex items-center gap-1 shrink-0">

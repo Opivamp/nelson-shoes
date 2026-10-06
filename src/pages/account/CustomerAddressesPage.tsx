@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   MapPin, 
   Plus, 
@@ -37,6 +37,15 @@ export const CustomerAddressesPage: React.FC = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isModalOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsModalOpen(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isModalOpen]);
 
   const openAddModal = () => {
     setEditingAddress(null);
@@ -140,11 +149,14 @@ export const CustomerAddressesPage: React.FC = () => {
             ADDRESS MODAL (ADD / EDIT)
         ======================================================== */}
         {isModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
+          <div 
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn"
+            onClick={(e) => { if (e.target === e.currentTarget) setIsModalOpen(false); }}
+          >
             <div className="bg-[#121212] border border-[#D8CBB8]/20 rounded-xl p-6 sm:p-8 max-w-lg w-full space-y-5 shadow-2xl relative max-h-[90vh] overflow-y-auto">
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="absolute top-4 right-4 text-[#D8CBB8]/50 hover:text-[#F5F1E8] transition-colors p-1"
+                className="absolute top-4 right-4 text-[#D8CBB8]/50 hover:text-[#F5F1E8] transition-colors p-2 min-h-[44px] min-w-[44px] flex items-center justify-center"
                 aria-label="Close"
               >
                 <X size={18} />

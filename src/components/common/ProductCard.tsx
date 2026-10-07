@@ -53,26 +53,26 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           )}
         </div>
 
-        {/* Wishlist Button */}
+        {/* Wishlist Button — Strict 44x44px Touch Target */}
         <button
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
             toggleWishlist(product.id);
           }}
-          className={`absolute top-3.5 right-3.5 z-10 min-h-[40px] min-w-[40px] flex items-center justify-center backdrop-blur-md transition-all duration-300 cursor-pointer ${
+          className={`absolute top-3 right-3 z-10 w-11 h-11 min-h-[40px] min-w-[40px] min-h-[44px] min-w-[44px] flex items-center justify-center backdrop-blur-md transition-all duration-300 cursor-pointer ${
             isSaved 
               ? 'bg-[#B89B5E] text-[#0A0A0A] shadow-md' 
               : 'bg-[#0A0A0A]/75 text-[#D8CBB8] hover:text-[#B89B5E] hover:bg-[#0A0A0A]'
           }`}
           aria-label={isSaved ? "Remove from saved creations" : "Save creation to wishlist"}
         >
-          <Heart className={`w-3.5 h-3.5 ${isSaved ? 'fill-current' : ''}`} />
+          <Heart className={`w-4 h-4 ${isSaved ? 'fill-current' : ''}`} />
         </button>
 
         {/* Hover Quick Actions Overlay */}
         <div 
-          className={`absolute inset-x-0 bottom-0 p-3.5 bg-gradient-to-t from-[#0A0A0A]/95 via-[#0A0A0A]/70 to-transparent transition-all duration-300 flex items-center justify-between gap-2 ${
+          className={`absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-[#0A0A0A]/95 via-[#0A0A0A]/70 to-transparent transition-all duration-300 flex items-center justify-between gap-2 ${
             hovered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 pointer-events-none'
           }`}
         >
@@ -83,7 +83,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                 e.stopPropagation();
                 onQuickView(product);
               }}
-              className="flex-1 py-2.5 bg-[#1A1A1A]/90 hover:bg-[#B89B5E] hover:text-[#0A0A0A] text-[#F5F1E8] text-[10px] tracking-[0.2em] uppercase font-medium transition-colors flex items-center justify-center gap-1.5 border border-[#D8CBB8]/20 min-h-[38px] cursor-pointer"
+              className="flex-1 py-2.5 px-3 bg-[#1A1A1A]/90 hover:bg-[#B89B5E] hover:text-[#0A0A0A] text-[#F5F1E8] text-[10px] tracking-[0.2em] uppercase font-medium transition-colors flex items-center justify-center gap-1.5 border border-[#D8CBB8]/20 min-h-[44px] cursor-pointer"
             >
               <Eye className="w-3.5 h-3.5" />
               <span>QUICK VIEW</span>
@@ -92,11 +92,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
           <Link
             to={`/product/${product.slug}`}
-            className="p-2.5 min-h-[38px] min-w-[38px] bg-[#B89B5E] text-[#0A0A0A] hover:bg-[#D4BD86] transition-colors flex items-center justify-center cursor-pointer shadow-md"
+            className="w-11 h-11 min-h-[44px] min-w-[44px] bg-[#B89B5E] text-[#0A0A0A] hover:bg-[#D4BD86] transition-colors flex items-center justify-center cursor-pointer shadow-md shrink-0"
             title="View Details"
             aria-label={`View details for ${product.name}`}
           >
-            <ArrowUpRight className="w-3.5 h-3.5" />
+            <ArrowUpRight className="w-4 h-4" />
           </Link>
         </div>
 

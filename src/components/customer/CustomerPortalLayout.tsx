@@ -87,14 +87,14 @@ export const CustomerPortalLayout: React.FC<CustomerPortalLayoutProps> = ({ chil
         {/* ========================================================
             1. CUSTOMER ACCOUNT HEADER
         ======================================================== */}
-        <div className="bg-gradient-to-br from-[#141414] via-[#101010] to-[#0D0D0D] border border-[#D8CBB8]/15 p-6 sm:p-8 rounded-xl shadow-2xl relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-80 h-80 bg-[#B89B5E]/5 rounded-full blur-3xl pointer-events-none" />
+        <div className="bg-gradient-to-br from-[#141414] via-[#101010] to-[#0D0D0D] border border-[#D8CBB8]/15 p-6 sm:p-8 rounded-none shadow-2xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-80 h-80 bg-[#B89B5E]/5 blur-3xl pointer-events-none" />
 
           <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
             
             {/* Identity & Account Information */}
             <div className="flex items-center gap-4 sm:gap-6">
-              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-2 border-[#B89B5E] bg-[#1A1A1A] flex items-center justify-center text-[#B89B5E] font-serif text-2xl sm:text-3xl font-light shadow-xl shrink-0">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 border border-[#B89B5E] bg-[#1A1A1A] flex items-center justify-center text-[#B89B5E] font-serif text-2xl sm:text-3xl font-light shadow-xl shrink-0">
                 {customerMonogram}
               </div>
 
@@ -103,7 +103,7 @@ export const CustomerPortalLayout: React.FC<CustomerPortalLayoutProps> = ({ chil
                   <h1 className="font-serif text-xl sm:text-2xl text-[#F5F1E8] font-medium truncate">
                     {profile?.fullName || customerUser?.displayName || 'Valued Customer'}
                   </h1>
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#B89B5E]/20 text-[#B89B5E] border border-[#B89B5E]/40 font-semibold tracking-wider uppercase">
+                  <span className="text-[10px] font-mono px-2 py-0.5 bg-[#B89B5E]/20 text-[#B89B5E] border border-[#B89B5E]/40 font-semibold tracking-wider uppercase">
                     ID: #{customerUser?.uid.slice(0, 8).toUpperCase()}
                   </span>
                 </div>
@@ -136,7 +136,7 @@ export const CustomerPortalLayout: React.FC<CustomerPortalLayoutProps> = ({ chil
                       <button
                         onClick={handleResendVerification}
                         disabled={isResending}
-                        className="text-[10px] uppercase font-mono tracking-wider underline text-[#B89B5E] hover:text-[#D4BD86] disabled:opacity-50 cursor-pointer"
+                        className="text-[10px] uppercase font-mono tracking-wider underline text-[#B89B5E] hover:text-[#D4BD86] disabled:opacity-50 cursor-pointer min-h-[36px] flex items-center"
                       >
                         {isResending ? 'Sending...' : 'Resend Verification Link'}
                       </button>
@@ -152,11 +152,11 @@ export const CustomerPortalLayout: React.FC<CustomerPortalLayoutProps> = ({ chil
               </div>
             </div>
 
-            {/* Quick Actions */}
+            {/* Quick Actions — Strict 44px Touch Targets */}
             <div className="flex items-center gap-3 shrink-0 pt-4 md:pt-0 border-t md:border-t-0 border-[#D8CBB8]/10">
               <Link
                 to="/track"
-                className="px-4 py-2 bg-[#181818] hover:bg-[#202020] border border-[#D8CBB8]/20 hover:border-[#B89B5E]/50 text-xs font-mono text-[#D8CBB8] hover:text-[#B89B5E] rounded-lg transition-colors flex items-center gap-2"
+                className="px-4 min-h-[44px] bg-[#181818] hover:bg-[#202020] border border-[#D8CBB8]/20 hover:border-[#B89B5E]/50 text-xs font-mono text-[#D8CBB8] hover:text-[#B89B5E] transition-colors flex items-center gap-2"
               >
                 <Clock size={13} className="text-[#B89B5E]" />
                 <span>Track Order</span>
@@ -164,7 +164,7 @@ export const CustomerPortalLayout: React.FC<CustomerPortalLayoutProps> = ({ chil
 
               <button
                 onClick={handleSignOut}
-                className="px-4 py-2 bg-[#181818] hover:bg-red-950/30 border border-[#D8CBB8]/20 hover:border-red-500/30 text-xs font-mono text-red-400 hover:text-red-300 rounded-lg transition-colors flex items-center gap-2 cursor-pointer"
+                className="px-4 min-h-[44px] bg-[#181818] hover:bg-red-950/30 border border-[#D8CBB8]/20 hover:border-red-500/30 text-xs font-mono text-red-400 hover:text-red-300 transition-colors flex items-center gap-2 cursor-pointer"
               >
                 <LogOut size={13} />
                 <span>Sign Out</span>
@@ -186,7 +186,7 @@ export const CustomerPortalLayout: React.FC<CustomerPortalLayoutProps> = ({ chil
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`flex items-center gap-2 px-4 py-3 text-xs tracking-wider uppercase font-mono border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+                  className={`flex items-center gap-2 px-4 py-3 min-h-[44px] text-xs tracking-wider uppercase font-mono border-b-2 transition-all cursor-pointer whitespace-nowrap ${
                     active
                       ? 'border-[#B89B5E] text-[#B89B5E] font-semibold bg-[#B89B5E]/5'
                       : 'border-transparent text-[#D8CBB8]/60 hover:text-[#F5F1E8] hover:bg-[#141414]'

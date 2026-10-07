@@ -118,9 +118,9 @@ export const OrderTrackingPage: React.FC = () => {
 
         {/* Verification Form (Displayed when no order is verified) */}
         {!verifiedOrder && (
-          <div className="max-w-xl mx-auto bg-[#121212] border border-[#D8CBB8]/15 rounded-xl p-6 sm:p-8 space-y-6 shadow-xl">
+          <div className="max-w-xl mx-auto bg-[#121212] border border-[#D8CBB8]/15 rounded-none p-6 sm:p-8 space-y-6 shadow-xl">
             <div className="flex items-center gap-3 pb-4 border-b border-[#D8CBB8]/10">
-              <div className="p-2 bg-[#B89B5E]/10 rounded text-[#B89B5E]">
+              <div className="p-2 bg-[#B89B5E]/10 rounded-none text-[#B89B5E]">
                 <ShieldCheck size={20} />
               </div>
               <div>
@@ -134,7 +134,7 @@ export const OrderTrackingPage: React.FC = () => {
             </div>
 
             {verificationError && (
-              <div className="p-3.5 bg-red-950/40 border border-red-500/30 rounded text-xs text-red-300 flex items-start gap-2.5 animate-fadeIn">
+              <div className="p-3.5 bg-red-950/40 border border-red-500/30 rounded-none text-xs text-red-300 flex items-start gap-2.5 animate-fadeIn">
                 <AlertCircle size={16} className="shrink-0 mt-0.5 text-red-400" />
                 <div className="space-y-1">
                   <p>{verificationError}</p>
@@ -155,7 +155,7 @@ export const OrderTrackingPage: React.FC = () => {
                   value={orderReference}
                   onChange={(e) => setOrderReference(e.target.value)}
                   placeholder="e.g. NS-ORD-882190"
-                  className="w-full bg-[#181818] border border-[#D8CBB8]/20 px-3.5 py-2.5 text-xs text-[#F5F1E8] focus:outline-none focus:border-[#B89B5E] font-mono uppercase rounded transition-colors"
+                  className="w-full bg-[#181818] border border-[#D8CBB8]/20 px-3.5 py-2.5 text-xs text-[#F5F1E8] focus:outline-none focus:border-[#B89B5E] font-mono uppercase rounded-none transition-colors"
                   disabled={isVerifying}
                 />
               </div>
@@ -169,7 +169,7 @@ export const OrderTrackingPage: React.FC = () => {
                   value={contactIdentifier}
                   onChange={(e) => setContactIdentifier(e.target.value)}
                   placeholder="e.g. adebayo.adeleke@gmail.com or +234 803 555 0192"
-                  className="w-full bg-[#181818] border border-[#D8CBB8]/20 px-3.5 py-2.5 text-xs text-[#F5F1E8] focus:outline-none focus:border-[#B89B5E] rounded transition-colors"
+                  className="w-full bg-[#181818] border border-[#D8CBB8]/20 px-3.5 py-2.5 text-xs text-[#F5F1E8] focus:outline-none focus:border-[#B89B5E] rounded-none transition-colors"
                   disabled={isVerifying}
                 />
                 <span className="text-[10px] text-[#D8CBB8]/40 block">
@@ -181,7 +181,7 @@ export const OrderTrackingPage: React.FC = () => {
                 <button
                   type="submit"
                   disabled={isVerifying}
-                  className="w-full py-3 bg-[#B89B5E] hover:bg-[#D4BD86] text-[#0A0A0A] font-semibold text-xs uppercase tracking-widest transition-all rounded disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="w-full min-h-[44px] py-3 bg-[#B89B5E] hover:bg-[#D4BD86] text-[#0A0A0A] font-semibold text-xs uppercase tracking-widest transition-all rounded-none disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
                 >
                   {isVerifying ? (
                     <>
@@ -199,7 +199,7 @@ export const OrderTrackingPage: React.FC = () => {
 
         {/* Verified Order Tracking Result */}
         {verifiedOrder && (
-          <div className="bg-[#121212] border border-[#B89B5E]/30 p-6 md:p-8 rounded-xl space-y-8 shadow-2xl animate-fadeIn">
+          <div className="bg-[#121212] border border-[#B89B5E]/30 p-6 md:p-8 rounded-none space-y-8 shadow-2xl animate-fadeIn">
             {/* Top Bar: Reference & Status */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-[#D8CBB8]/15">
               <div>

@@ -112,24 +112,24 @@ export const CartPage: React.FC = () => {
                 </div>
 
                 <div className="flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto gap-4">
-                  {/* Quantity */}
+                  {/* Quantity — Ergonomic Touch Targets */}
                   <div className="flex items-center border border-[#D8CBB8]/20 text-xs">
                     <button
                       onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                      className="px-2.5 py-1 text-[#D8CBB8]/60 hover:text-[#F5F1E8]"
+                      className="w-10 h-10 min-w-[40px] min-h-[40px] flex items-center justify-center text-[#D8CBB8]/60 hover:text-[#F5F1E8] transition-colors cursor-pointer"
                       aria-label="Decrease quantity"
                     >
-                      <Minus className="w-3 h-3" />
+                      <Minus className="w-3.5 h-3.5" />
                     </button>
-                    <span className="px-3 font-sans text-xs text-[#F5F1E8]">
+                    <span className="px-3 font-sans text-xs text-[#F5F1E8] min-w-[28px] text-center">
                       {item.quantity}
                     </span>
                     <button
                       onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                      className="px-2.5 py-1 text-[#D8CBB8]/60 hover:text-[#F5F1E8]"
+                      className="w-10 h-10 min-w-[40px] min-h-[40px] flex items-center justify-center text-[#D8CBB8]/60 hover:text-[#F5F1E8] transition-colors cursor-pointer"
                       aria-label="Increase quantity"
                     >
-                      <Plus className="w-3 h-3" />
+                      <Plus className="w-3.5 h-3.5" />
                     </button>
                   </div>
 

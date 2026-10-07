@@ -329,13 +329,13 @@ export const Navbar: React.FC = () => {
 
           </nav>
 
-          {/* Right Action Icons & Primary CTA */}
-          <div className="flex items-center space-x-3 md:space-x-5">
+          {/* Right Action Icons & Primary CTA — Strict 44x44px Touch Targets */}
+          <div className="flex items-center space-x-1 sm:space-x-2">
             
             {/* Search Trigger */}
             <button
               onClick={openSearch}
-              className="p-2 text-[#D8CBB8]/80 hover:text-[#B89B5E] transition-colors duration-200"
+              className="w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center text-[#D8CBB8]/80 hover:text-[#B89B5E] transition-colors duration-200 cursor-pointer"
               aria-label="Search Collection and Stories"
               title="Search"
             >
@@ -345,13 +345,13 @@ export const Navbar: React.FC = () => {
             {/* Wishlist Link */}
             <Link
               to={customerUser ? "/account/saved" : "/collection?saved=true"}
-              className="relative p-2 text-[#D8CBB8]/80 hover:text-[#B89B5E] transition-colors duration-200 hidden sm:block"
+              className="relative w-11 h-11 min-w-[44px] min-h-[44px] hidden sm:flex items-center justify-center text-[#D8CBB8]/80 hover:text-[#B89B5E] transition-colors duration-200 cursor-pointer"
               aria-label="Saved Pieces"
               title="Wishlist"
             >
               <Heart className="w-4 h-4 stroke-[1.5]" />
               {totalWishlist > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-[#B89B5E] text-[#0A0A0A] text-[9px] font-bold flex items-center justify-center">
+                <span className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-[#B89B5E] text-[#0A0A0A] text-[9px] font-bold flex items-center justify-center">
                   {totalWishlist}
                 </span>
               )}
@@ -360,7 +360,7 @@ export const Navbar: React.FC = () => {
             {/* Customer Account Link */}
             <Link
               to={customerUser ? "/account" : "/account/login"}
-              className="relative p-2 text-[#D8CBB8]/80 hover:text-[#B89B5E] transition-colors duration-200"
+              className="relative w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center text-[#D8CBB8]/80 hover:text-[#B89B5E] transition-colors duration-200 cursor-pointer"
               aria-label="Customer Account"
               title={customerUser ? "Customer Portal" : "Sign In / Register"}
             >
@@ -370,13 +370,13 @@ export const Navbar: React.FC = () => {
             {/* Cart Trigger */}
             <button
               onClick={openCart}
-              className="relative p-2 text-[#D8CBB8]/80 hover:text-[#B89B5E] transition-colors duration-200"
+              className="relative w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center text-[#D8CBB8]/80 hover:text-[#B89B5E] transition-colors duration-200 cursor-pointer"
               aria-label="View Inquiries & Cart"
               title="Cart / Inquiries"
             >
               <ShoppingBag className="w-4 h-4 stroke-[1.5]" />
               {totalItems > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-[#B89B5E] text-[#0A0A0A] text-[9px] font-bold flex items-center justify-center">
+                <span className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-[#B89B5E] text-[#0A0A0A] text-[9px] font-bold flex items-center justify-center">
                   {totalItems}
                 </span>
               )}
@@ -385,7 +385,7 @@ export const Navbar: React.FC = () => {
             {/* Book Consultation CTA (Desktop) */}
             <Link
               to="/bespoke"
-              className="hidden md:inline-flex items-center gap-1.5 px-4 py-2 border border-[#B89B5E]/60 text-[10px] uppercase tracking-[0.2em] font-medium text-[#F5F1E8] hover:bg-[#B89B5E] hover:text-[#0A0A0A] transition-all duration-300"
+              className="hidden md:inline-flex items-center gap-1.5 px-4 min-h-[44px] border border-[#B89B5E]/60 text-[10px] uppercase tracking-[0.2em] font-medium text-[#F5F1E8] hover:bg-[#B89B5E] hover:text-[#0A0A0A] transition-all duration-300"
             >
               <span>CONSULTATION</span>
               <ArrowUpRight className="w-3 h-3" />
@@ -394,7 +394,7 @@ export const Navbar: React.FC = () => {
             {/* Mobile Hamburger Toggle */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2 text-[#F5F1E8] hover:text-[#B89B5E] transition-colors"
+              className="lg:hidden w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center text-[#F5F1E8] hover:text-[#B89B5E] transition-colors cursor-pointer"
               aria-label="Toggle navigation menu"
             >
               {mobileMenuOpen ? (

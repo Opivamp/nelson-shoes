@@ -123,9 +123,9 @@ export const HomePage: React.FC = () => {
             3. LIVE ATELIER BENCH STATUS TICKER
             Useful status info indicating active cordwaining in Lagos
         ======================================================== */}
-        <div className="bg-[#121212] border border-[#B89B5E]/25 rounded-xl p-2.5 sm:p-3.5 flex items-center justify-between gap-2.5 text-xs font-mono shadow-md w-full min-w-0 overflow-hidden">
+        <div className="bg-[#121212] border border-[#B89B5E]/30 p-3 sm:p-4 flex items-center justify-between gap-2.5 text-xs font-mono shadow-md w-full min-w-0 overflow-hidden">
           <div className="flex items-center gap-2 min-w-0 flex-1">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+            <span className="w-2.5 h-2.5 bg-emerald-400 animate-pulse shrink-0" />
             <span className="text-[#D8CBB8]/90 truncate min-w-0 block text-[11px] sm:text-xs">
               <strong className="text-[#B89B5E] font-semibold">Active Bench:</strong> Nelson Lagos Atelier currently lasting Batch #14 in French Box Calf.
             </span>
@@ -145,24 +145,24 @@ export const HomePage: React.FC = () => {
         <section aria-label="Bespoke Footwear Collection" className="space-y-4 w-full min-w-0">
           
           {/* Header & Silhouette Filter Chips */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 bg-[#111111] p-2.5 sm:p-3 rounded-xl border border-[#D8CBB8]/15 w-full min-w-0 overflow-hidden">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 bg-[#111111] p-3 sm:p-3.5 border border-[#D8CBB8]/15 w-full min-w-0 overflow-hidden">
             <div className="flex items-center gap-2 shrink-0">
               <Sparkles size={14} className="text-[#B89B5E] shrink-0" />
               <h2 className="font-serif text-sm sm:text-base md:text-lg text-[#F5F1E8] whitespace-nowrap">
                 Atelier Creations
               </h2>
-              <span className="text-[10px] font-mono text-[#B89B5E] bg-[#B89B5E]/15 px-2 py-0.5 rounded-full whitespace-nowrap">
+              <span className="text-[10px] font-mono text-[#B89B5E] bg-[#B89B5E]/15 px-2 py-0.5 whitespace-nowrap">
                 {filteredProducts.length} Silhouettes
               </span>
             </div>
 
-            {/* Filter Pills */}
+            {/* Filter Pills — 44px Touch Targets */}
             <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 w-full sm:w-auto">
               {categories.map((cat) => (
                 <button
                   key={cat}
                   onClick={() => setCategoryFilter(cat)}
-                  className={`px-2.5 sm:px-3 py-1 rounded-lg text-xs font-mono transition-all cursor-pointer shrink-0 ${
+                  className={`min-h-[44px] px-3.5 flex items-center justify-center text-xs font-mono transition-all cursor-pointer shrink-0 ${
                     categoryFilter === cat
                       ? 'bg-[#B89B5E] text-[#0A0A0A] font-bold shadow-md'
                       : 'bg-[#181818] border border-[#D8CBB8]/15 text-[#D8CBB8]/70 hover:text-[#F5F1E8] hover:border-[#D8CBB8]/30'
@@ -193,7 +193,7 @@ export const HomePage: React.FC = () => {
             5. THE ART OF MAKING (INTERACTIVE 6-STAGE SCRUBBER)
             Educational, high-value visualizer of the cordwaining process
         ======================================================== */}
-        <section aria-label="Cordwaining Craftsmanship" className="bg-[#121212] border border-[#D8CBB8]/15 rounded-2xl p-3.5 sm:p-6 space-y-4 sm:space-y-5 w-full min-w-0 overflow-hidden">
+        <section aria-label="Cordwaining Craftsmanship" className="bg-[#121212] border border-[#D8CBB8]/15 p-4 sm:p-6 space-y-4 sm:space-y-5 w-full min-w-0 overflow-hidden">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 border-b border-[#D8CBB8]/10 pb-3 sm:pb-4">
             <div>
               <span className="text-[10px] font-mono uppercase tracking-widest text-[#B89B5E] block">
@@ -208,13 +208,13 @@ export const HomePage: React.FC = () => {
             </span>
           </div>
 
-          {/* Step Selector Buttons */}
+          {/* Step Selector Buttons — 44px Touch Targets */}
           <div className="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar w-full">
             {makingStages.map((stage, idx) => (
               <button
                 key={stage.num}
                 onClick={() => setActiveStep(idx)}
-                className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-mono uppercase tracking-wider whitespace-nowrap transition-all cursor-pointer shrink-0 ${
+                className={`min-h-[44px] px-3.5 flex items-center justify-center text-xs font-mono uppercase tracking-wider whitespace-nowrap transition-all cursor-pointer shrink-0 ${
                   activeStep === idx
                     ? 'bg-[#B89B5E] text-[#0A0A0A] font-bold shadow-md'
                     : 'bg-[#181818] border border-[#D8CBB8]/15 text-[#D8CBB8]/60 hover:text-[#F5F1E8]'
@@ -227,13 +227,13 @@ export const HomePage: React.FC = () => {
 
           {/* Active Stage Card */}
           <div className="space-y-3 sm:space-y-4 w-full min-w-0">
-            <div className="aspect-[16/10] overflow-hidden rounded-xl border border-[#D8CBB8]/15 bg-black relative">
+            <div className="aspect-[16/10] overflow-hidden border border-[#D8CBB8]/15 bg-black relative">
               <img
                 src={makingStages[activeStep].image}
                 alt={makingStages[activeStep].title}
                 className="w-full h-full object-cover object-center transition-transform duration-700 hover:scale-105"
               />
-              <div className="absolute top-2.5 left-2.5 sm:top-3 sm:left-3 bg-black/80 backdrop-blur-md px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full border border-[#B89B5E]/40 font-mono text-[11px] sm:text-xs text-[#B89B5E]">
+              <div className="absolute top-2.5 left-2.5 sm:top-3 sm:left-3 bg-black/85 backdrop-blur-md px-3 py-1 border border-[#B89B5E]/40 font-mono text-[11px] sm:text-xs text-[#B89B5E]">
                 Stage {makingStages[activeStep].num}
               </div>
             </div>
@@ -247,16 +247,16 @@ export const HomePage: React.FC = () => {
               </p>
             </div>
 
-            <div className="pt-1 flex items-center justify-between">
+            <div className="pt-1 flex items-center justify-between gap-3">
               <button
                 onClick={() => setActiveStep((prev) => (prev > 0 ? prev - 1 : makingStages.length - 1))}
-                className="px-3 sm:px-4 py-1.5 sm:py-2 border border-[#D8CBB8]/20 hover:border-[#B89B5E] text-xs font-mono uppercase tracking-wider text-[#D8CBB8] rounded-lg transition-colors cursor-pointer"
+                className="min-h-[44px] px-4 border border-[#D8CBB8]/20 hover:border-[#B89B5E] text-xs font-mono uppercase tracking-wider text-[#D8CBB8] transition-colors cursor-pointer flex items-center justify-center"
               >
                 ← Prev
               </button>
               <button
                 onClick={() => setActiveStep((prev) => (prev < makingStages.length - 1 ? prev + 1 : 0))}
-                className="px-3 sm:px-4 py-1.5 sm:py-2 bg-[#B89B5E] text-[#0A0A0A] text-xs font-mono uppercase tracking-wider font-semibold hover:bg-[#D4BD86] rounded-lg transition-colors cursor-pointer"
+                className="min-h-[44px] px-5 bg-[#B89B5E] text-[#0A0A0A] text-xs font-mono uppercase tracking-wider font-semibold hover:bg-[#D4BD86] transition-colors cursor-pointer flex items-center justify-center"
               >
                 Next Stage →
               </button>
@@ -268,7 +268,7 @@ export const HomePage: React.FC = () => {
             6. BESPOKE PATHWAY
             The 6-step journey from consultation to delivery
         ======================================================== */}
-        <section aria-label="Bespoke Pathway" className="bg-[#121212] border border-[#D8CBB8]/15 rounded-2xl p-3.5 sm:p-6 space-y-4 sm:space-y-5 w-full min-w-0 overflow-hidden">
+        <section aria-label="Bespoke Pathway" className="bg-[#121212] border border-[#D8CBB8]/15 p-4 sm:p-6 space-y-4 sm:space-y-5 w-full min-w-0 overflow-hidden">
           <div className="text-center space-y-1 border-b border-[#D8CBB8]/10 pb-3 sm:pb-4">
             <span className="text-[10px] font-mono uppercase tracking-widest text-[#B89B5E]">
               Custom Shoemaking
@@ -285,7 +285,7 @@ export const HomePage: React.FC = () => {
             {bespokeJourney.map((item) => (
               <div
                 key={item.step}
-                className="p-3 sm:p-3.5 bg-[#181818] border border-[#D8CBB8]/10 rounded-xl space-y-1 hover:border-[#B89B5E]/40 transition-colors"
+                className="p-3 sm:p-3.5 bg-[#181818] border border-[#D8CBB8]/10 space-y-1 hover:border-[#B89B5E]/40 transition-colors"
               >
                 <span className="font-serif text-base sm:text-lg text-[#B89B5E] font-medium">
                   {item.step}
@@ -303,7 +303,7 @@ export const HomePage: React.FC = () => {
           <div className="pt-1 text-center">
             <Link
               to="/bespoke"
-              className="inline-flex items-center gap-2 px-5 sm:px-6 py-2.5 sm:py-3 bg-[#B89B5E] text-[#0A0A0A] font-mono font-semibold text-xs uppercase tracking-wider rounded-xl hover:bg-[#D4BD86] transition-all shadow-xl"
+              className="inline-flex items-center gap-2 px-6 min-h-[44px] bg-[#B89B5E] text-[#0A0A0A] font-mono font-semibold text-xs uppercase tracking-wider hover:bg-[#D4BD86] transition-all shadow-xl"
             >
               <span>Initiate Bespoke Commission</span>
               <ArrowRight size={14} />
@@ -315,7 +315,7 @@ export const HomePage: React.FC = () => {
             7. VERIFIED CLIENT DOSSIERS & TESTIMONIALS
         ======================================================== */}
         <section aria-label="Client Testimonials" className="space-y-3 w-full min-w-0">
-          <div className="bg-[#121212] border border-[#D8CBB8]/15 rounded-xl p-3 sm:p-3.5 flex items-center justify-between w-full min-w-0">
+          <div className="bg-[#121212] border border-[#D8CBB8]/15 p-3 sm:p-3.5 flex items-center justify-between w-full min-w-0">
             <div>
               <span className="text-[10px] font-mono uppercase text-[#B89B5E]">Client Testimonials</span>
               <h3 className="font-serif text-sm sm:text-lg text-[#F5F1E8]">Verified Client Chronicles</h3>
@@ -330,7 +330,7 @@ export const HomePage: React.FC = () => {
             {TESTIMONIALS.map((t) => (
               <div
                 key={t.id}
-                className="p-3.5 sm:p-4 bg-[#121212] border border-[#D8CBB8]/10 rounded-xl space-y-2.5 flex flex-col justify-between"
+                className="p-3.5 sm:p-4 bg-[#121212] border border-[#D8CBB8]/10 space-y-2.5 flex flex-col justify-between"
               >
                 <div className="space-y-1.5">
                   <div className="flex text-[#B89B5E] text-xs">

@@ -8,7 +8,7 @@ export const TESTIMONIALS: Testimonial[] = [
   {
     id: "test-01",
     quote: "The pitch of the heel and the bevelled waist feel like they were cast directly from my feet. In twenty years of collecting luxury footwear in London and Lagos, this is the most comfortable and visually commanding wholecut I have ever owned.",
-    author: "Bespoke Collector & Executive",
+    author: "Bespoke Client & Executive",
     titleOrLocation: "Victoria Island, Lagos",
     shoeCommissioned: "The Sovereign Wholecut in Burnished Espresso",
     verifiedStatus: "Verified Atelier Commission [Client Review Placeholder]"

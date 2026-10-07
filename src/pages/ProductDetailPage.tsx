@@ -181,7 +181,7 @@ export const ProductDetailPage: React.FC = () => {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={handleShare}
-                    className="p-2 border border-[#D8CBB8]/15 hover:border-[#B89B5E] text-[#D8CBB8] hover:text-[#B89B5E] transition-colors"
+                    className="w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center border border-[#D8CBB8]/15 hover:border-[#B89B5E] text-[#D8CBB8] hover:text-[#B89B5E] transition-colors cursor-pointer"
                     aria-label="Share creation"
                     title="Share link"
                   >
@@ -190,7 +190,7 @@ export const ProductDetailPage: React.FC = () => {
 
                   <button
                     onClick={() => toggleWishlist(product.id)}
-                    className={`p-2 border transition-colors ${
+                    className={`w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center border transition-colors cursor-pointer ${
                       isSaved
                         ? 'border-[#B89B5E] bg-[#B89B5E] text-[#0A0A0A]'
                         : 'border-[#D8CBB8]/15 hover:border-[#B89B5E] text-[#D8CBB8] hover:text-[#B89B5E]'
@@ -246,7 +246,7 @@ export const ProductDetailPage: React.FC = () => {
                   <button
                     key={size}
                     onClick={() => setSelectedSize(size)}
-                    className={`py-2.5 min-h-[40px] text-xs font-mono transition-all border cursor-pointer ${
+                    className={`min-h-[44px] min-w-[44px] flex items-center justify-center text-xs font-mono transition-all border cursor-pointer ${
                       selectedSize === size
                         ? 'border-[#B89B5E] bg-[#B89B5E] text-[#0A0A0A] font-bold shadow-md'
                         : 'border-[#D8CBB8]/15 bg-[#121212] text-[#D8CBB8] hover:border-[#B89B5E]/50 hover:text-[#F5F1E8]'
@@ -351,7 +351,7 @@ export const ProductDetailPage: React.FC = () => {
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key as any)}
-                className={`pb-3 text-xs tracking-[0.2em] uppercase font-medium transition-colors border-b-2 whitespace-nowrap ${
+                className={`min-h-[44px] flex items-center px-1 pb-3 text-xs tracking-[0.2em] uppercase font-medium transition-colors border-b-2 whitespace-nowrap cursor-pointer ${
                   activeTab === tab.key
                     ? 'border-[#B89B5E] text-[#B89B5E]'
                     : 'border-transparent text-[#D8CBB8]/60 hover:text-[#F5F1E8]'

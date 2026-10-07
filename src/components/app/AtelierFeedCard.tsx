@@ -8,6 +8,8 @@ import {
   Eye, 
   Sparkles, 
   Check, 
+  Clock,
+  ShieldCheck,
   MoreHorizontal,
   ExternalLink
 } from 'lucide-react';
@@ -68,7 +70,7 @@ export const AtelierFeedCard: React.FC<AtelierFeedCardProps> = ({
   );
 
   return (
-    <article className="bg-[#121212] border border-[#D8CBB8]/15 rounded-xl md:rounded-2xl overflow-hidden shadow-xl hover:border-[#B89B5E]/40 transition-all duration-300 w-full min-w-0">
+    <article className="bg-[#121212] border border-[#D8CBB8]/15 rounded-none overflow-hidden shadow-xl hover:border-[#B89B5E]/40 transition-all duration-300 w-full min-w-0">
       
       {/* 1. App Post Header */}
       <div className="p-3.5 md:p-4.5 flex items-center justify-between border-b border-[#D8CBB8]/10">
@@ -149,16 +151,19 @@ export const AtelierFeedCard: React.FC<AtelierFeedCardProps> = ({
           {product.description || benchNote}
         </p>
 
-        {/* Specs Highlights Badge Bar */}
-        <div className="flex flex-wrap items-center gap-2 pt-1 font-mono text-[10px] text-[#B89B5E]/90">
-          <span className="bg-[#1A1A1A] border border-[#D8CBB8]/15 px-2 py-0.5 rounded">
-            🔨 {hoursSpent}h Benchwork
+        {/* Specs Highlights Badge Bar — Refined Luxury Typographic Badges */}
+        <div className="flex flex-wrap items-center gap-2 pt-1 font-mono text-[10px]">
+          <span className="bg-[#1A1A1A] border border-[#D8CBB8]/15 px-2.5 py-1 flex items-center gap-1.5 text-[#F5F1E8]">
+            <Clock size={12} className="text-[#B89B5E]" />
+            <span>{hoursSpent}h Benchwork</span>
           </span>
-          <span className="bg-[#1A1A1A] border border-[#D8CBB8]/15 px-2 py-0.5 rounded">
-            ✨ {product.materials?.upper || 'French Box Calf'}
+          <span className="bg-[#1A1A1A] border border-[#D8CBB8]/15 px-2.5 py-1 flex items-center gap-1.5 text-[#F5F1E8]">
+            <Sparkles size={12} className="text-[#B89B5E]" />
+            <span>{product.materials?.upper || 'French Box Calf'}</span>
           </span>
-          <span className="bg-[#1A1A1A] border border-[#D8CBB8]/15 px-2 py-0.5 rounded">
-            🛡️ {product.materials?.construction || 'Goodyear Welted'}
+          <span className="bg-[#1A1A1A] border border-[#D8CBB8]/15 px-2.5 py-1 flex items-center gap-1.5 text-[#F5F1E8]">
+            <ShieldCheck size={12} className="text-[#B89B5E]" />
+            <span>{product.materials?.construction || 'Goodyear Welted'}</span>
           </span>
         </div>
       </div>
@@ -178,24 +183,24 @@ export const AtelierFeedCard: React.FC<AtelierFeedCardProps> = ({
           className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 pointer-events-none" 
         />
 
-        {/* Quick View Button on Image */}
+        {/* Quick View Button on Image — 44px Touch Target */}
         <button
           onClick={() => onQuickView(product)}
-          className="absolute bottom-3 right-3 px-3.5 py-1.5 rounded-full bg-black/75 backdrop-blur-md border border-[#B89B5E]/40 text-[#F5F1E8] hover:text-[#B89B5E] text-[11px] font-mono flex items-center gap-1.5 transition-all opacity-90 group-hover:opacity-100 hover:scale-105"
+          className="absolute bottom-3 right-3 min-h-[44px] px-4 bg-black/85 backdrop-blur-md border border-[#B89B5E]/50 text-[#F5F1E8] hover:text-[#B89B5E] text-[11px] font-mono flex items-center gap-2 transition-all opacity-90 group-hover:opacity-100 hover:scale-102 cursor-pointer shadow-lg"
         >
-          <Eye size={13} />
+          <Eye size={14} />
           <span>Inspect Piece</span>
         </button>
 
         {/* Status Chip */}
-        <div className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-black/80 backdrop-blur-md border border-[#D8CBB8]/20 text-[10px] font-mono text-[#D8CBB8] flex items-center gap-1.5">
+        <div className="absolute top-3 left-3 px-3 py-1 bg-black/85 backdrop-blur-md border border-[#D8CBB8]/20 text-[10px] font-mono text-[#D8CBB8] flex items-center gap-1.5">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
           <span>{product.status || 'Atelier Stock Ready'}</span>
         </div>
       </div>
 
-      {/* 4. App Interactive Feed Action Bar (Like, Quick View, WhatsApp, Cart) */}
-      <div className="p-2.5 sm:p-3.5 flex items-center justify-between gap-1.5 sm:gap-2 bg-[#0E0E0E] w-full min-w-0">
+      {/* 4. App Interactive Feed Action Bar (Like, Quick View, WhatsApp, Cart) — Strict 44px Targets */}
+      <div className="p-2 sm:p-3 flex items-center justify-between gap-2 bg-[#0E0E0E] w-full min-w-0">
         
         {/* Left Action Buttons */}
         <div className="flex items-center gap-1 sm:gap-2 shrink-0">
@@ -203,7 +208,7 @@ export const AtelierFeedCard: React.FC<AtelierFeedCardProps> = ({
           {/* Wishlist Button */}
           <button
             onClick={() => toggleWishlist(product.id)}
-            className={`flex items-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-mono transition-colors shrink-0 ${
+            className={`min-h-[44px] min-w-[44px] flex items-center justify-center gap-1.5 px-3 text-xs font-mono transition-colors shrink-0 cursor-pointer ${
               isLiked 
                 ? 'text-rose-400 bg-rose-500/10' 
                 : 'text-[#D8CBB8]/70 hover:text-rose-400 hover:bg-[#181818]'
@@ -219,7 +224,7 @@ export const AtelierFeedCard: React.FC<AtelierFeedCardProps> = ({
             href={whatsAppInquiryUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-mono text-[#D8CBB8]/70 hover:text-emerald-400 hover:bg-[#181818] transition-colors shrink-0"
+            className="min-h-[44px] min-w-[44px] flex items-center justify-center gap-1.5 px-3 text-xs font-mono text-[#D8CBB8]/70 hover:text-emerald-400 hover:bg-[#181818] transition-colors shrink-0 cursor-pointer"
             title="Discuss with Master Cordwainer"
           >
             <MessageCircle size={15} className="shrink-0" />
@@ -229,7 +234,7 @@ export const AtelierFeedCard: React.FC<AtelierFeedCardProps> = ({
           {/* Share */}
           <button
             onClick={handleShare}
-            className="flex items-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-mono text-[#D8CBB8]/70 hover:text-[#B89B5E] hover:bg-[#181818] transition-colors shrink-0"
+            className="min-h-[44px] min-w-[44px] flex items-center justify-center gap-1.5 px-3 text-xs font-mono text-[#D8CBB8]/70 hover:text-[#B89B5E] hover:bg-[#181818] transition-colors shrink-0 cursor-pointer"
             aria-label="Share"
           >
             <Share2 size={15} className="shrink-0" />
@@ -241,7 +246,7 @@ export const AtelierFeedCard: React.FC<AtelierFeedCardProps> = ({
         {/* Right Action: Add to Cart / Commission CTA */}
         <button
           onClick={handleAddToCart}
-          className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg font-mono text-xs font-semibold flex items-center gap-1.5 sm:gap-2 transition-all duration-300 shadow-md shrink-0 whitespace-nowrap ${
+          className={`min-h-[44px] px-4 sm:px-6 font-mono text-xs font-semibold flex items-center gap-2 transition-all duration-300 shadow-md shrink-0 whitespace-nowrap cursor-pointer ${
             addedAnimation
               ? 'bg-emerald-500 text-[#0A0A0A]'
               : 'bg-[#B89B5E] hover:bg-[#C9AD70] text-[#0A0A0A] hover:shadow-[0_0_15px_rgba(184,155,94,0.3)]'

@@ -551,7 +551,7 @@ export const BespokePage: React.FC = () => {
                         <option>Black Tie Wedding / State Gala</option>
                         <option>Traditional / Native Ceremonial Attire</option>
                         <option>Daily Discretion & Casual Luxury</option>
-                        <option>Heirloom Collector Commission</option>
+                        <option>Heirloom Bespoke Commission</option>
                       </select>
                     </div>
                   </div>

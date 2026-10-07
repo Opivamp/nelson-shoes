@@ -46,23 +46,23 @@ export const AtelierComposer: React.FC<AtelierComposerProps> = ({ onOpenQuickCom
   return (
     <>
       {/* App Feed Composer Bar (Guaranteed Zero Horizontal Overflow on Mobile) */}
-      <div className="bg-[#121212] border border-[#D8CBB8]/15 rounded-xl p-3 sm:p-4 shadow-lg backdrop-blur-sm w-full min-w-0 overflow-hidden">
+      <div className="bg-[#121212] border border-[#D8CBB8]/15 p-3 sm:p-4 shadow-lg backdrop-blur-sm w-full min-w-0 overflow-hidden">
         
         {/* Top Input Row */}
         <div className="flex items-center gap-2.5 sm:gap-3 w-full min-w-0">
           
           {/* Avatar / Customer Monogram */}
           <div className="relative shrink-0">
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gradient-to-tr from-[#1A1A1A] via-[#2A2418] to-[#1A1A1A] border border-[#B89B5E]/50 flex items-center justify-center text-[#B89B5E] font-serif text-sm font-semibold shadow-inner shrink-0">
+            <div className="w-10 h-10 bg-gradient-to-tr from-[#1A1A1A] via-[#2A2418] to-[#1A1A1A] border border-[#B89B5E]/50 flex items-center justify-center text-[#B89B5E] font-serif text-sm font-semibold shadow-inner shrink-0">
               N
             </div>
-            <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-[#121212]" title="Atelier Open" />
+            <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 border border-[#121212]" title="Atelier Open" />
           </div>
 
-          {/* Fake Input trigger (min-w-0 and truncate ensures it shrinks on ANY mobile screen) */}
+          {/* Fake Input trigger */}
           <button
             onClick={handleOpen}
-            className="flex-1 min-w-0 bg-[#1A1A1A] hover:bg-[#222222] border border-[#D8CBB8]/15 hover:border-[#B89B5E]/40 text-left px-3 sm:px-4 py-2 sm:py-2.5 rounded-full text-xs text-[#D8CBB8]/70 hover:text-[#F5F1E8] transition-all flex items-center justify-between gap-1 group cursor-pointer focus:outline-none focus:ring-1 focus:ring-[#B89B5E] overflow-hidden"
+            className="flex-1 min-w-0 min-h-[44px] bg-[#1A1A1A] hover:bg-[#222222] border border-[#D8CBB8]/15 hover:border-[#B89B5E]/40 text-left px-3 sm:px-4 py-2.5 text-xs text-[#D8CBB8]/70 hover:text-[#F5F1E8] transition-all flex items-center justify-between gap-1 group cursor-pointer focus:outline-none focus:ring-1 focus:ring-[#B89B5E] overflow-hidden"
             aria-label="Commission bespoke footwear"
           >
             <span className="truncate block min-w-0 text-[11px] sm:text-xs">
@@ -75,13 +75,13 @@ export const AtelierComposer: React.FC<AtelierComposerProps> = ({ onOpenQuickCom
         {/* Divider */}
         <div className="h-[1px] bg-[#D8CBB8]/10 my-2.5 sm:my-3" />
 
-        {/* Action Pills Row */}
+        {/* Action Pills Row — Strict 44px Touch Targets */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 sm:gap-2 w-full min-w-0">
           
           {/* Action 1: Custom Last */}
           <button
             onClick={handleOpen}
-            className="flex items-center justify-center gap-1.5 py-1.5 sm:py-2 px-2 rounded-lg hover:bg-[#1A1A1A] text-[#D8CBB8]/80 hover:text-[#B89B5E] text-[11px] sm:text-xs font-mono font-medium transition-colors group cursor-pointer min-w-0 overflow-hidden"
+            className="flex items-center justify-center gap-1.5 min-h-[44px] px-2.5 bg-[#161616] border border-[#D8CBB8]/10 hover:border-[#B89B5E]/40 text-[#D8CBB8]/80 hover:text-[#B89B5E] text-[11px] sm:text-xs font-mono font-medium transition-colors group cursor-pointer min-w-0 overflow-hidden"
           >
             <Scissors size={13} className="text-[#B89B5E] group-hover:scale-110 transition-transform shrink-0" />
             <span className="truncate">Bespoke Last</span>
@@ -90,7 +90,7 @@ export const AtelierComposer: React.FC<AtelierComposerProps> = ({ onOpenQuickCom
           {/* Action 2: Anatomy & Sizing */}
           <Link
             to="/bespoke"
-            className="flex items-center justify-center gap-1.5 py-1.5 sm:py-2 px-2 rounded-lg hover:bg-[#1A1A1A] text-[#D8CBB8]/80 hover:text-[#B89B5E] text-[11px] sm:text-xs font-mono font-medium transition-colors group min-w-0 overflow-hidden"
+            className="flex items-center justify-center gap-1.5 min-h-[44px] px-2.5 bg-[#161616] border border-[#D8CBB8]/10 hover:border-[#B89B5E]/40 text-[#D8CBB8]/80 hover:text-[#B89B5E] text-[11px] sm:text-xs font-mono font-medium transition-colors group min-w-0 overflow-hidden"
           >
             <Ruler size={13} className="text-[#E8D49E] group-hover:scale-110 transition-transform shrink-0" />
             <span className="truncate">Anatomy Scan</span>
@@ -101,7 +101,7 @@ export const AtelierComposer: React.FC<AtelierComposerProps> = ({ onOpenQuickCom
             href={getWhatsAppUrl("Hello Nelson Atelier, I would like to consult with the Master Cordwainer regarding a new bespoke commission.")}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-center gap-1.5 py-1.5 sm:py-2 px-2 rounded-lg hover:bg-[#1A1A1A] text-[#D8CBB8]/80 hover:text-[#B89B5E] text-[11px] sm:text-xs font-mono font-medium transition-colors group min-w-0 overflow-hidden"
+            className="flex items-center justify-center gap-1.5 min-h-[44px] px-2.5 bg-[#161616] border border-[#D8CBB8]/10 hover:border-[#B89B5E]/40 text-[#D8CBB8]/80 hover:text-[#B89B5E] text-[11px] sm:text-xs font-mono font-medium transition-colors group min-w-0 overflow-hidden"
           >
             <MessageCircle size={13} className="text-emerald-400 group-hover:scale-110 transition-transform shrink-0" />
             <span className="truncate">Cordwainer Live</span>
@@ -110,7 +110,7 @@ export const AtelierComposer: React.FC<AtelierComposerProps> = ({ onOpenQuickCom
           {/* Action 4: Track Order */}
           <Link
             to="/track"
-            className="flex items-center justify-center gap-1.5 py-1.5 sm:py-2 px-2 rounded-lg hover:bg-[#1A1A1A] text-[#D8CBB8]/80 hover:text-[#B89B5E] text-[11px] sm:text-xs font-mono font-medium transition-colors group min-w-0 overflow-hidden"
+            className="flex items-center justify-center gap-1.5 min-h-[44px] px-2.5 bg-[#161616] border border-[#D8CBB8]/10 hover:border-[#B89B5E]/40 text-[#D8CBB8]/80 hover:text-[#B89B5E] text-[11px] sm:text-xs font-mono font-medium transition-colors group min-w-0 overflow-hidden"
           >
             <Package size={13} className="text-[#B89B5E] group-hover:scale-110 transition-transform shrink-0" />
             <span className="truncate">Track Order</span>
@@ -122,13 +122,13 @@ export const AtelierComposer: React.FC<AtelierComposerProps> = ({ onOpenQuickCom
 
       {/* Modal Dialog for Quick Commission */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
-          <div className="bg-[#121212] border border-[#B89B5E]/40 rounded-2xl w-full max-w-lg p-5 sm:p-6 relative shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-fadeIn" role="dialog" aria-modal="true">
+          <div className="bg-[#121212] border border-[#B89B5E]/40 w-full max-w-lg p-5 sm:p-6 relative shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
             
             {/* Modal Header */}
             <div className="flex items-center justify-between border-b border-[#D8CBB8]/15 pb-3">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-full bg-[#B89B5E]/20 text-[#B89B5E] flex items-center justify-center font-serif font-bold text-sm shrink-0">
+                <div className="w-8 h-8 bg-[#B89B5E]/20 text-[#B89B5E] flex items-center justify-center font-serif font-bold text-sm shrink-0">
                   N
                 </div>
                 <div>
@@ -138,7 +138,7 @@ export const AtelierComposer: React.FC<AtelierComposerProps> = ({ onOpenQuickCom
               </div>
               <button 
                 onClick={() => setIsModalOpen(false)}
-                className="text-[#D8CBB8]/60 hover:text-[#F5F1E8] p-1.5 rounded-lg hover:bg-[#1C1C1C] transition-colors"
+                className="w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center text-[#D8CBB8]/60 hover:text-[#F5F1E8] transition-colors cursor-pointer"
                 aria-label="Close modal"
               >
                 <X size={18} />

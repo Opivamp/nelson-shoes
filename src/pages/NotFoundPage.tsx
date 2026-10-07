@@ -1,9 +1,15 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { SeoHead } from '../components/common/SeoHead';
 
 export const NotFoundPage: React.FC = () => {
   return (
     <div className="bg-[#0A0A0A] text-[#F5F1E8] min-h-[80vh] flex items-center justify-center text-center px-6">
+      <SeoHead
+        title="Page Not Found | Nelson Shoes"
+        description="The requested page could not be found in the Nelson Shoes archive."
+        noIndex={true}
+      />
       <div className="max-w-md mx-auto space-y-6">
         <div className="w-16 h-16 border border-[#B89B5E]/40 mx-auto flex items-center justify-center">
           <span className="font-serif text-3xl font-light text-[#B89B5E]">N</span>

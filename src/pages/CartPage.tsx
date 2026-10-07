@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Trash2, Plus, Minus, ArrowRight, MessageCircle, ShieldCheck } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { formatCurrencyNGN, formatCurrencyUSD } from '../data/config';
+import { SeoHead } from '../components/common/SeoHead';
 
 export const CartPage: React.FC = () => {
   const { 
@@ -19,6 +20,10 @@ export const CartPage: React.FC = () => {
   if (items.length === 0) {
     return (
       <div className="bg-[#0A0A0A] text-[#F5F1E8] min-h-screen pt-40 pb-24 text-center px-6">
+        <SeoHead
+          title="Commission Dossier | Nelson Shoes"
+          noIndex={true}
+        />
         <div className="max-w-md mx-auto space-y-4">
           <div className="w-12 h-12 border border-[#B89B5E]/40 mx-auto flex items-center justify-center font-serif text-xl text-[#B89B5E]">
             N
@@ -42,6 +47,10 @@ export const CartPage: React.FC = () => {
 
   return (
     <div className="bg-[#0A0A0A] text-[#F5F1E8] min-h-screen pt-28 md:pt-36 pb-24">
+      <SeoHead
+        title={`Commission Dossier (${totalItems}) | Nelson Shoes`}
+        noIndex={true}
+      />
       <div className="max-w-7xl mx-auto px-6 md:px-10 space-y-12">
         
         {/* Header */}

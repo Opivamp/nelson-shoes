@@ -3,10 +3,20 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, Compass, ShieldCheck, Sparkles, MapPin } from 'lucide-react';
 import { SectionHeading } from '../components/common/SectionHeading';
 import { BRAND_CONFIG } from '../data/config';
+import { SeoHead } from '../components/common/SeoHead';
 
 export const AboutPage: React.FC = () => {
   return (
     <div className="bg-[#0A0A0A] text-[#F5F1E8] min-h-screen pt-28 md:pt-36 pb-24">
+      <SeoHead
+        title="The House of Nelson | Heritage & Mastery | Nelson Shoes"
+        description="Learn the story and philosophy behind Nelson Shoes. Master bespoke shoemaking in Lagos, Nigeria, rooted in African heritage and cordwaining excellence."
+        canonicalPath="/about"
+        breadcrumbs={[
+          { name: "Home", url: "/" },
+          { name: "The House of Nelson", url: "/about" }
+        ]}
+      />
       <div className="max-w-7xl mx-auto px-6 md:px-10 space-y-24">
         
         {/* ========================================================

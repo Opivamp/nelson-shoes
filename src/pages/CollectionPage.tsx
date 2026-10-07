@@ -7,6 +7,7 @@ import { ProductCard } from '../components/common/ProductCard';
 import { QuickViewModal } from '../components/common/QuickViewModal';
 import { SectionHeading } from '../components/common/SectionHeading';
 import { useWishlist } from '../context/WishlistContext';
+import { SeoHead } from '../components/common/SeoHead';
 
 export const CollectionPage: React.FC = () => {
   const { products } = useProducts();
@@ -87,6 +88,15 @@ export const CollectionPage: React.FC = () => {
 
   return (
     <div className="bg-[#0A0A0A] text-[#F5F1E8] min-h-screen pt-32 pb-24">
+      <SeoHead
+        title={showSavedOnly ? "Saved Creations | Nelson Shoes" : "Footwear Collection | Handcrafted Bespoke Silhouettes | Nelson Shoes"}
+        description="Explore the Nelson Shoes collection of handcrafted bespoke Oxfords, Belgian Loafers, Chelsea Boots, and Artisanal Sandals. Meticulously lasted and welted in Lagos, Nigeria."
+        canonicalPath="/collection"
+        breadcrumbs={[
+          { name: "Home", url: "/" },
+          { name: "Collection", url: "/collection" }
+        ]}
+      />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-10 space-y-12">
         
         {/* Editorial Header */}

@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { BRAND_CONFIG, getWhatsAppUrl } from '../data/config';
 import { SectionHeading } from '../components/common/SectionHeading';
+import { SeoHead } from '../components/common/SeoHead';
 
 export const ContactPage: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -35,6 +36,15 @@ export const ContactPage: React.FC = () => {
 
   return (
     <div className="bg-[#0A0A0A] text-[#F5F1E8] min-h-screen pt-28 md:pt-36 pb-24">
+      <SeoHead
+        title="Private Atelier Appointments & Concierge | Nelson Shoes"
+        description="Contact the Nelson Shoes atelier for private commissions, fitting appointments, and concierge inquiries in Lagos, Nigeria."
+        canonicalPath="/contact"
+        breadcrumbs={[
+          { name: "Home", url: "/" },
+          { name: "Concierge", url: "/contact" }
+        ]}
+      />
       <div className="max-w-7xl mx-auto px-6 md:px-10 space-y-20">
         
         {/* Header */}

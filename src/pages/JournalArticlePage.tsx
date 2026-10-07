@@ -2,6 +2,7 @@ import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Clock, Share2, BookOpen, ArrowRight } from 'lucide-react';
 import { getArticleBySlug, JOURNAL_ARTICLES } from '../data/journal';
+import { SeoHead } from '../components/common/SeoHead';
 
 export const JournalArticlePage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -10,6 +11,11 @@ export const JournalArticlePage: React.FC = () => {
   if (!article) {
     return (
       <div className="bg-[#0A0A0A] text-[#F5F1E8] min-h-screen pt-40 pb-24 text-center px-6">
+        <SeoHead
+          title="Story Not Found | Nelson Shoes"
+          description="The requested editorial story could not be found."
+          noIndex={true}
+        />
         <h1 className="font-serif text-3xl">STORY NOT FOUND</h1>
         <Link to="/journal" className="inline-block mt-4 text-[#B89B5E] text-xs uppercase tracking-widest hover:underline">
           Return to Journal
@@ -22,6 +28,18 @@ export const JournalArticlePage: React.FC = () => {
 
   return (
     <div className="bg-[#0A0A0A] text-[#F5F1E8] min-h-screen pt-28 md:pt-36 pb-24">
+      <SeoHead
+        title={`${article.title} | The Atelier Journal | Nelson Shoes`}
+        description={article.excerpt || article.subtitle}
+        canonicalPath={`/journal/${article.slug}`}
+        ogType="article"
+        ogImage={article.heroImage}
+        breadcrumbs={[
+          { name: "Home", url: "/" },
+          { name: "Journal", url: "/journal" },
+          { name: article.title, url: `/journal/${article.slug}` }
+        ]}
+      />
       <div className="max-w-4xl mx-auto px-6 md:px-10 space-y-12">
         
         {/* Back Link */}

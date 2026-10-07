@@ -4,6 +4,7 @@ import type { GalleryItem } from '../types';
 import { LightboxModal } from '../components/common/LightboxModal';
 import { SectionHeading } from '../components/common/SectionHeading';
 import { Eye } from 'lucide-react';
+import { SeoHead } from '../components/common/SeoHead';
 
 export const GalleryPage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -38,6 +39,15 @@ export const GalleryPage: React.FC = () => {
 
   return (
     <div className="bg-[#0A0A0A] text-[#F5F1E8] min-h-screen pt-28 md:pt-36 pb-24">
+      <SeoHead
+        title="Atelier Visual Gallery | Craft Photography & Masterpieces | Nelson Shoes"
+        description="Explore high-resolution photography documenting Nelson Shoes bespoke cordwaining, workshop lasts, leather patina glacage, and artisanal details in Lagos."
+        canonicalPath="/gallery"
+        breadcrumbs={[
+          { name: "Home", url: "/" },
+          { name: "Visual Gallery", url: "/gallery" }
+        ]}
+      />
       <div className="max-w-7xl mx-auto px-6 md:px-10 space-y-16">
         
         {/* Header */}

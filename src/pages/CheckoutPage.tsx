@@ -22,6 +22,7 @@ import { useCart } from '../context/CartContext';
 import { useCustomerAuth } from '../context/CustomerAuthContext';
 import { formatCurrencyNGN, formatCurrencyUSD, BRAND_CONFIG, getWhatsAppUrl } from '../data/config';
 import { launchPaystackPopup, isPaystackConfigured } from '../services/paystack';
+import { SeoHead } from '../components/common/SeoHead';
 
 export interface PlacedOrderSummary {
   orderId: string;
@@ -98,6 +99,10 @@ export const CheckoutPage: React.FC = () => {
   if (items.length === 0 && !orderPlaced) {
     return (
       <div className="bg-[#0A0A0A] text-[#F5F1E8] min-h-screen pt-40 pb-24 text-center px-6">
+        <SeoHead
+          title="Commission Checkout | Nelson Shoes"
+          noIndex={true}
+        />
         <h1 className="font-serif text-3xl">NO ITEMS IN COMMISSION DOSSIER</h1>
         <p className="text-xs text-[#D8CBB8]/70 font-sans mt-2">
           Please add a creation to your bag before proceeding to order request.
@@ -352,6 +357,10 @@ export const CheckoutPage: React.FC = () => {
 
   return (
     <div className="bg-[#0A0A0A] text-[#F5F1E8] min-h-screen pt-6 md:pt-10 pb-24">
+      <SeoHead
+        title="Secure Commission Checkout | Nelson Shoes"
+        noIndex={true}
+      />
       <div className="max-w-7xl mx-auto px-6 md:px-10 space-y-12">
         
         {/* Top Back Link */}

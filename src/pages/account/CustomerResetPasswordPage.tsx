@@ -11,6 +11,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { confirmCustomerPasswordReset } from '../../services/customerAuthService';
+import { SeoHead } from '../../components/common/SeoHead';
 
 export const CustomerResetPasswordPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -63,6 +64,10 @@ export const CustomerResetPasswordPage: React.FC = () => {
 
   return (
     <div className="min-h-[85vh] flex items-center justify-center px-4 py-16 relative overflow-hidden bg-[#0A0A0A] text-[#F5F1E8]">
+      <SeoHead
+        title="Reset Password | Customer Account | Nelson Shoes"
+        noIndex={true}
+      />
       {/* Background Ambient Glow */}
       <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-[#B89B5E]/5 rounded-full blur-3xl pointer-events-none" />
 

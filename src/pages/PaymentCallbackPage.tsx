@@ -14,6 +14,7 @@ import {
 import { useCart } from '../context/CartContext';
 import { verifyServerPayment, ServerVerifyPaymentResult } from '../services/paystack';
 import { formatCurrencyNGN, formatCurrencyUSD, getWhatsAppUrl } from '../data/config';
+import { SeoHead } from '../components/common/SeoHead';
 
 type VerificationState = 'loading' | 'success' | 'failed' | 'not_found';
 
@@ -67,6 +68,10 @@ export const PaymentCallbackPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#0A0A0A] text-[#F5F1E8] pt-32 pb-24 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
+      <SeoHead
+        title="Payment Verification | Nelson Shoes"
+        noIndex={true}
+      />
       <div className="w-full max-w-xl">
         {/* Verification in Progress */}
         {state === 'loading' && (

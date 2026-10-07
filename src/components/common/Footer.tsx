@@ -64,6 +64,7 @@ export const Footer: React.FC = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Enter your email address"
+                  aria-label="Email address for Atelier Journal newsletter"
                   required
                   className="w-full bg-transparent text-sm text-[#F5F1E8] placeholder-[#D8CBB8]/40 focus:outline-none font-sans"
                 />

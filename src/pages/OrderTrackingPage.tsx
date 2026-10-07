@@ -15,6 +15,7 @@ import {
 import { useOrders } from '../context/OrderContext';
 import { verifyOrderOwnership, GENERIC_VERIFICATION_ERROR } from '../services/orderTrackingService';
 import type { PublicOrderTracking } from '../types';
+import { SeoHead } from '../components/common/SeoHead';
 
 export const OrderTrackingPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -89,6 +90,10 @@ export const OrderTrackingPage: React.FC = () => {
 
   return (
     <div className="bg-[#0A0A0A] text-[#F5F1E8] min-h-screen pt-32 pb-24 font-sans">
+      <SeoHead
+        title="Track Footwear Commission | Nelson Shoes"
+        noIndex={true}
+      />
       <div className="max-w-4xl mx-auto px-6 space-y-10">
         
         {/* Header Navigation & Title */}

@@ -15,6 +15,7 @@ import type { Product } from '../types';
 import { CreativeAppSlider } from '../components/app/CreativeAppSlider';
 import { AtelierComposer } from '../components/app/AtelierComposer';
 import { AtelierFeedCard } from '../components/app/AtelierFeedCard';
+import { SeoHead } from '../components/common/SeoHead';
 
 export const HomePage: React.FC = () => {
   const { products, getFeaturedProducts } = useProducts();
@@ -85,6 +86,13 @@ export const HomePage: React.FC = () => {
 
   return (
     <div className="bg-[#0A0A0A] text-[#F5F1E8] min-h-screen w-full min-w-0">
+      <SeoHead
+        title="Nelson Shoes | Luxury Bespoke Nigerian Footwear | Crafted Beyond Ordinary"
+        description="Nelson Shoes is a premier bespoke footwear house handcrafted in Lagos, Nigeria. Meticulously shaped by hand, defined by precision, and sculpted for discerning gentlemen and connoisseurs."
+        canonicalPath="/"
+        ogImage="/images/hero-bespoke-oxford.jpg"
+      />
+      <h1 className="sr-only">Nelson Shoes — Luxury Bespoke Nigerian Footwear Atelier</h1>
       
       {/* ========================================================
           APPLICATION MAIN STREAM CONTAINER

@@ -26,6 +26,7 @@ import { useOrders } from '../../context/OrderContext';
 import { useProducts } from '../../context/ProductContext';
 import { BRAND_CONFIG } from '../../data/config';
 import { isFirebaseConfigured } from '../../services/firebase';
+import { SeoHead } from '../../components/common/SeoHead';
 
 export const AdminLayout: React.FC = () => {
   const { isAdmin, adminUser, isAuthLoading, loginAdmin, logoutAdmin, authError } = useAdminAuth();
@@ -124,6 +125,10 @@ export const AdminLayout: React.FC = () => {
 
     return (
       <div className="min-h-screen bg-[#0A0A0A] text-[#F5F1E8] flex flex-col justify-center items-center px-4 py-16 relative overflow-hidden">
+        <SeoHead
+          title="Atelier Management Console | Nelson Shoes"
+          noIndex={true}
+        />
         {/* Subtle background ambient aura */}
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-[#B89B5E]/5 rounded-full blur-3xl pointer-events-none" />
 
@@ -247,6 +252,10 @@ export const AdminLayout: React.FC = () => {
   // Authenticated Admin Dashboard Layout
   return (
     <div className="min-h-screen bg-[#0A0A0A] text-[#F5F1E8] flex flex-col md:flex-row antialiased">
+      <SeoHead
+        title="Atelier Management Console | Nelson Shoes"
+        noIndex={true}
+      />
       {/* Mobile Top Header */}
       <header className="md:hidden flex items-center justify-between px-4 py-3 bg-[#121212] border-b border-[#D8CBB8]/15 sticky top-0 z-50">
         <div className="flex items-center gap-2">

@@ -1,0 +1,37 @@
+# Nelson Shoes — Production Robots Policy
+# https://nelson-shoes.vercel.app
+
+User-agent: *
+# Public Indexable Routes
+Allow: /
+Allow: /collection
+Allow: /product/
+Allow: /bespoke
+Allow: /craft
+Allow: /about
+Allow: /journal
+Allow: /journal/
+Allow: /gallery
+Allow: /contact
+Allow: /privacy
+Allow: /terms
+
+# Private Customer Portal & Order Lookup
+Disallow: /account
+Disallow: /account/
+Disallow: /track
+
+# Commerce & Checkout Flows
+Disallow: /cart
+Disallow: /checkout
+Disallow: /payment/
+
+# Administrative & Atelier Systems
+Disallow: /admin
+Disallow: /admin/
+
+# Backend APIs
+Disallow: /api/
+
+# Canonical Sitemap Declaration
+Sitemap: https://nelson-shoes.vercel.app/sitemap.xml

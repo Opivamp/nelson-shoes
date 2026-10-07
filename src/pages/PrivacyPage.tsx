@@ -1,10 +1,20 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { BRAND_CONFIG } from '../data/config';
+import { SeoHead } from '../components/common/SeoHead';
 
 export const PrivacyPage: React.FC = () => {
   return (
     <div className="bg-[#0A0A0A] text-[#F5F1E8] min-h-screen pt-28 md:pt-36 pb-24">
+      <SeoHead
+        title="Privacy Policy & Client Discretion | Nelson Shoes"
+        description="Privacy and client confidentiality policies of the Nelson Shoes atelier. Complete discretion for client measurements, commission details, and security."
+        canonicalPath="/privacy"
+        breadcrumbs={[
+          { name: "Home", url: "/" },
+          { name: "Privacy Policy", url: "/privacy" }
+        ]}
+      />
       <div className="max-w-4xl mx-auto px-6 md:px-10 space-y-12">
         <div className="space-y-4 border-b border-[#D8CBB8]/15 pb-8">
           <span className="text-[10px] md:text-xs tracking-[0.4em] uppercase text-[#B89B5E] font-medium block">

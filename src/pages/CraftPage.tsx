@@ -3,10 +3,20 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, Scissors, Sparkles, ShieldCheck, Compass, Hammer } from 'lucide-react';
 import { SectionHeading } from '../components/common/SectionHeading';
 import { getWhatsAppUrl } from '../data/config';
+import { SeoHead } from '../components/common/SeoHead';
 
 export const CraftPage: React.FC = () => {
   return (
     <div className="bg-[#0A0A0A] text-[#F5F1E8] min-h-screen pt-28 md:pt-36 pb-24">
+      <SeoHead
+        title="Artisanal Craftsmanship & Cordwaining Heritage | Nelson Shoes"
+        description="Discover the shoemaking craft at Nelson Shoes. Hand-welted Goodyear construction, hand-carved wooden lasts, and signature mirror patina glacage in Lagos, Nigeria."
+        canonicalPath="/craft"
+        breadcrumbs={[
+          { name: "Home", url: "/" },
+          { name: "Craftsmanship", url: "/craft" }
+        ]}
+      />
       <div className="max-w-7xl mx-auto px-6 md:px-10 space-y-28">
         
         {/* ========================================================

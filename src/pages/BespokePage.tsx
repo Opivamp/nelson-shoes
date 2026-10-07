@@ -19,6 +19,7 @@ import { getWhatsAppUrl } from '../data/config';
 import { useCustomerAuth } from '../context/CustomerAuthContext';
 import { submitBespokeInquiryToFirestore, uploadBespokeReferenceToStorage } from '../services/firebase';
 import type { BespokeReferenceAsset } from '../types';
+import { SeoHead } from '../components/common/SeoHead';
 
 export const BespokePage: React.FC = () => {
   const { customerUser, profile } = useCustomerAuth();
@@ -247,6 +248,15 @@ export const BespokePage: React.FC = () => {
 
   return (
     <div className="bg-[#0A0A0A] text-[#F5F1E8] min-h-screen pt-28 md:pt-36 pb-24">
+      <SeoHead
+        title="Bespoke Footwear Commission | Nelson Shoes Atelier"
+        description="Initiate a private bespoke footwear commission with the Nelson Shoes Lagos atelier. Hand-carved anatomical wooden lasts, French full-grain calfskin, and bespoke cordwaining."
+        canonicalPath="/bespoke"
+        breadcrumbs={[
+          { name: "Home", url: "/" },
+          { name: "Bespoke Atelier", url: "/bespoke" }
+        ]}
+      />
       <div className="max-w-7xl mx-auto px-6 md:px-10 space-y-24">
         
         {/* ========================================================

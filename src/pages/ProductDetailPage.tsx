@@ -16,6 +16,7 @@ import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useProducts } from '../context/ProductContext';
 import { ProductCard } from '../components/common/ProductCard';
+import { SeoHead } from '../components/common/SeoHead';
 
 export const ProductDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -37,6 +38,11 @@ export const ProductDetailPage: React.FC = () => {
   if (!product) {
     return (
       <div className="bg-[#0A0A0A] text-[#F5F1E8] min-h-screen pt-40 pb-24 text-center px-6">
+        <SeoHead
+          title="Creation Not Found | Nelson Shoes"
+          description="The requested footwear creation could not be found in the Nelson Shoes archive."
+          noIndex={true}
+        />
         <div className="max-w-md mx-auto space-y-4">
           <h1 className="font-serif text-3xl">CREATION NOT FOUND</h1>
           <p className="text-xs text-[#D8CBB8]/70 font-sans">
@@ -74,10 +80,32 @@ export const ProductDetailPage: React.FC = () => {
 
   return (
     <div className="bg-[#0A0A0A] text-[#F5F1E8] min-h-screen pt-28 md:pt-36 pb-24">
+      <SeoHead
+        title={`${product.name} | Handcrafted Luxury Footwear | Nelson Shoes`}
+        description={product.description || product.tagline}
+        canonicalPath={`/product/${product.slug}`}
+        ogType="product"
+        ogImage={product.primaryImage}
+        product={{
+          name: product.name,
+          description: product.description || product.tagline,
+          image: product.primaryImage,
+          priceNGN: product.priceNGN,
+          priceUSD: product.priceUSD,
+          sku: product.id,
+          category: product.categoryLabel || product.category,
+          inStock: product.status !== 'Archive Piece'
+        }}
+        breadcrumbs={[
+          { name: "Home", url: "/" },
+          { name: "Collection", url: "/collection" },
+          { name: product.name, url: `/product/${product.slug}` }
+        ]}
+      />
       <div className="max-w-7xl mx-auto px-6 md:px-10 space-y-16">
         
         {/* Breadcrumb Navigation */}
-        <nav className="flex items-center space-x-2 text-[11px] uppercase tracking-widest text-[#D8CBB8]/60 font-sans">
+        <nav aria-label="Breadcrumb" className="flex items-center space-x-2 text-[11px] uppercase tracking-widest text-[#D8CBB8]/60 font-sans">
           <Link to="/" className="hover:text-[#B89B5E] transition-colors">Home</Link>
           <span>/</span>
           <Link to="/collection" className="hover:text-[#B89B5E] transition-colors">Collection</Link>
@@ -95,7 +123,9 @@ export const ProductDetailPage: React.FC = () => {
             <div className="relative aspect-[4/3] md:aspect-[16/11] bg-[#141414] border border-[#D8CBB8]/15 overflow-hidden">
               <img
                 src={product.gallery[activeImageIndex]?.url || product.primaryImage}
-                alt={product.gallery[activeImageIndex]?.alt || product.name}
+                alt={product.gallery[activeImageIndex]?.alt || `${product.name} - Handcrafted Nigerian luxury footwear`}
+                fetchPriority="high"
+                decoding="async"
                 className="w-full h-full object-cover object-center transition-all duration-700 hover:scale-105"
               />
               <div className="absolute top-4 left-4 bg-[#0A0A0A]/85 backdrop-blur-md px-3 py-1 border border-[#D8CBB8]/10 text-[9px] uppercase tracking-widest text-[#B89B5E]">
@@ -117,7 +147,9 @@ export const ProductDetailPage: React.FC = () => {
                 >
                   <img
                     src={img.url}
-                    alt={img.alt}
+                    alt={img.alt || `${product.name} gallery view ${idx + 1}`}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover object-center"
                   />
                 </button>

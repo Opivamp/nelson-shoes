@@ -16,6 +16,7 @@ import {
   LayoutDashboard
 } from 'lucide-react';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
+import { SeoHead } from '../common/SeoHead';
 
 interface CustomerPortalLayoutProps {
   children: React.ReactNode;
@@ -77,6 +78,10 @@ export const CustomerPortalLayout: React.FC<CustomerPortalLayoutProps> = ({ chil
 
   return (
     <div className="bg-[#0A0A0A] text-[#F5F1E8] min-h-screen pt-24 sm:pt-28 pb-16 px-4 sm:px-6 lg:px-8">
+      <SeoHead
+        title="Customer Portal | Nelson Shoes"
+        noIndex={true}
+      />
       <div className="max-w-6xl mx-auto space-y-8">
 
         {/* ========================================================

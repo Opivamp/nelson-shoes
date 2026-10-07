@@ -34,8 +34,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         <Link to={`/product/${product.slug}`} className="block w-full h-full">
           <img
             src={product.primaryImage}
-            alt={product.name}
+            alt={`${product.name} - ${product.categoryLabel || 'Bespoke Footwear'} by Nelson Shoes`}
             loading={priority ? "eager" : "lazy"}
+            decoding="async"
             className="w-full h-full object-cover object-center transform scale-100 group-hover:scale-105 transition-transform duration-700 ease-out"
           />
         </Link>

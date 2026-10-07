@@ -170,7 +170,10 @@ export const CreativeAppSlider: React.FC<CreativeAppSliderProps> = ({ onQuickVie
             >
               <img
                 src={slide.image}
-                alt={slide.title}
+                alt={`${slide.title} - Handcrafted Nigerian luxury footwear by Nelson Shoes`}
+                loading={idx === 0 ? "eager" : "lazy"}
+                fetchPriority={idx === 0 ? "high" : "low"}
+                decoding="async"
                 className={`w-full h-full object-cover object-center transform transition-transform duration-[6500ms] ease-out ${
                   isActive ? 'scale-105' : 'scale-100'
                 }`}

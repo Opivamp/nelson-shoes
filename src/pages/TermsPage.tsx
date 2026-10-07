@@ -1,10 +1,20 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { BRAND_CONFIG } from '../data/config';
+import { SeoHead } from '../components/common/SeoHead';
 
 export const TermsPage: React.FC = () => {
   return (
     <div className="bg-[#0A0A0A] text-[#F5F1E8] min-h-screen pt-28 md:pt-36 pb-24">
+      <SeoHead
+        title="Terms of Bespoke Commission | Nelson Shoes"
+        description="Terms, production timelines, deposit conditions, and lifetime atelier guarantees for Nelson Shoes bespoke footwear commissions."
+        canonicalPath="/terms"
+        breadcrumbs={[
+          { name: "Home", url: "/" },
+          { name: "Terms of Commission", url: "/terms" }
+        ]}
+      />
       <div className="max-w-4xl mx-auto px-6 md:px-10 space-y-12">
         <div className="space-y-4 border-b border-[#D8CBB8]/15 pb-8">
           <span className="text-[10px] md:text-xs tracking-[0.4em] uppercase text-[#B89B5E] font-medium block">

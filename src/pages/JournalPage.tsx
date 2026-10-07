@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Clock, ArrowRight, BookOpen } from 'lucide-react';
 import { JOURNAL_ARTICLES } from '../data/journal';
 import { SectionHeading } from '../components/common/SectionHeading';
+import { SeoHead } from '../components/common/SeoHead';
 
 export const JournalPage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -18,6 +19,15 @@ export const JournalPage: React.FC = () => {
 
   return (
     <div className="bg-[#0A0A0A] text-[#F5F1E8] min-h-screen pt-28 md:pt-36 pb-24">
+      <SeoHead
+        title="The Atelier Journal | Cordwaining & African Luxury | Nelson Shoes"
+        description="Essays on bespoke shoemaking, calfskin tanneries, anatomical lasts, and the philosophy of contemporary Nigerian luxury from the Nelson Shoes atelier."
+        canonicalPath="/journal"
+        breadcrumbs={[
+          { name: "Home", url: "/" },
+          { name: "Journal", url: "/journal" }
+        ]}
+      />
       <div className="max-w-7xl mx-auto px-6 md:px-10 space-y-20">
         
         {/* Magazine Editorial Header */}
